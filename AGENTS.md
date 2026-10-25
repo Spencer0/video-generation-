@@ -139,8 +139,9 @@ Measured on the bag scene, 32 samples, adaptive, OIDN denoise:
 
 The first draft explained well but opened soft. The structure that landed:
 
-1. **Curiosity hook, 1 line**: "Physics you don't know: what happens when X?"
-   Name the question, never the answer, in the first 1.5 s.
+1. **Curiosity hook, 1 line**: open directly on the question ("What happens
+   when a flame touches a plastic bag?"). No channel tagline or eyebrow in
+   front of it; that was tried and cut because it delayed the hook.
 2. **The obvious outcome**: "Obviously, it melts. Instantly." (lets the viewer
    feel smart, sets up the reversal).
 3. **The reversal + "How?"**: the impossible thing, ending on a one-word
@@ -148,7 +149,7 @@ The first draft explained well but opened soft. The structure that landed:
 4. **Why, with an equation**: one formula on screen (q = k·ΔT/d, Q = m·L),
    each symbol highlighted as it is spoken; numbers as bars, not prose.
 5. **Payoff everyone can repeat**: "You can even boil noodles in a bag."
-6. **CTA, 3 s**: "Follow for more physics you don't know." (echo the hook).
+6. **CTA, 3 s**: "Follow for more!"
 
 Pacing: ~3 words/s at Kokoro speed 1.12; 45 s total; no beat longer than 8 s.
 Keep beat ids stable when rewriting (hook, empty, water, ...) because the
@@ -158,6 +159,16 @@ than renaming.
 Shots are time-based with fixed nominal durations (`SHOT_DUR` in
 scene_bag.py), so a script rewrite that changes beat lengths does not
 invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
+
+## Fact-check notes for video 001 (keep claims this honest next time)
+
+- Mechanism is right (Fourier conduction through a thin film into water held
+  at its boiling point; latent heat absorbs the surplus).
+- Softest numbers: LDPE bags melt ~105-115°C (we said 120); the film's flame
+  side sits ~5-15°C above the water (we said "at 100"); "cannot melt" should
+  be "won't melt where water touches it". Blue flames, soot, seams and the
+  dry part of the bag can all fail it. Flame "over 1,000°C" is fine for the
+  hot zone. Round numbers are OK on screen, but say "about" in the VO.
 
 ## Workflow for a new video
 
