@@ -41,7 +41,7 @@ def main(video_id):
         t = max(t, b_start + beat.get("min_duration", 0))
         # snap beat boundaries to whole frames so shots concatenate cleanly
         t = round(round(t * fps) / fps, 4)
-        beats_out.append({"id": beat["id"], "start": round(b_start, 4), "end": t,
+        beats_out.append({"id": beat["id"], "start": round(b_start, 4), "end": t, "bg_offset": beat.get("bg_offset", 0),
                           "duration": round(t - b_start, 4), "frames": int(round((t - b_start) * fps)),
                           "start_frame": int(round(b_start * fps)), "lines": lines_out})
     total = t

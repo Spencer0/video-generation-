@@ -79,7 +79,7 @@ def main(video_id):
                     n += 1
         return B[beat]["start"]
     # --- burner: lit from hook ignition until the end (cuts keep it continuous)
-    t_ign = B["hook"]["start"] + 2.45
+    t_ign = B["hook"]["start"] + 2.45 - B["hook"].get("bg_offset", 0) / tl["fps"]   # shot A ignites at 2.45 s of footage
     place(sfx, clicklighter(), t_ign - 0.22, 0.5)
     place(sfx, ignite(0.7), t_ign - 0.02, 0.9)
     place(sfx, burner_roar(D - t_ign, 0.0, 0.5), t_ign, 0.22)

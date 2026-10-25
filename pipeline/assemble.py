@@ -56,6 +56,7 @@ def main():
     lines = []
     for b in tl["beats"]:
         s, off = BG_PLAN[b["id"]]
+        off += b.get("bg_offset", 0)   # script.json can shift a beat's footage (e.g. ignition on a word)
         n_avail = (max(shots[s][0]) + 1) if shots[s][0] else 1
         for k in range(b["frames"]):
             i = off + k

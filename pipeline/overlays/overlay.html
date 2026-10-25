@@ -104,10 +104,9 @@ function drawCaptions(t){
 function fadeInOut(tb,b,a0=0.2){return smooth(0,a0,tb)*(1-smooth(b.duration-0.3,b.duration-0.05,tb))}
 function beatHook(tb,t,b){
   const out=1-smooth(b.duration-0.35,b.duration-0.05,tb);
-  pill('PHYSICS YOU DON’T KNOW',W/2,200,{size:38,bg:'rgba(255,122,26,0.95)',alpha:smooth(0.05,0.3,tb)*out});
   const k1=tb-0.25; if(k1>0){ const s=lerp(1.5,1,easeOutBack(k1/0.3)); ctx.save(); ctx.translate(W/2,360); ctx.scale(s,s); ctx.globalAlpha=smooth(0,0.1,k1)*out;
     text('FLAME 🔥 + PLASTIC BAG',0,0,{size:82,weight:900}); ctx.restore(); }
-  const tIgn=2.45; const k2=tb-tIgn; if(k2>0){ const s=lerp(2.2,1,easeOutBack(k2/0.35))*(1+0.03*Math.sin(k2*8)); ctx.save(); ctx.translate(W/2,540); ctx.scale(s,s); ctx.globalAlpha=smooth(0,0.08,k2)*out;
+  const tIgn=2.45-(b.bg_offset||0)/TL.fps; const k2=tb-tIgn; if(k2>0){ const s=lerp(2.2,1,easeOutBack(k2/0.35))*(1+0.03*Math.sin(k2*8)); ctx.save(); ctx.translate(W/2,540); ctx.scale(s,s); ctx.globalAlpha=smooth(0,0.08,k2)*out;
     text('= ?',0,0,{size:150,weight:900,color:C.yellow}); ctx.restore(); flash(t,b.start+tIgn,{dur:0.3,peak:0.5,color:'255,170,60'}); }
 }
 const MELT_START=0.8, MELT_END=1.8; // must match scene_bag.py shot B
@@ -258,7 +257,7 @@ function beatNoodles(tb,t,b){
 function beatCta(tb,t,b){
   const tFollow=wordTime('cta','follow'); const kf=t-tFollow+0.1; if(kf>0){ const s=lerp(1.6,1,easeOutBack(kf/0.35))*(1+0.03*Math.sin(kf*6));
     ctx.save(); ctx.translate(W/2,860); ctx.scale(s,s); ctx.globalAlpha=smooth(0,0.1,kf); pill('＋ FOLLOW',0,0,{size:76,bg:'#FF2D55',fg:'#fff',padX:54}); ctx.restore();
-    ctx.save(); ctx.globalAlpha=smooth(0.2,0.45,kf); text('physics you don’t know',W/2,980,{size:46,weight:700}); ctx.restore(); }
+    ctx.save(); ctx.globalAlpha=smooth(0.2,0.45,kf); text('more physics like this',W/2,980,{size:46,weight:700}); ctx.restore(); }
   const fo=smooth(b.duration-0.45,b.duration-0.02,tb); if(fo>0){ctx.fillStyle=`rgba(0,0,0,${fo})`; ctx.fillRect(0,0,W,H)}
 }
 const DRAW={hook:beatHook,empty:beatEmpty,water:beatWater,temps:beatTemps,equation:beatEquation,ceiling:beatCeiling,punch:beatPunch,noodles:beatNoodles,cta:beatCta};

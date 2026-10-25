@@ -13,12 +13,13 @@
   "beats": [
     {
       "id": "hook",
-      "pad_before": 0.3,
+      "pad_before": 0.25,
       "pad_after": 0.2,
-      "min_duration": 4.2,
+      "min_duration": 3.6,
       "lines": [
-        "Physics you don't know. What happens when a flame touches a plastic bag?"
-      ]
+        "What happens when a flame touches a plastic bag?"
+      ],
+      "bg_offset": 22
     },
     {
       "id": "empty",
@@ -86,10 +87,10 @@
     {
       "id": "cta",
       "pad_before": 0.15,
-      "pad_after": 0.8,
-      "min_duration": 3.0,
+      "pad_after": 0.9,
+      "min_duration": 2.6,
       "lines": [
-        "Follow for more physics you don't know."
+        "Follow for more!"
       ]
     }
   ]
