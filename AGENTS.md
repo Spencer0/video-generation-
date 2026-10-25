@@ -61,6 +61,14 @@ Measured on the bag scene, 32 samples, adaptive, OIDN denoise:
   DoF, bubbles (110 glass icospheres), bloom, bounce caps all cost < 10% each.
 - The bag shader (fresnel film + bump + soot + melt-hole masks) is ~20% of
   frame time; the flame (two emissive shells with animated noise alpha) is free.
+- Sample count barely matters above 16: adaptive sampling runs its first
+  convergence check at the first power of two >= `adaptive_min_samples`, and
+  most pixels stop there. Each sample costs ~1 s at 540p in this scene, so
+  set `adaptive_min_samples = 4`, `adaptive_threshold = 0.1`, 24 samples, and
+  spend the budget on resolution instead. Scene sync + BVH is only 0.3 s/frame.
+- Profile with `SCENE_FLAGS=nodof,nobubbles,...` toggles (see scene_bag.py)
+  and read the second frame's time, never the first (first frame carries
+  kernel load + shader compile).
 - `use_persistent_data = True` and rendering frames in a loop inside one
   Blender process avoids a ~30 s scene rebuild per frame. Do not launch one
   Blender process per frame.
@@ -116,6 +124,16 @@ Measured on the bag scene, 32 samples, adaptive, OIDN denoise:
   often get a trending sound layered on top anyway.
 - VO: highpass 80 Hz, soft tanh compression, peak-normalized, sits ~8 dB above
   everything else.
+
+## Gotchas that cost time
+
+- `pgrep -f name` matches the shell that runs the pgrep itself; a "wait until
+  the other job exits" loop built on it never exits. Match on the binary
+  (`pgrep -x blender`) or a pid file.
+- `rm -rf "$VAR"/*` is refused by the harness; write `"${VAR:?}"/*`.
+- Kokoro `af_heart` reads "120" as "one hundred twenty" (fine) but write
+  numbers the way you want them spoken; "one twenty" in the script avoids a
+  long number read.
 
 ## Workflow for a new video
 

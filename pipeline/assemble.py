@@ -43,7 +43,10 @@ def main():
     def shot_frame(s, i):
         nonlocal missing
         idx, files = shots[s]
-        if not files: raise SystemExit(f"no frames rendered for shot {s}")
+        if not files:  # shot not started yet: borrow any rendered shot so previews still cut
+            s = next((k for k in "CDAB" if shots[k][1]), None)
+            if s is None: raise SystemExit("no 3D frames rendered yet")
+            idx, files = shots[s]
         if i in idx: return files[idx.index(i)]
         missing += 1
         j = bisect.bisect_left(idx, i); j = min(max(j, 0), len(idx) - 1)
