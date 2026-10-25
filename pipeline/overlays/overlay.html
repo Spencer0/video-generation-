@@ -1,0 +1,267 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>overlay</title>
+<style>
+  html,body{margin:0;padding:0;background:transparent}
+  canvas{display:block}
+</style></head>
+<body><canvas id="c" width="1080" height="1920"></canvas>
+<script>
+// Overlay engine for videos/001-water-bag. Everything is a pure function of
+// (timeline, frame) so Playwright can screenshot any frame independently.
+const W = 1080, H = 1920;
+const cv = document.getElementById('c'); const ctx = cv.getContext('2d');
+let TL = null, WORDS = [], CHUNKS = [], BEATS = {};
+const FONT = 'Inter';
+const C = { yellow:'#FFD60A', orange:'#FF7A1A', red:'#FF3B3B', blue:'#4DB8FF', green:'#3DDC84', white:'#FFFFFF', ink:'rgba(8,10,16,0.82)' };
+
+// ---------------------------------------------------------------- helpers
+const clamp = (x,a,b)=>Math.max(a,Math.min(b,x));
+const lerp = (a,b,t)=>a+(b-a)*t;
+const smooth = (e0,e1,x)=>{const t=clamp((x-e0)/(e1-e0),0,1);return t*t*(3-2*t)};
+const easeOutBack = t=>{const c1=1.70158,c3=c1+1;t=clamp(t,0,1);return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2)};
+const easeOutCubic = t=>1-Math.pow(1-clamp(t,0,1),3);
+const easeOutElastic = t=>{t=clamp(t,0,1);if(t===0||t===1)return t;return Math.pow(2,-10*t)*Math.sin((t*10-0.75)*(2*Math.PI/3))+1};
+function mulberry(seed){return function(){let t=seed+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+function fmtNum(n){return Math.round(n).toLocaleString('en-US')}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function font(weight,size,family){ctx.font=`${weight} ${size}px "${family||FONT}", "Noto Color Emoji", sans-serif`}
+function text(str,x,y,{size=72,weight=800,color=C.white,align='center',stroke=true,strokeW=null,shadow=true,alpha=1,family=null,baseline='middle'}={}){
+  ctx.save(); ctx.globalAlpha=ctx.globalAlpha*alpha; font(weight,size,family); ctx.textAlign=align; ctx.textBaseline=baseline;
+  if(shadow){ctx.shadowColor='rgba(0,0,0,0.55)';ctx.shadowBlur=size*0.18;ctx.shadowOffsetY=size*0.06}
+  if(stroke){ctx.lineJoin='round';ctx.lineWidth=strokeW||Math.max(6,size*0.16);ctx.strokeStyle='rgba(0,0,0,0.9)';ctx.strokeText(str,x,y)}
+  ctx.shadowColor='transparent'; ctx.fillStyle=color; ctx.fillText(str,x,y); ctx.restore();
+}
+function measure(str,size,weight){font(weight||800,size);return ctx.measureText(str).width}
+function pill(label,x,y,{bg='rgba(10,12,18,0.78)',fg=C.white,size=40,weight=800,padX=28,h=null,border=null,alpha=1,align='center'}={}){
+  const w=measure(label,size,weight)+padX*2, hh=h||size*1.7; let x0 = align==='center'?x-w/2:(align==='left'?x:x-w);
+  ctx.save(); ctx.globalAlpha=ctx.globalAlpha*alpha; rr(x0,y-hh/2,w,hh,hh/2); ctx.fillStyle=bg; ctx.fill();
+  if(border){ctx.lineWidth=4;ctx.strokeStyle=border;ctx.stroke()}
+  text(label,x0+w/2,y+2,{size,weight,color:fg,stroke:false,shadow:false}); ctx.restore(); return w;
+}
+function flash(t,at,{dur=0.22,peak=0.55,color='255,255,255'}={}){
+  const k=(t-at)/dur; if(k<0||k>1)return; ctx.save(); ctx.fillStyle=`rgba(${color},${peak*(1-easeOutCubic(k))})`; ctx.fillRect(0,0,W,H); ctx.restore();
+}
+function vignette(){
+  const g=ctx.createRadialGradient(W/2,H/2,H*0.22,W/2,H/2,H*0.72); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,0.5)');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+}
+function panel(x,y,w,h,alpha=1){ctx.save();ctx.globalAlpha=ctx.globalAlpha*alpha;rr(x,y,w,h,36);ctx.fillStyle='rgba(8,10,16,0.72)';ctx.fill();ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.stroke();ctx.restore()}
+function stopwatch(sec,x,y,{color=C.white,size=74,label=null,alpha=1}={}){
+  const s=Math.max(0,sec); const str=s.toFixed(2)+'s';
+  ctx.save(); ctx.globalAlpha=ctx.globalAlpha*alpha; const w=380,h=118; rr(x-w,y-h/2,w,h,28); ctx.fillStyle='rgba(8,10,16,0.78)'; ctx.fill();
+  ctx.lineWidth=3; ctx.strokeStyle='rgba(255,255,255,0.14)'; ctx.stroke();
+  // tiny clock icon
+  ctx.beginPath(); ctx.arc(x-w+54,y,22,0,Math.PI*2); ctx.lineWidth=5; ctx.strokeStyle=color; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x-w+54,y); ctx.lineTo(x-w+54,y-14); ctx.lineTo(x-w+64,y-4); ctx.stroke();
+  font(800,size); ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.fillStyle=color; ctx.fontVariantNumeric='tabular-nums';
+  ctx.fillText(str,x-30,y+3);
+  if(label) text(label,x-w/2,y+h/2+34,{size:30,weight:700,color:'rgba(255,255,255,0.8)',stroke:false,shadow:true});
+  ctx.restore();
+}
+function stamp(label,x,y,t0,t,{color=C.red,size=120,rot=-0.14}={}){
+  const k=t-t0; if(k<0)return; const s=lerp(1.6,1,easeOutBack(k/0.28)); const a=smooth(0,0.08,k);
+  ctx.save(); ctx.translate(x,y); ctx.rotate(rot); ctx.scale(s,s); ctx.globalAlpha=a;
+  font(900,size); const w=ctx.measureText(label).width+70, h=size*1.35;
+  rr(-w/2,-h/2,w,h,22); ctx.lineWidth=12; ctx.strokeStyle=color; ctx.stroke(); ctx.fillStyle='rgba(8,10,16,0.55)'; ctx.fill();
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle=color; ctx.fillText(label,0,size*0.06); ctx.restore();
+  if(k<0.35) flash(t,t0,{dur:0.18,peak:0.22});
+}
+function wordTime(beatId,word,nth=0){ // start time of the nth occurrence of a word in a beat
+  const b=BEATS[beatId]; let n=0; for(const l of b.lines) for(const w of l.words){ if(w.word.toLowerCase().replace(/[^a-z0-9']/g,'')===word.toLowerCase()){ if(n===nth) return w.start; n++; } } return b.start;
+}
+
+// ---------------------------------------------------------------- captions (TikTok style, word-synced)
+const CAPTION_Y = 1460;
+const KEYWORDS = new Set(['water','flame','boil','boils','boiling','melts','melting','gone','nothing','thousand','twenty','hundred','sponge','ceiling','steam','never','fake','cup','hotter','fine','plastic']);
+function buildChunks(){
+  WORDS=[]; TL.beats.forEach(b=>b.lines.forEach(l=>l.words.forEach(w=>WORDS.push({...w,beat:b.id}))));
+  CHUNKS=[]; let cur=[];
+  const flush=()=>{if(cur.length){CHUNKS.push({words:cur,start:cur[0].start,end:cur[cur.length-1].end});cur=[]}};
+  WORDS.forEach((w,i)=>{ cur.push(w); const punct=/[.!?,;:]$|\.\.\.$/.test(w.word); const next=WORDS[i+1];
+    if(punct||cur.length>=3||!next||next.beat!==w.beat) flush(); });
+  CHUNKS.forEach((c,i)=>{const nx=CHUNKS[i+1]; c.hide = nx ? Math.min(c.end+0.6, nx.start) : c.end+0.9;});
+}
+function drawCaptions(t){
+  const c=CHUNKS.find(c=>t>=c.start-0.04 && t<c.hide); if(!c)return;
+  const size=78, gap=22; font(900,size);
+  const info=c.words.map(w=>{ const active = t>=w.start-0.02 && t<w.end+0.02; const spoken = t>=w.start-0.02;
+    const key = KEYWORDS.has(w.word.toLowerCase().replace(/[^a-z']/g,'')) || /\d/.test(w.word);
+    const ws = active ? lerp(1.0,1.12,easeOutBack((t-w.start)/0.12)) : 1;
+    return {w, ws, width:ctx.measureText(w.word.toUpperCase()).width*ws, col: active ? C.yellow : (spoken && key ? C.orange : C.white)}; });
+  const total=info.reduce((a,b)=>a+b.width,0)+gap*(info.length-1);
+  const scaleAll = total>960 ? 960/total : 1;
+  const y=CAPTION_Y; let x=W/2-total*scaleAll/2;
+  const pop = lerp(0.85,1,easeOutBack((t-c.start)/0.16));
+  info.forEach((it,i)=>{
+    const s = it.ws*pop*scaleAll; const cx = x+it.width*scaleAll/2;
+    ctx.save(); ctx.translate(cx,y); ctx.scale(s,s);
+    text(it.w.word.toUpperCase(),0,0,{size,weight:900,color:it.col,strokeW:14});
+    ctx.restore(); x+=it.width*scaleAll+gap*scaleAll;
+  });
+}
+
+// ---------------------------------------------------------------- beat graphics
+function beatHook(tb,t,b){
+  // title slam
+  const k1=tb-0.12; if(k1>0){ const s=lerp(1.5,1,easeOutBack(k1/0.3)); const a=smooth(0,0.1,k1)*(1-smooth(b.duration-0.35,b.duration-0.05,tb));
+    ctx.save(); ctx.translate(W/2,330); ctx.scale(s,s); ctx.globalAlpha=a;
+    text('WATER IN A',0,-62,{size:92,weight:900}); text('PLASTIC BAG',0,46,{size:108,weight:900,color:C.blue}); ctx.restore(); }
+  const tIgn=2.3; const k2=tb-tIgn; if(k2>0){ const s=lerp(1.8,1,easeOutBack(k2/0.3)); const a=smooth(0,0.08,k2)*(1-smooth(b.duration-0.35,b.duration-0.05,tb));
+    ctx.save(); ctx.translate(W/2,560); ctx.scale(s,s); ctx.globalAlpha=a; text('OVER AN OPEN FLAME 🔥',0,0,{size:84,weight:900,color:C.orange}); ctx.restore();
+    flash(t,b.start+tIgn,{dur:0.3,peak:0.5,color:'255,170,60'}); }
+  pill('PHYSICS THAT LOOKS FAKE',W/2,180,{size:34,bg:'rgba(255,122,26,0.9)',alpha:smooth(0.3,0.6,tb)*(1-smooth(b.duration-0.35,b.duration-0.05,tb))});
+}
+const MELT_START=0.8, MELT_END=1.8; // must match scene_bag.py shot B
+function beatEmpty(tb,t,b){
+  const a=smooth(0,0.15,tb);
+  pill('EMPTY BAG',120,250,{align:'left',size:40,bg:'rgba(120,125,140,0.85)',alpha:a});
+  const sw = tb<MELT_START?0:Math.min(tb-MELT_START, MELT_END-MELT_START);
+  stopwatch(sw,W-80,250,{color: sw>=MELT_END-MELT_START-0.001?C.red:C.white,alpha:a});
+  stamp('MELTED',W/2,980,b.start+MELT_END+0.08,t,{color:C.red,size:150});
+}
+function beatWater(tb,t,b){
+  const a=smooth(0,0.15,tb);
+  pill('WATER BAG',120,250,{align:'left',size:40,bg:'rgba(45,140,255,0.9)',alpha:a});
+  stopwatch(Math.max(0,tb-0.2),W-80,250,{color: tb>3?C.green:C.white,alpha:a});
+  const tNothing=wordTime('water','nothing');
+  stamp('STILL FINE ✅',W/2,980,tNothing+0.05,t,{color:C.green,size:110,rot:-0.08});
+  const tBoil=wordTime('water','boil'); const kb=t-tBoil; if(kb>0){ const s=lerp(1.4,1,easeOutBack(kb/0.3));
+    ctx.save(); ctx.translate(W/2,1160); ctx.scale(s,s); ctx.globalAlpha=smooth(0,0.1,kb); pill('WATER: 100°C  •  BOILING',0,0,{size:44,bg:'rgba(8,10,16,0.8)',fg:C.blue,border:C.blue}); ctx.restore(); }
+}
+function bar(x,y,w,h,frac,color,label,value,alpha){
+  ctx.save(); ctx.globalAlpha=ctx.globalAlpha*alpha; rr(x,y,w,h,h/2); ctx.fillStyle='rgba(255,255,255,0.08)'; ctx.fill();
+  const fw=Math.max(h,w*frac); rr(x,y,fw,h,h/2); ctx.fillStyle=color; ctx.fill();
+  text(label,x,y-44,{size:36,weight:800,color:'rgba(255,255,255,0.85)',align:'left',stroke:false});
+  text(value,x+fw+24,y+h/2+2,{size:58,weight:900,color,align:'left',stroke:true,strokeW:8}); ctx.restore();
+}
+function beatTemps(tb,t,b){
+  const a=smooth(0,0.2,tb)*(1-smooth(b.duration-0.3,b.duration-0.05,tb));
+  const px=90,py=540,pw=900,ph=640; panel(px,py,pw,ph,a);
+  text('HOW HOT?',W/2,py+70,{size:56,weight:900,alpha:a,stroke:false});
+  const bx=px+60,bw=pw-120-220, bh=54, MAX=1150;
+  const t1=wordTime('temps','flame'), t2=wordTime('temps','plastic'), t3=wordTime('temps','fine');
+  const rows=[
+    {t0:t1,val:1000,color:C.orange,label:'FLAME',fmt:v=>fmtNum(v)+'°C+'},
+    {t0:t2,val:120,color:C.red,label:'PLASTIC MELTS',fmt:v=>fmtNum(v)+'°C'},
+    {t0:t3,val:100,color:C.blue,label:'WATER BOILS',fmt:v=>fmtNum(v)+'°C'},
+  ];
+  rows.forEach((r,i)=>{ const k=t-r.t0; if(k<0)return; const p=easeOutCubic(k/0.9); const y=py+200+i*160;
+    bar(bx,y,bw,bh,r.val*p/MAX,r.color,r.label,r.fmt(r.val*p),a*smooth(0,0.1,k)); });
+  const kq=t-t3; if(kq>0.6) text('?',W/2,py+ph+70,{size:150,weight:900,color:C.yellow,alpha:smooth(0.6,0.8,kq)*a});
+}
+function flameIcon(x,y,s,tt,alpha=1){
+  ctx.save(); ctx.globalAlpha=alpha; ctx.translate(x,y); ctx.scale(s,s);
+  for(let i=0;i<3;i++){ const w=[1,0.65,0.35][i], col=['#FF6A00','#FFB000','#FFF2B0'][i]; const fl=1+0.08*Math.sin(tt*9+i*2);
+    ctx.beginPath(); ctx.moveTo(0,-110*w*fl); ctx.bezierCurveTo(60*w,-40*w,70*w,30*w,0,60*w); ctx.bezierCurveTo(-70*w,30*w,-60*w,-40*w,0,-110*w*fl); ctx.fillStyle=col; ctx.fill(); }
+  ctx.restore();
+}
+function beatSponge(tb,t,b){
+  const a=smooth(0,0.2,tb)*(1-smooth(b.duration-0.3,b.duration-0.05,tb));
+  const px=70,py=500,pw=940,ph=740; panel(px,py,pw,ph,a);
+  ctx.save(); ctx.globalAlpha=a;
+  // zones: flame | film | water
+  const filmX=px+400, filmW=14, top=py+130, bot=py+ph-70;
+  const wg=ctx.createLinearGradient(filmX,0,px+pw,0); wg.addColorStop(0,'rgba(77,184,255,0.55)'); wg.addColorStop(1,'rgba(77,184,255,0.25)');
+  ctx.fillStyle=wg; rr(filmX+filmW,top,px+pw-40-filmX-filmW,bot-top,24); ctx.fill();
+  const fg=ctx.createRadialGradient(px+200,(top+bot)/2,10,px+200,(top+bot)/2,260); fg.addColorStop(0,'rgba(255,170,40,0.75)'); fg.addColorStop(1,'rgba(255,90,0,0)');
+  ctx.fillStyle=fg; ctx.fillRect(px+20,top,filmX-px-20,bot-top);
+  flameIcon(px+200,(top+bot)/2+40,1.1,t,0.95);
+  ctx.fillStyle='#E8ECF2'; rr(filmX,top,filmW,bot-top,6); ctx.fill();
+  text('FLAME',px+200,top-40,{size:38,weight:800,color:C.orange,stroke:false});
+  text('WATER',filmX+280,top-40,{size:38,weight:800,color:C.blue,stroke:false});
+  text('PLASTIC',filmX+7,bot+40,{size:34,weight:800,color:'#E8ECF2',stroke:false});
+  text('0.03 mm thin',filmX+7,bot+80,{size:28,weight:600,color:'rgba(255,255,255,0.7)',stroke:false});
+  // heat particles
+  const rnd=mulberry(42); const N=140;
+  for(let i=0;i<N;i++){ const s0=i*0.045+rnd()*0.03, yy=lerp(top+40,bot-40,rnd()), spd=lerp(420,560,rnd()); const k=tb-s0-0.4; if(k<0)continue;
+    let x=px+230+spd*k; if(x>px+pw-60)continue;
+    const inWater=x>filmX; const life=inWater?(x-filmX)/300:0; if(life>1)continue;
+    const r=inWater?lerp(9,3,life):9; const col=inWater?`rgba(120,210,255,${1-life})`:'rgba(255,150,40,0.95)';
+    ctx.beginPath(); ctx.arc(x,yy+Math.sin(k*7+i)*6,r,0,Math.PI*2); ctx.fillStyle=col; ctx.fill();
+    if(!inWater){ctx.beginPath();ctx.moveTo(x-26,yy+Math.sin(k*7+i)*6);ctx.lineTo(x-8,yy+Math.sin(k*7+i)*6);ctx.lineWidth=4;ctx.strokeStyle='rgba(255,150,40,0.5)';ctx.stroke()}
+  }
+  // film temperature gauge
+  const gx=filmX+7, gy=top-150; rr(gx-170,gy-46,340,92,46); ctx.fillStyle='rgba(8,10,16,0.9)'; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle=C.blue; ctx.stroke();
+  const temp=100+2*Math.sin(t*5); text('FILM: '+temp.toFixed(0)+'°C',gx,gy+2,{size:40,weight:900,color:C.blue,stroke:false});
+  const tPull=wordTime('sponge','pulled'); if(t>tPull){ const k=t-tPull; ctx.save(); ctx.globalAlpha=smooth(0,0.2,k); 
+    text('HEAT IN → HEAT OUT',W/2,py+ph+70,{size:52,weight:900,color:C.orange}); ctx.restore(); }
+  ctx.restore();
+}
+function lockIcon(x,y,s,color){ctx.save();ctx.translate(x,y);ctx.scale(s,s);ctx.lineWidth=7;ctx.strokeStyle=color;ctx.fillStyle=color;
+  ctx.beginPath();ctx.arc(0,-14,18,Math.PI,0);ctx.stroke(); rr(-26,-14,52,40,8);ctx.fill();ctx.restore()}
+function beatCeiling(tb,t,b){
+  const a=smooth(0,0.2,tb)*(1-smooth(b.duration-0.3,b.duration-0.05,tb));
+  const px=70,py=480,pw=940,ph=780; panel(px,py,pw,ph,a);
+  ctx.save(); ctx.globalAlpha=a;
+  // thermometer: 0..130 °C mapped to bot..top
+  const tx=px+230, top=py+110, bot=py+ph-110, tw=70;
+  const yOf=v=>lerp(bot,top,v/130);
+  rr(tx-tw/2,top-20,tw,bot-top+20,tw/2); ctx.fillStyle='rgba(255,255,255,0.1)'; ctx.fill();
+  ctx.beginPath(); ctx.arc(tx,bot+40,70,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.1)'; ctx.fill();
+  // temperature rises 20 -> 100 then locks (with a tiny bounce)
+  const tLock=wordTime('ceiling','boils'); const rise=smooth(b.start+0.3,tLock,t); let temp=lerp(20,100,rise);
+  if(t>tLock){ const k=t-tLock; temp=100+ 3*Math.exp(-k*4)*Math.sin(k*18); }
+  const col = temp<60? C.blue : (temp<95? C.orange : C.red);
+  const hy=yOf(temp); rr(tx-tw/2+14,hy,tw-28,bot+40-hy,20); ctx.fillStyle=col; ctx.fill();
+  ctx.beginPath(); ctx.arc(tx,bot+40,52,0,Math.PI*2); ctx.fill();
+  text(Math.round(temp)+'°C',tx,bot+44,{size:40,weight:900,color:'#0a0c12',stroke:false,shadow:false});
+  // marks
+  const mark=(v,label,color,dash)=>{ const y=yOf(v); ctx.save(); ctx.setLineDash(dash?[14,12]:[]); ctx.lineWidth=5; ctx.strokeStyle=color;
+    ctx.beginPath(); ctx.moveTo(tx-tw/2-30,y); ctx.lineTo(px+pw-60,y); ctx.stroke(); ctx.restore();
+    text(label,tx+tw/2+40,y-34,{size:34,weight:800,color,align:'left',stroke:false}); };
+  mark(120,'PLASTIC MELTS  120°C',C.red,true);
+  mark(100,'BOILING POINT  100°C',C.yellow,false);
+  if(t>tLock){ const k=t-tLock; const s=lerp(2.2,1,easeOutBack(k/0.35)); lockIcon(px+pw-130,yOf(100),s,C.yellow); 
+    ctx.save(); ctx.globalAlpha=smooth(0.1,0.3,k); text('HARD CEILING',px+pw-130,yOf(100)+70,{size:34,weight:900,color:C.yellow,stroke:false}); ctx.restore(); }
+  // steam: after "steam" word, puffs rise from the 100 line on the right
+  const tSteam=wordTime('ceiling','steam'); const rnd=mulberry(7);
+  for(let i=0;i<40;i++){ const s0=rnd()*2.5, x0=lerp(px+520,px+840,rnd()), sp=lerp(90,160,rnd()); const k=t-tSteam-s0+1.0; if(k<0)continue;
+    const life=(k%2.2)/2.2; const y=yOf(100)-20-life*260, x=x0+Math.sin(k*2+i)*18; const r=lerp(10,34,life);
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fillStyle=`rgba(255,255,255,${0.55*(1-life)*smooth(0,0.3,k)})`; ctx.fill(); }
+  if(t>tSteam){ ctx.save(); ctx.globalAlpha=smooth(0,0.2,t-tSteam); text('EXTRA ENERGY → STEAM',W/2,py+ph+70,{size:50,weight:900,color:C.white}); ctx.restore(); }
+  // heat arrows coming in from below while locked
+  if(t>tLock){ for(let i=0;i<5;i++){ const k=((t-tLock)*1.4+i*0.2)%1; const y=lerp(bot+120,bot-40,k), x=px+560+i*60; ctx.save(); ctx.globalAlpha=(1-k)*0.9;
+      ctx.strokeStyle=C.orange; ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(x,y+40); ctx.lineTo(x,y); ctx.moveTo(x-12,y+14); ctx.lineTo(x,y); ctx.lineTo(x+12,y+14); ctx.stroke(); ctx.restore(); } }
+  ctx.restore();
+}
+function hud(label,value,x,y,color,alpha,align){
+  ctx.save(); ctx.globalAlpha=ctx.globalAlpha*alpha; const w=400,h=150; const x0=align==='left'?x:x-w; rr(x0,y-h/2,w,h,28); ctx.fillStyle='rgba(8,10,16,0.8)'; ctx.fill(); ctx.lineWidth=4; ctx.strokeStyle=color; ctx.stroke();
+  text(label,x0+w/2,y-38,{size:30,weight:700,color:'rgba(255,255,255,0.8)',stroke:false}); text(value,x0+w/2,y+26,{size:62,weight:900,color,stroke:false}); ctx.restore();
+}
+function beatPunch(tb,t,b){
+  const a=smooth(0,0.25,tb)*(1-smooth(b.duration-0.3,b.duration-0.05,tb));
+  const tHundred=wordTime('punch','hundred'), tTwenty=wordTime('punch','twenty');
+  const temp=lerp(20,100,smooth(b.start,tHundred+0.3,t));
+  hud('PLASTIC',Math.round(temp)+'°C',70,300,C.blue,a,'left');
+  hud('MELTS AT','120°C',W-70,300,C.red,a*smooth(0.6,0.9,tb),'right');
+  // pointer line from plastic HUD to bag bottom
+  ctx.save(); ctx.globalAlpha=a*0.8; ctx.strokeStyle=C.blue; ctx.lineWidth=4; ctx.setLineDash([10,10]); ctx.beginPath(); ctx.moveTo(270,375); ctx.lineTo(430,1000); ctx.stroke(); ctx.restore();
+  const k=t-tTwenty; if(k>0){ const s=lerp(1.6,1,easeOutBack(k/0.3)); ctx.save(); ctx.translate(W/2,520); ctx.scale(s,s); ctx.globalAlpha=smooth(0,0.1,k)*a;
+    pill('20°C TO SPARE  ✅ SAFE',0,0,{size:48,bg:'rgba(61,220,132,0.95)',fg:'#06210f'}); ctx.restore(); }
+}
+function cupIcon(x,y,s,alpha){ctx.save();ctx.globalAlpha=alpha;ctx.translate(x,y);ctx.scale(s,s);ctx.fillStyle='#F2E9DC';
+  ctx.beginPath();ctx.moveTo(-40,-50);ctx.lineTo(40,-50);ctx.lineTo(30,50);ctx.lineTo(-30,50);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#F2E9DC';ctx.lineWidth=10;ctx.beginPath();ctx.arc(46,-5,24,-Math.PI/2,Math.PI/2);ctx.stroke();
+  ctx.fillStyle=C.blue;ctx.beginPath();ctx.moveTo(-38,-38);ctx.lineTo(38,-38);ctx.lineTo(36,-22);ctx.lineTo(-36,-22);ctx.closePath();ctx.fill();ctx.restore()}
+function beatCta(tb,t,b){
+  const a=smooth(0,0.2,tb);
+  const tCup=wordTime('cta','paper'); const kc=t-tCup+0.6; if(kc>0){ const s=lerp(1.4,1,easeOutBack(kc/0.3)); ctx.save(); ctx.translate(W/2,330); ctx.scale(s,s); ctx.globalAlpha=smooth(0,0.1,kc);
+    panel(-440,-120,880,240,1); cupIcon(-330,0,1.1,1); text('SAME TRICK WORKS',-230,-34,{size:40,weight:800,align:'left',stroke:false}); text('WITH A PAPER CUP',-230,34,{size:48,weight:900,color:C.yellow,align:'left',stroke:false}); ctx.restore(); }
+  const tFollow=wordTime('cta','follow'); const kf=t-tFollow; if(kf>0){ const s=lerp(1.6,1,easeOutBack(kf/0.35))*(1+0.03*Math.sin(kf*6));
+    ctx.save(); ctx.translate(W/2,900); ctx.scale(s,s); ctx.globalAlpha=smooth(0,0.1,kf); pill('＋ FOLLOW',0,0,{size:70,bg:'#FF2D55',fg:'#fff',padX:50}); ctx.restore();
+    ctx.save(); ctx.globalAlpha=smooth(0.2,0.45,kf); text('more physics that looks fake',W/2,1010,{size:44,weight:700}); ctx.restore(); }
+  // fade out
+  const fo=smooth(b.duration-0.45,b.duration-0.02,tb); if(fo>0){ctx.fillStyle=`rgba(0,0,0,${fo})`; ctx.fillRect(0,0,W,H)}
+}
+const DRAW={hook:beatHook,empty:beatEmpty,water:beatWater,temps:beatTemps,sponge:beatSponge,ceiling:beatCeiling,punch:beatPunch,cta:beatCta};
+const CUT_FLASH=['empty','water','sponge','punch','cta'];
+
+window.setTimeline=function(tl){TL=tl; BEATS={}; TL.beats.forEach(b=>BEATS[b.id]=b); buildChunks();};
+window.renderFrame=function(f){
+  const t=f/TL.fps; ctx.clearRect(0,0,W,H); vignette();
+  for(const b of TL.beats){ if(t>=b.start && t<b.end){ const fn=DRAW[b.id]; if(fn) fn(t-b.start,t,b); } }
+  drawCaptions(t);
+  for(const id of CUT_FLASH){ flash(t,BEATS[id].start,{dur:0.2,peak:0.45}); }
+  return true;
+};
+</script></body></html>

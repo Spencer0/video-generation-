@@ -1,0 +1,7 @@
+# generated build artifacts (frames, wavs, intermediates)
+videos/*/build/
+__pycache__/
+*.pyc
+.DS_Store
+# tool binaries live outside the repo (see AGENTS.md)
+tools/

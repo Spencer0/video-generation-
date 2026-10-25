@@ -1,0 +1,26 @@
+{
+  "id": "001-water-bag",
+  "title": "Water in a plastic bag over an open flame",
+  "fps": 24,
+  "width": 1080,
+  "height": 1920,
+  "voice": {"engine": "kokoro", "name": "af_heart", "speed": 1.12, "lang": "en-us"},
+  "beats": [
+    {"id": "hook",    "pad_before": 0.35, "pad_after": 0.25, "min_duration": 4.0,
+     "lines": ["This bag is full of water. I'm about to hold it over an open flame."]},
+    {"id": "empty",   "pad_before": 0.20, "pad_after": 0.55, "min_duration": 4.0,
+     "lines": ["Empty bag first. One second... gone."]},
+    {"id": "water",   "pad_before": 0.20, "pad_after": 0.60, "min_duration": 6.0,
+     "lines": ["Now the one with water. Same flame. Nothing. It just starts to boil."]},
+    {"id": "temps",   "pad_before": 0.20, "pad_after": 0.45, "min_duration": 5.5,
+     "lines": ["That flame is over a thousand degrees. The plastic melts at one twenty. So why is it fine?"]},
+    {"id": "sponge",  "pad_before": 0.20, "pad_after": 0.40, "min_duration": 6.0,
+     "lines": ["Water is a heat sponge. Heat hitting the plastic gets pulled into the water faster than the plastic can heat up."]},
+    {"id": "ceiling", "pad_before": 0.20, "pad_after": 0.40, "min_duration": 6.0,
+     "lines": ["And water has a hard ceiling. At a hundred degrees it boils, and refuses to get hotter. The extra energy just makes steam."]},
+    {"id": "punch",   "pad_before": 0.20, "pad_after": 0.50, "min_duration": 5.0,
+     "lines": ["So the plastic never gets hotter than the water touching it. A hundred degrees. Twenty short of melting."]},
+    {"id": "cta",     "pad_before": 0.20, "pad_after": 0.90, "min_duration": 4.5,
+     "lines": ["Same reason you can boil water in a paper cup. Follow for more physics that looks fake."]}
+  ]
+}
