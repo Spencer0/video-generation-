@@ -20,7 +20,7 @@ BG_PLAN = {
     "hook":    ("A", 0),
     "empty":   ("B", 0),
     "water":   ("C", 0),
-    "temps":   ("C", 144),
+    "temps":   ("C", 24),     # behind the HOW HOT panel: replay the boil ramp
     "sponge":  ("D", 0),      # behind the explainer panels; blurred + dimmed
     "ceiling": ("D", 60),
     "punch":   ("D", 0),
@@ -55,7 +55,6 @@ def main():
         n_avail = (max(shots[s][0]) + 1) if shots[s][0] else 1
         for k in range(b["frames"]):
             i = off + k
-            if s == "C" and b["id"] == "temps" and i >= 288: i = 288 - 1 - (i - 288) % 60  # hold near end if C is short
             if i >= n_avail and shots[s][0]: i = idx_wrap(i, n_avail, off)
             lines.append(f"file '{os.path.abspath(shot_frame(s, i))}'\nduration {1/fps:.6f}")
     lines.append(lines[-1].split("\n")[0])  # concat demuxer needs the last file repeated

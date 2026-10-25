@@ -23,7 +23,7 @@ from mathutils import noise as mnoise
 # ----------------------------------------------------------------------------- args
 def parse_args():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
-    a = {"shot": "C", "start": 0, "end": 1, "out": "/tmp/frames", "res": 720, "samples": 32, "preview": False, "fps": 24}
+    a = {"shot": "C", "start": 0, "end": 1, "out": "/tmp/frames", "res": 576, "samples": 24, "preview": False, "fps": 24}
     i = 0
     while i < len(argv):
         k = argv[i].lstrip("-")
@@ -165,7 +165,7 @@ def bag_material():
     fr = n.new("ShaderNodeFresnel"); fr.inputs["IOR"].default_value = 1.51
     tr = n.new("ShaderNodeBsdfTransparent"); tr.inputs["Color"].default_value = (0.93, 0.95, 0.97, 1)
     gl = n.new("ShaderNodeBsdfGlossy"); gl.inputs["Roughness"].default_value = 0.10
-    bump_tex = n.new("ShaderNodeTexNoise"); bump_tex.inputs["Scale"].default_value = 60; bump_tex.inputs["Detail"].default_value = 5
+    bump_tex = n.new("ShaderNodeTexNoise"); bump_tex.inputs["Scale"].default_value = 60; bump_tex.inputs["Detail"].default_value = 2
     bump = n.new("ShaderNodeBump"); bump.inputs["Strength"].default_value = 0.12
     L.new(tc.outputs["Object"], bump_tex.inputs["Vector"]); L.new(bump_tex.outputs["Fac"], bump.inputs["Height"]); L.new(bump.outputs[0], gl.inputs["Normal"])
     mix1 = n.new("ShaderNodeMixShader"); L.new(fr.outputs[0], mix1.inputs[0]); L.new(tr.outputs[0], mix1.inputs[1]); L.new(gl.outputs[0], mix1.inputs[2])
@@ -229,7 +229,7 @@ def flame_material(core=False):
     ramp = n.new("ShaderNodeValToRGB"); cr = ramp.color_ramp
     if core:
         cr.elements[0].position = 0.0; cr.elements[0].color = (0.25, 0.45, 1.0, 1)
-        cr.elements[1].position = 0.35; cr.elements[1].color = (1.0, 0.88, 0.55, 1)
+        cr.elements[1].position = 0.35; cr.elements[1].color = (1.0, 0.80, 0.42, 1)
         e = cr.elements.new(1.0); e.color = (1.0, 0.75, 0.3, 1)
     else:
         cr.elements[0].position = 0.0; cr.elements[0].color = (0.2, 0.35, 1.0, 1)
@@ -239,7 +239,7 @@ def flame_material(core=False):
     L.new(sep.outputs["Z"], ramp.inputs[0])
     em = n.new("ShaderNodeEmission"); L.new(ramp.outputs["Color"], em.inputs["Color"])
     strength = n.new("ShaderNodeMapRange"); strength.inputs["From Min"].default_value = 0.0; strength.inputs["From Max"].default_value = 1.0
-    strength.inputs["To Min"].default_value = (22 if core else 16); strength.inputs["To Max"].default_value = (10 if core else 4)
+    strength.inputs["To Min"].default_value = (13 if core else 12); strength.inputs["To Max"].default_value = (6 if core else 3)
     L.new(sep.outputs["Z"], strength.inputs["Value"]); L.new(strength.outputs[0], em.inputs["Strength"])
     # transparency: facing factor * animated noise * tip fade
     lw = n.new("ShaderNodeLayerWeight"); lw.inputs["Blend"].default_value = 0.6
@@ -316,7 +316,7 @@ def build_set():
     m, nt, out = new_mat("backdrop"); p = nt.nodes.new("ShaderNodeBsdfPrincipled")
     p.inputs["Base Color"].default_value = (0.012, 0.014, 0.022, 1); p.inputs["Roughness"].default_value = 0.85
     nt.links.new(p.outputs[0], out.inputs[0])
-    S["backdrop"] = add_box("backdrop", (4, 0.02, 3), (0, 1.1, 1.0), m, bevel=0)
+    S["backdrop"] = add_box("backdrop", (6, 0.02, 4), (0, 1.9, 1.2), m, bevel=0)
     steel = metal("steel", (0.42, 0.43, 0.45), 0.3)
     dark = metal("dark_metal", (0.12, 0.12, 0.13), 0.45)
     brass = metal("brass", (0.6, 0.45, 0.2), 0.35)
@@ -438,7 +438,7 @@ class Bubbles:
         return Vector((x, y, z)), r
 
 def boil_rate_C(t):   # bubbles per second over the shot-C clock (t in seconds from shot start)
-    return 0.0 if t < 1.1 else 2.5 * smoothstep(1.1, 3.0, t) + 24 * smoothstep(3.0, 6.0, t) + 22 * smoothstep(6.0, 8.5, t)
+    return 0.0 if t < 1.1 else 3.0 * smoothstep(1.1, 2.8, t) + 24 * smoothstep(2.8, 5.0, t) + 21 * smoothstep(5.0, 7.0, t)
 
 def boil_rate_D(t): return 48.0
 
@@ -466,9 +466,9 @@ def shot_update(S, frame, sim):
         cam.location = vlerp((0.26, -0.50, 0.36), (0.22, -0.44, 0.34), k)
         tgt.location = vlerp(bottom + Vector((0, 0, 0.05)), bottom + Vector((0, 0, 0.04)), k)
         cam.data.lens = 36; cam.data.dof.aperture_fstop = 4.0
-        m0, m1 = 0.75, 2.75
-        melt = smoothstep(m0, m1, t) ** 0.8
-        hole = -1.0 if t < m0 + 0.15 else lerp(0.0, 0.075, smoothstep(m0 + 0.15, m1 + 0.2, t) ** 0.9)
+        m0, m1 = 0.8, 1.8
+        melt = smoothstep(m0, m1 + 0.3, t) ** 0.8
+        hole = -1.0 if t < m0 + 0.1 else lerp(0.0, 0.075, smoothstep(m0 + 0.1, m1 + 0.1, t) ** 0.9)
         S["melt_key"].value = melt
     elif SHOT == "C":
         T = ARGS["end"] / FPS
@@ -520,10 +520,10 @@ def shot_update(S, frame, sim):
 def setup_render(res, samples):
     sc = bpy.context.scene
     sc.render.engine = "CYCLES"; c = sc.cycles
-    c.device = "CPU"; c.samples = samples; c.use_adaptive_sampling = True; c.adaptive_threshold = (0.1 if "thresh01" in FLAGS else 0.08); c.adaptive_min_samples = 8
+    c.device = "CPU"; c.samples = samples; c.use_adaptive_sampling = True; c.adaptive_threshold = 0.1; c.adaptive_min_samples = 4
     c.use_denoising = "nodenoise" not in FLAGS; c.denoiser = "OPENIMAGEDENOISE"; c.denoising_input_passes = "RGB_ALBEDO_NORMAL"
     c.denoising_use_gpu = False; c.denoising_prefilter = "ACCURATE"
-    c.max_bounces = 8; c.diffuse_bounces = 2; c.glossy_bounces = 3; c.transmission_bounces = 8; c.volume_bounces = 0; c.transparent_max_bounces = (6 if "tb6" in FLAGS else 12)
+    c.max_bounces = 6; c.diffuse_bounces = 2; c.glossy_bounces = 2; c.transmission_bounces = 6; c.volume_bounces = 0; c.transparent_max_bounces = 10
     c.caustics_reflective = False; c.caustics_refractive = False; c.blur_glossy = 1.5
     c.sample_clamp_indirect = 8.0
     c.use_light_tree = True

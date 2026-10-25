@@ -3,14 +3,14 @@
 # Resumable: scene_bag.py skips frames that already exist.
 # usage: bash pipeline/blender/render_all.sh <video_id> [res] [samples]
 set -e
-VID=${1:?video id}; RES=${2:-720}; SAMPLES=${3:-32}
+VID=${1:?video id}; RES=${2:-576}; SAMPLES=${3:-24}
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 BLENDER=${BLENDER:-/home/user/tools/blender-4.5.15-linux-x64/blender}
 OUT=$ROOT/videos/$VID/build/frames
 # shot -> frame count, derived from timeline.json beats (see BG_PLAN in assemble.py)
 read -r A B C D <<<"$(python3 - "$ROOT/videos/$VID/build/timeline.json" <<'PY'
 import json,sys; tl=json.load(open(sys.argv[1])); b={x['id']:x['frames'] for x in tl['beats']}
-print(b['hook'], b['empty'], b['water']+b['temps'], max(b['punch'], b['sponge'], b['ceiling']) )
+print(b['hook'], b['empty'], b['water']+24, b['punch']+23)
 PY
 )"
 echo "frames: A=$A B=$B C=$C D=$D  (res=$RES samples=$SAMPLES)"
