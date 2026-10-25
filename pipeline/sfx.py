@@ -94,7 +94,7 @@ def main(video_id):
     def rate_at(t):
         c0 = B["water"]["start"]; tc = t - c0
         if t < c0: return 0.0
-        if t < B["temps"]["end"]:
+        if t < B["water"]["end"]:
             import math
             def ss(a, b, x): u = max(0, min(1, (x - a) / (b - a))); return u * u * (3 - 2 * u)
             return 0.0 if tc < 1.1 else 3 * ss(1.1, 3.0, tc) + 24 * ss(3.0, 6.0, tc) + 22 * ss(6.0, 8.5, tc)
@@ -111,13 +111,15 @@ def main(video_id):
     env = np.interp(ta, np.arange(0, D, 0.1), [min(1.0, rate_at(x) / 48) for x in np.arange(0, D, 0.1)])
     place(sfx, hiss / (np.abs(hiss).max() + 1e-9) * env, 0, 0.06)
     # --- cuts / stamps / UI
-    for bid in ("empty", "water", "sponge", "punch", "cta"): place(sfx, whoosh(0.32), B[bid]["start"] - 0.18, 0.45)
+    for bid in ("empty", "water", "temps", "equation", "punch", "noodles", "cta"): place(sfx, whoosh(0.32), B[bid]["start"] - 0.18, 0.45)
     place(sfx, whoosh(0.5, 200, 2500, rev=True), t_ign - 0.5, 0.3)
-    place(sfx, ding(), W("water", "nothing") + 0.05, 0.6)
-    for i, wd in enumerate(("flame", "plastic", "fine")):
+    place(sfx, ding(), W("water", "impossible") + 0.05, 0.6); place(sfx, thud(80, 0.4), W("water", "how"), 0.7); place(sfx, shimmer(0.5), W("water", "how") - 0.45, 0.3)
+    for i, wd in enumerate(("flame", "plastic", "never")):
         at = W("temps", wd); place(sfx, whoosh(0.5, 400, 3000), at, 0.25); place(sfx, tick(900 + 300 * i, 0.08), at + 0.75, 0.3)
     place(sfx, thud(90, 0.4), W("ceiling", "boils"), 0.6); place(sfx, tick(1200, 0.08), W("ceiling", "boils") + 0.02, 0.4)
-    place(sfx, ding(1760), W("punch", "twenty"), 0.5)
+    place(sfx, ding(1760), W("punch", "twenty"), 0.5); place(sfx, thud(60, 0.5), W("punch", "cannot"), 0.9)
+    place(sfx, tick(1500, 0.1), W("equation", "thin"), 0.5); place(sfx, ding(1568, 0.8), W("ceiling", "joule"), 0.4)
+    place(sfx, ding(1318, 0.9), B["noodles"]["start"] + 0.15, 0.5); place(sfx, thud(70, 0.4), W("noodles", "bag") + 0.02, 0.6)
     place(sfx, ding(1046, 1.2), W("cta", "follow"), 0.55)
     # steam hiss burst
     st = W("ceiling", "steam"); sh = bandpass_fast(noise(1.2), 2000, 8000); sh *= np.exp(-t_axis(1.2) / 0.5); place(sfx, sh / (np.abs(sh).max() + 1e-9), st, 0.25)

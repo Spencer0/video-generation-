@@ -10,7 +10,7 @@ OUT=$ROOT/videos/$VID/build/frames
 # shot -> frame count, derived from timeline.json beats (see BG_PLAN in assemble.py)
 read -r A B C D <<<"$(python3 - "$ROOT/videos/$VID/build/timeline.json" <<'PY'
 import json,sys; tl=json.load(open(sys.argv[1])); b={x['id']:x['frames'] for x in tl['beats']}
-print(b['hook'], b['empty'], b['water']+24, b['punch']+23)
+print(b['hook'], b['empty'], 168, 168)  # C/D nominal lengths are fixed in scene_bag.py SHOT_DUR
 PY
 )"
 echo "frames: A=$A B=$B C=$C D=$D  (res=$RES samples=$SAMPLES)"

@@ -105,6 +105,8 @@ WATER_LEVEL = 0.56     # fraction of bag height filled
 BURNER_TOP = 0.118
 FLAME_H = 0.158        # tip just touches the bag bottom
 FILLED = SHOT != "B"
+SHOT_DUR = {"A": 104 / 24, "B": 96 / 24, "C": 168 / 24, "D": 168 / 24}  # nominal seconds; paths clamp beyond
+T_SHOT = SHOT_DUR[SHOT]
 N_RING = 64
 N_V = 70
 
@@ -452,7 +454,7 @@ def shot_update(S, frame, sim):
     bag_center = Vector((0, 0, BAG_Z0 + BAG_H * 0.42))
     bottom = Vector((0, 0, BAG_Z0 + 0.03))
     if SHOT == "A":
-        k = ease_in_out(t / (ARGS["end"] / FPS))
+        k = ease_in_out(min(t / T_SHOT, 1.0))
         cam.location = vlerp((0.30, -0.56, 0.42), (0.24, -0.46, 0.38), k)
         tgt.location = vlerp(bag_center + Vector((0, 0, -0.02)), bag_center - Vector((0, 0, 0.05)), k)
         cam.data.lens = lerp(30, 33, k); cam.data.dof.aperture_fstop = 4.0
@@ -462,7 +464,7 @@ def shot_update(S, frame, sim):
             ignite = smoothstep(0, 0.22, t - t_ign)
             flame_scale = lerp(0.0, 1.0, ignite) * (1 + 0.35 * (1 - smoothstep(0.2, 0.6, t - t_ign)))
     elif SHOT == "B":
-        k = ease_in_out(t / (ARGS["end"] / FPS))
+        k = ease_in_out(min(t / T_SHOT, 1.0))
         cam.location = vlerp((0.26, -0.50, 0.36), (0.22, -0.44, 0.34), k)
         tgt.location = vlerp(bottom + Vector((0, 0, 0.05)), bottom + Vector((0, 0, 0.04)), k)
         cam.data.lens = 36; cam.data.dof.aperture_fstop = 4.0
@@ -471,8 +473,7 @@ def shot_update(S, frame, sim):
         hole = -1.0 if t < m0 + 0.1 else lerp(0.0, 0.075, smoothstep(m0 + 0.1, m1 + 0.1, t) ** 0.9)
         S["melt_key"].value = melt
     elif SHOT == "C":
-        T = ARGS["end"] / FPS
-        k = t / T
+        k = min(t / T_SHOT, 1.0)
         ang = math.radians(lerp(-28, 22, k))
         rad = lerp(0.42, 0.52, ease_in_out(k)); h = lerp(0.30, 0.40, ease_in_out(k))
         cam.location = Vector((rad * math.sin(ang), -rad * math.cos(ang), h))
@@ -480,8 +481,7 @@ def shot_update(S, frame, sim):
         cam.data.lens = lerp(42, 34, ease_in_out(k)); cam.data.dof.aperture_fstop = 2.8
         soot = 0.55 * smoothstep(2.0, 11.0, t)
     elif SHOT == "D":
-        T = ARGS["end"] / FPS
-        k = ease_in_out(t / T)
+        k = ease_in_out(min(t / T_SHOT, 1.0))
         cam.location = vlerp((0.16, -0.30, 0.30), (0.20, -0.27, 0.315), k)
         tgt.location = vlerp(bottom + Vector((0.0, 0, 0.0)), bottom + Vector((0.0, 0, 0.015)), k)
         cam.data.lens = 48; cam.data.dof.aperture_fstop = 2.2
@@ -553,8 +553,8 @@ def main():
     S = build_set()
     setup_render(ARGS["res"], ARGS["samples"])
     sim = None
-    if SHOT == "C": sim = Bubbles(boil_rate_C, t0=0.0, t1=ARGS["end"] / FPS + 1)
-    if SHOT == "D": sim = Bubbles(boil_rate_D, t0=-3.0, t1=ARGS["end"] / FPS + 1, seed=11)
+    if SHOT == "C": sim = Bubbles(boil_rate_C, t0=0.0, t1=max(ARGS["end"] / FPS, T_SHOT) + 1)
+    if SHOT == "D": sim = Bubbles(boil_rate_D, t0=-3.0, t1=max(ARGS["end"] / FPS, T_SHOT) + 1, seed=11)
     if SHOT == "A": pass
     os.makedirs(ARGS["out"], exist_ok=True)
     sc = bpy.context.scene

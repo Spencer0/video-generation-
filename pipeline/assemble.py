@@ -17,16 +17,17 @@ from timeline import load_json, video_dir
 # background plan: for each beat, which shot and which shot-frame the beat starts on.
 # "loop" lets a beat run past the end of a shot by wrapping.
 BG_PLAN = {
-    "hook":    ("A", 0),
-    "empty":   ("B", 0),
-    "water":   ("C", 0),
-    "temps":   ("C", 24),     # behind the HOW HOT panel: replay the boil ramp
-    "sponge":  ("D", 0),      # behind the explainer panels; blurred + dimmed
-    "ceiling": ("D", 60),
-    "punch":   ("D", 0),
-    "cta":     ("C", 100),
+    "hook":     ("A", 0),
+    "empty":    ("B", 0),
+    "water":    ("C", 0),      # boil ramps in from nothing
+    "temps":    ("D", 0),      # cut to the hero close-up, rolling boil
+    "equation": ("C", 40),     # behind the explainer panels; blurred + dimmed
+    "ceiling":  ("D", 20),
+    "punch":    ("D", 0),
+    "noodles":  ("C", 60),
+    "cta":      ("D", 90),
 }
-BLUR_BEATS = ("sponge", "ceiling")
+BLUR_BEATS = ("equation", "ceiling")
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("video_id"); ap.add_argument("--out", default=None); ap.add_argument("--preview", action="store_true")

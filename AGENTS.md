@@ -135,6 +135,30 @@ Measured on the bag scene, 32 samples, adaptive, OIDN denoise:
   numbers the way you want them spoken; "one twenty" in the script avoids a
   long number read.
 
+## Script formula (feedback from video 001)
+
+The first draft explained well but opened soft. The structure that landed:
+
+1. **Curiosity hook, 1 line**: "Physics you don't know: what happens when X?"
+   Name the question, never the answer, in the first 1.5 s.
+2. **The obvious outcome**: "Obviously, it melts. Instantly." (lets the viewer
+   feel smart, sets up the reversal).
+3. **The reversal + "How?"**: the impossible thing, ending on a one-word
+   question that the next beat answers.
+4. **Why, with an equation**: one formula on screen (q = k·ΔT/d, Q = m·L),
+   each symbol highlighted as it is spoken; numbers as bars, not prose.
+5. **Payoff everyone can repeat**: "You can even boil noodles in a bag."
+6. **CTA, 3 s**: "Follow for more physics you don't know." (echo the hook).
+
+Pacing: ~3 words/s at Kokoro speed 1.12; 45 s total; no beat longer than 8 s.
+Keep beat ids stable when rewriting (hook, empty, water, ...) because the
+overlay, SFX and background plan key on them; add new ones (noodles) rather
+than renaming.
+
+Shots are time-based with fixed nominal durations (`SHOT_DUR` in
+scene_bag.py), so a script rewrite that changes beat lengths does not
+invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
+
 ## Workflow for a new video
 
 1. Copy `videos/001-water-bag/script.json`, write beats (3 words/sec pacing,

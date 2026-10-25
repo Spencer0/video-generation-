@@ -4,23 +4,93 @@
   "fps": 24,
   "width": 1080,
   "height": 1920,
-  "voice": {"engine": "kokoro", "name": "af_heart", "speed": 1.12, "lang": "en-us"},
+  "voice": {
+    "engine": "kokoro",
+    "name": "af_heart",
+    "speed": 1.12,
+    "lang": "en-us"
+  },
   "beats": [
-    {"id": "hook",    "pad_before": 0.35, "pad_after": 0.25, "min_duration": 4.0,
-     "lines": ["This bag is full of water. I'm about to hold it over an open flame."]},
-    {"id": "empty",   "pad_before": 0.20, "pad_after": 0.55, "min_duration": 4.0,
-     "lines": ["Empty bag first. One second... gone."]},
-    {"id": "water",   "pad_before": 0.20, "pad_after": 0.60, "min_duration": 6.0,
-     "lines": ["Now the one with water. Same flame. Nothing. It just starts to boil."]},
-    {"id": "temps",   "pad_before": 0.20, "pad_after": 0.45, "min_duration": 5.5,
-     "lines": ["That flame is over a thousand degrees. The plastic melts at one twenty. So why is it fine?"]},
-    {"id": "sponge",  "pad_before": 0.20, "pad_after": 0.40, "min_duration": 6.0,
-     "lines": ["Water is a heat sponge. Heat hitting the plastic gets pulled into the water faster than the plastic can heat up."]},
-    {"id": "ceiling", "pad_before": 0.20, "pad_after": 0.40, "min_duration": 6.0,
-     "lines": ["And water has a hard ceiling. At a hundred degrees it boils, and refuses to get hotter. The extra energy just makes steam."]},
-    {"id": "punch",   "pad_before": 0.20, "pad_after": 0.50, "min_duration": 5.0,
-     "lines": ["So the plastic never gets hotter than the water touching it. A hundred degrees. Twenty short of melting."]},
-    {"id": "cta",     "pad_before": 0.20, "pad_after": 0.90, "min_duration": 4.5,
-     "lines": ["Same reason you can boil water in a paper cup. Follow for more physics that looks fake."]}
+    {
+      "id": "hook",
+      "pad_before": 0.3,
+      "pad_after": 0.2,
+      "min_duration": 4.2,
+      "lines": [
+        "Physics you don't know. What happens when a flame touches a plastic bag?"
+      ]
+    },
+    {
+      "id": "empty",
+      "pad_before": 0.15,
+      "pad_after": 0.55,
+      "min_duration": 3.4,
+      "lines": [
+        "Obviously... it melts. Instantly."
+      ]
+    },
+    {
+      "id": "water",
+      "pad_before": 0.2,
+      "pad_after": 0.7,
+      "min_duration": 5.0,
+      "lines": [
+        "But fill the bag with water, and it is impossible to melt it. How?"
+      ]
+    },
+    {
+      "id": "temps",
+      "pad_before": 0.2,
+      "pad_after": 0.35,
+      "min_duration": 5.0,
+      "lines": [
+        "The flame is over a thousand degrees. The plastic melts at one twenty. But it never gets close."
+      ]
+    },
+    {
+      "id": "equation",
+      "pad_before": 0.2,
+      "pad_after": 0.4,
+      "min_duration": 6.0,
+      "lines": [
+        "Heat flow is k, delta T, over d. The film is point zero three millimeters thin, so heat shoots straight through into the water."
+      ]
+    },
+    {
+      "id": "ceiling",
+      "pad_before": 0.2,
+      "pad_after": 0.4,
+      "min_duration": 5.5,
+      "lines": [
+        "And water can't pass a hundred degrees. Once it boils, every extra joule becomes steam, not hotter plastic."
+      ]
+    },
+    {
+      "id": "punch",
+      "pad_before": 0.2,
+      "pad_after": 0.45,
+      "min_duration": 4.2,
+      "lines": [
+        "So the plastic sits at a hundred. Twenty below melting. It cannot melt."
+      ]
+    },
+    {
+      "id": "noodles",
+      "pad_before": 0.2,
+      "pad_after": 0.5,
+      "min_duration": 3.5,
+      "lines": [
+        "You can even boil noodles in a plastic bag."
+      ]
+    },
+    {
+      "id": "cta",
+      "pad_before": 0.15,
+      "pad_after": 0.8,
+      "min_duration": 3.0,
+      "lines": [
+        "Follow for more physics you don't know."
+      ]
+    }
   ]
 }
