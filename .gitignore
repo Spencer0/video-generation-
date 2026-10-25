@@ -5,3 +5,4 @@ __pycache__/
 .DS_Store
 # tool binaries live outside the repo (see AGENTS.md)
 tools/
+build_tmp/
