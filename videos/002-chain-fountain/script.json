@@ -1,0 +1,118 @@
+{
+  "id": "002-chain-fountain",
+  "title": "The chain fountain (Mould effect)",
+  "fps": 24,
+  "width": 1080,
+  "height": 1920,
+  "voice": {
+    "engine": "kokoro",
+    "name": "af_heart",
+    "speed": 1.12,
+    "lang": "en-us"
+  },
+  "beats": [
+    {
+      "id": "hook",
+      "pad_before": 0.25,
+      "pad_after": 0.25,
+      "min_duration": 3.4,
+      "lines": [
+        "What happens when a bead chain falls out of a beaker?"
+      ]
+    },
+    {
+      "id": "obvious",
+      "pad_before": 0.15,
+      "pad_after": 0.5,
+      "min_duration": 3.2,
+      "lines": [
+        "Obviously, it slides over the rim and drops."
+      ]
+    },
+    {
+      "id": "reversal",
+      "pad_before": 0.2,
+      "pad_after": 0.7,
+      "min_duration": 7.0,
+      "lines": [
+        "But it doesn't. The chain lifts itself out of the beaker and hovers in a loop above the rim, until the beaker is empty. How?"
+      ]
+    },
+    {
+      "id": "kick",
+      "pad_before": 0.2,
+      "pad_after": 0.45,
+      "min_duration": 6.0,
+      "lines": [
+        "Each bead is a tiny rigid rod. When the chain yanks one end up, the other end kicks down into the pile. And the pile kicks back."
+      ]
+    },
+    {
+      "id": "equation",
+      "pad_before": 0.2,
+      "pad_after": 0.45,
+      "min_duration": 6.0,
+      "lines": [
+        "That kick is a fraction, alpha, of the pull. Fountain height is alpha over one minus alpha, times the drop height. Alpha is about one eighth."
+      ]
+    },
+    {
+      "id": "scale",
+      "pad_before": 0.2,
+      "pad_after": 0.5,
+      "min_duration": 5.0,
+      "lines": [
+        "Drop it one and a half meters, and it floats twenty centimeters above the rim. Drop it from a fourth floor balcony, and the fountain is as tall as you."
+      ]
+    },
+    {
+      "id": "cta",
+      "pad_before": 0.15,
+      "pad_after": 0.8,
+      "min_duration": 2.6,
+      "lines": [
+        "Follow for more!"
+      ]
+    }
+  ],
+  "scene": "pipeline/blender/scene_chain.py",
+  "shots": {
+    "A": 343,
+    "C": 192
+  },
+  "bg_plan": {
+    "hook": [
+      "A",
+      0
+    ],
+    "obvious": [
+      "A",
+      82
+    ],
+    "reversal": [
+      "A",
+      159
+    ],
+    "kick": [
+      "C",
+      0
+    ],
+    "equation": [
+      "C",
+      60
+    ],
+    "scale": [
+      "A",
+      200
+    ],
+    "cta": [
+      "C",
+      120
+    ]
+  },
+  "blur_beats": [
+    "kick",
+    "equation",
+    "scale"
+  ]
+}

@@ -14,19 +14,12 @@ import sys, os, glob, argparse, subprocess, bisect
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from timeline import load_json, video_dir
 
-# background plan: for each beat, which shot and which shot-frame the beat starts on.
-# "loop" lets a beat run past the end of a shot by wrapping.
-BG_PLAN = {
-    "hook":     ("A", 0),
-    "empty":    ("B", 0),
-    "water":    ("C", 0),      # boil ramps in from nothing
-    "temps":    ("D", 0),      # cut to the hero close-up, rolling boil
-    "equation": ("C", 40),     # behind the explainer panels; blurred + dimmed
-    "ceiling":  ("D", 20),
-    "punch":    ("D", 0),
-    "noodles":  ("C", 60),
-    "cta":      ("D", 90),
-}
+# Background plan lives in videos/<id>/script.json:
+#   "bg_plan": {beat: [shot, start_frame]}  which shot / shot-frame a beat starts on (wraps past the end)
+#   "blur_beats": [...]                     beats whose footage is blurred + dimmed behind panels
+# (the dicts below are the fallback for video 001)
+BG_PLAN = {"hook": ("A", 0), "empty": ("B", 0), "water": ("C", 0), "temps": ("D", 0), "equation": ("C", 40),
+           "ceiling": ("D", 20), "punch": ("D", 0), "noodles": ("C", 60), "cta": ("D", 90)}
 BLUR_BEATS = ("equation", "ceiling")
 
 def main():
@@ -35,9 +28,13 @@ def main():
     a = ap.parse_args()
     vd = video_dir(video_id := a.video_id); bd = os.path.join(vd, "build")
     tl = load_json(os.path.join(bd, "timeline.json")); fps = tl["fps"]
+    script = load_json(os.path.join(vd, "script.json"))
+    bg_plan = {k: tuple(v) for k, v in script.get("bg_plan", BG_PLAN).items()}
+    blur_beats = tuple(script.get("blur_beats", BLUR_BEATS))
+    shot_ids = sorted(script.get("shots", {"A": 0, "B": 0, "C": 0, "D": 0}).keys())
     frames_dir = os.path.join(bd, "frames")
     shots = {}
-    for s in "ABCD":
+    for s in shot_ids:
         fl = sorted(glob.glob(os.path.join(frames_dir, s, f"{s}_*.png")))
         shots[s] = ([int(os.path.basename(f)[2:6]) for f in fl], fl)
     missing = 0
@@ -45,7 +42,7 @@ def main():
         nonlocal missing
         idx, files = shots[s]
         if not files:  # shot not started yet: borrow any rendered shot so previews still cut
-            s = next((k for k in "CDAB" if shots[k][1]), None)
+            s = next((k for k in shot_ids if shots[k][1]), None)
             if s is None: raise SystemExit("no 3D frames rendered yet")
             idx, files = shots[s]
         if i in idx: return files[idx.index(i)]
@@ -55,7 +52,7 @@ def main():
         return files[j]
     lines = []
     for b in tl["beats"]:
-        s, off = BG_PLAN[b["id"]]
+        s, off = bg_plan[b["id"]]
         off += b.get("bg_offset", 0)   # script.json can shift a beat's footage (e.g. ignition on a word)
         n_avail = (max(shots[s][0]) + 1) if shots[s][0] else 1
         for k in range(b["frames"]):
@@ -66,7 +63,7 @@ def main():
     concat = os.path.join(bd, "bg_concat.txt"); open(concat, "w").write("\n".join(lines) + "\n")
     if missing: print(f"warning: {missing} background frames substituted with nearest rendered frame")
     W, H = tl["width"], tl["height"]
-    enable = "+".join(f"between(t,{b['start']:.3f},{b['end']:.3f})" for b in tl["beats"] if b["id"] in BLUR_BEATS)
+    enable = "+".join(f"between(t,{b['start']:.3f},{b['end']:.3f})" for b in tl["beats"] if b["id"] in blur_beats)
     vf = (f"[0:v]scale={W}:{H}:flags=lanczos,setsar=1,format=yuv420p,"
           f"gblur=sigma=14:enable='{enable}',eq=brightness=-0.12:saturation=0.85:enable='{enable}'[bg];"
           f"[1:v]format=rgba[ov];[bg][ov]overlay=0:0:format=auto,format=yuv420p[v]")

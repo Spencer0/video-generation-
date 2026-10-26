@@ -93,5 +93,54 @@
         "Follow for more!"
       ]
     }
+  ],
+  "scene": "pipeline/blender/scene_bag.py",
+  "shots": {
+    "A": 112,
+    "B": 96,
+    "C": 168,
+    "D": 168
+  },
+  "bg_plan": {
+    "hook": [
+      "A",
+      0
+    ],
+    "empty": [
+      "B",
+      0
+    ],
+    "water": [
+      "C",
+      0
+    ],
+    "temps": [
+      "D",
+      0
+    ],
+    "equation": [
+      "C",
+      40
+    ],
+    "ceiling": [
+      "D",
+      20
+    ],
+    "punch": [
+      "D",
+      0
+    ],
+    "noodles": [
+      "C",
+      60
+    ],
+    "cta": [
+      "D",
+      90
+    ]
+  },
+  "blur_beats": [
+    "equation",
+    "ceiling"
   ]
 }

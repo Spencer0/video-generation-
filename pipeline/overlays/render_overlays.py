@@ -22,6 +22,7 @@ def main():
         except Exception: br = p.chromium.launch(executable_path="/opt/pw-browsers/chromium")
         page = br.new_page(viewport={"width": tl["width"], "height": tl["height"]}, device_scale_factor=1)
         page.goto("file://" + html); page.wait_for_load_state("load")
+        page.add_script_tag(path=os.path.join(vd, "beats.js"))   # per-video beat graphics
         page.evaluate("document.fonts.load('900 80px Inter'); document.fonts.load('700 40px Inter')")
         page.wait_for_timeout(300)
         page.evaluate("tl => window.setTimeline(tl)", tl)

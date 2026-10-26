@@ -13,16 +13,24 @@ Read this first, then `README.md` for the per-video walkthrough.
 pipeline/            reusable tooling (video-agnostic)
   tts.py             script.json -> build/vo.wav + build/timeline.json  (the timing source of truth)
   timeline.py        shared helpers (word-timing estimate, paths)
-  blender/scene_bag.py   procedural Cycles scene for video 001 (pattern to copy for new scenes)
-  overlays/overlay.html  canvas overlay engine: captions + per-beat graphics, pure function of frame
-  overlays/render_overlays.py  Playwright screenshots overlay.html -> PNG+alpha sequence
-  sfx.py             procedural SFX + music bed + VO mix -> build/mix.wav
-  assemble.py        maps shots onto the timeline, upscales, composites, encodes
+  blender/scene_bag.py     procedural Cycles scene for video 001 (water bag over flame)
+  blender/scene_chain.py   procedural Cycles scene for video 002 (chain fountain)
+  blender/render_all.sh    renders every shot listed in script.json "shots" with the "scene" script
+  overlays/overlay.html    canvas overlay engine: captions, helpers, renderFrame (video-agnostic)
+  overlays/render_overlays.py  loads videos/<id>/beats.js into overlay.html, screenshots PNG+alpha
+  audiolib.py        synth primitives (noise, pops, whoosh, ding, thud, filters, place)
+  sfx.py             generic mixer: VO + videos/<id>/sfx_cues.py cues + music -> build/mix.wav
+  assemble.py        maps shots onto beats via script.json "bg_plan", upscales, composites, encodes
 videos/<id>/
-  script.json        narration beats, pacing pads, voice, fps/size   (edit this to change the video)
+  script.json        narration beats + pacing, voice, fps/size, "scene", "shots", "bg_plan", "blur_beats"
+  beats.js           per-beat canvas graphics (window.BEATS = {draw, cutFlash, keywords})
+  sfx_cues.py        per-video sound cues: cues(tl, B, W, sfx, music, D, N)
   build/             generated, git-ignored: vo/, timeline.json, frames/<shot>/, overlay/, *.wav
   out/final.mp4      deliverable
 ```
+
+A new video touches exactly four files: `script.json`, a scene script,
+`beats.js`, `sfx_cues.py`. Everything else is shared.
 
 ## The one rule: the voiceover drives everything
 
@@ -169,6 +177,22 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
   be "won't melt where water touches it". Blue flames, soot, seams and the
   dry part of the bag can all fail it. Flame "over 1,000°C" is fine for the
   hot zone. Round numbers are OK on screen, but say "about" in the VO.
+
+## Video 002 notes (chain fountain)
+
+- Kinematic, not simulated: one bead unit (icosphere + link) with an Array
+  modifier, deformed along a POLY spline by a Curve modifier. The spline
+  points are recomputed from smooth functions of time in a
+  `frame_change_pre` handler, so Cycles deformation motion blur works
+  (shutter 0.5). Flow = `object.location.x = -(travelled % pitch)`.
+- Scene runs at 1/4 real speed (SLOWMO) so beads stay visible; say so on
+  screen ("SLOW MOTION 4x").
+- Physics: Biggins & Warner 2014. Pile reaction R = α·λv², fountain height
+  h = α·h₁/(1−α), chain speed v² = g·h₁/(1−α), α ≈ 0.12 measured.
+- Metal beads + thin-film glass beaker render at ~13-15 s/frame at 576p
+  with motion blur: cheaper than the glass-in-plastic bag scene.
+- Film-glass trick needs a dim glossy weight (fresnel × 0.45) in a dark
+  studio, or a tall glass reads as a black cylinder.
 
 ## Workflow for a new video
 

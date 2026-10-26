@@ -7,15 +7,12 @@ VID=${1:?video id}; RES=${2:-576}; SAMPLES=${3:-24}
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 BLENDER=${BLENDER:-/home/user/tools/blender-4.5.15-linux-x64/blender}
 OUT=$ROOT/videos/$VID/build/frames
-# shot -> frame count, derived from timeline.json beats (see BG_PLAN in assemble.py)
-read -r A B C D <<<"$(python3 - "$ROOT/videos/$VID/build/timeline.json" <<'PY'
-import json,sys; tl=json.load(open(sys.argv[1])); b={x['id']:x['frames'] for x in tl['beats']}
-print(b['hook'], b['empty'], 168, 168)  # C/D nominal lengths are fixed in scene_bag.py SHOT_DUR
-PY
-)"
-echo "frames: A=$A B=$B C=$C D=$D  (res=$RES samples=$SAMPLES)"
-for S in A B C D; do
-  N=${!S}
-  $BLENDER -b -noaudio -P "$ROOT/pipeline/blender/scene_bag.py" -- --shot $S --start 0 --end $N --out "$OUT/$S" --res $RES --samples $SAMPLES 2>&1 | grep -E "^FRAME|Error|Traceback"
+# scene script + shot frame counts come from videos/<id>/script.json ("scene", "shots")
+SCENE=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['scene'])" "$ROOT/videos/$VID/script.json")
+SHOTS=$(python3 -c "import json,sys; print(' '.join(f'{k}:{v}' for k,v in json.load(open(sys.argv[1]))['shots'].items()))" "$ROOT/videos/$VID/script.json")
+echo "scene=$SCENE shots=$SHOTS (res=$RES samples=$SAMPLES)"
+for KV in $SHOTS; do
+  S=${KV%%:*}; N=${KV##*:}
+  $BLENDER -b -noaudio -P "$ROOT/$SCENE" -- --shot $S --start 0 --end $N --out "$OUT/$S" --res $RES --samples $SAMPLES 2>&1 | grep --line-buffered -E "^FRAME|Error|Traceback"
 done
 echo "all shots done"
