@@ -12,12 +12,21 @@
   },
   "beats": [
     {
-      "id": "hook",
-      "pad_before": 0.25,
-      "pad_after": 0.25,
-      "min_duration": 3.4,
+      "id": "flash",
+      "pad_before": 0.15,
+      "pad_after": 0.15,
+      "min_duration": 2.2,
       "lines": [
-        "What happens when a bead chain falls out of a beaker?"
+        "This chain is standing up. On its own."
+      ]
+    },
+    {
+      "id": "hook",
+      "pad_before": 0.15,
+      "pad_after": 0.05,
+      "min_duration": 3.3,
+      "lines": [
+        "Why does it do that? Watch. Bead chain, bucket, end over the rim."
       ]
     },
     {
@@ -26,16 +35,16 @@
       "pad_after": 0.5,
       "min_duration": 3.2,
       "lines": [
-        "Obviously, it slides over the rim and drops."
+        "Pull the end, and obviously, it slides out."
       ]
     },
     {
       "id": "reversal",
       "pad_before": 0.2,
-      "pad_after": 0.7,
+      "pad_after": 0.5,
       "min_duration": 7.0,
       "lines": [
-        "But it doesn't. The chain lifts itself out of the beaker and hovers in a loop above the rim, until the beaker is empty. How?"
+        "But watch. It lifts itself out and floats above the rim. No hands. No trick. Until the bucket is empty. How?"
       ]
     },
     {
@@ -81,17 +90,21 @@
     "C": 192
   },
   "bg_plan": {
+    "flash": [
+      "A",
+      280
+    ],
     "hook": [
       "A",
       0
     ],
     "obvious": [
       "A",
-      82
+      88
     ],
     "reversal": [
       "A",
-      159
+      165
     ],
     "kick": [
       "C",

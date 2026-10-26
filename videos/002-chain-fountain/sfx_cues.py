@@ -8,10 +8,12 @@ from audiolib import *
 def cues(tl, B, W, sfx, music, D, N):
     rng = np.random.default_rng(11)
     t_release = B["hook"]["start"] + 3.8            # scene_chain.py T_RELEASE (the tug)
-    def speed(t):                                   # mirrors scene_chain.speed(), normalized 0..1
+    fl = B["flash"]
+    def speed(t):                                   # mirrors scene_chain.speed(), normalized 0..1; flash-forward is at full speed
+        if fl["start"] <= t < fl["end"]: return 1.0
         u = max(0.0, min(1.0, (t - t_release) / 4.5)); return u * u * (3 - 2 * u)
     # bead rattle: random metallic clicks, density ~ speed, slightly pitched down for slow-mo
-    t = t_release
+    t = 0.0
     while t < D:
         r = 4 + 110 * speed(t)
         t += min(rng.exponential(1 / r), 0.05)
@@ -31,7 +33,8 @@ def cues(tl, B, W, sfx, music, D, N):
     # release: a glass "tink" and a short slide
     place(sfx, ding(2093, 0.5), t_release - 0.05, 0.35); place(sfx, whoosh(0.4, 800, 6000), t_release, 0.3)
     # cuts and stamps
-    for bid in ("kick", "equation", "scale", "cta"): place(sfx, whoosh(0.32), B[bid]["start"] - 0.18, 0.45)
+    for bid in ("hook", "kick", "equation", "scale", "cta"): place(sfx, whoosh(0.32), B[bid]["start"] - 0.18, 0.45)
+    place(sfx, thud(70, 0.5), B["hook"]["start"], 0.8); place(sfx, ding(1760, 0.6), W("flash", "on"), 0.4)
     place(sfx, shimmer(0.6), W("reversal", "lifts") - 0.5, 0.35); place(sfx, ding(1568, 1.0), W("reversal", "lifts") + 0.05, 0.6)
     place(sfx, thud(80, 0.4), W("reversal", "how"), 0.7); place(sfx, shimmer(0.5), W("reversal", "how") - 0.45, 0.3)
     for wd in ("yanks", "kicks"): place(sfx, whoosh(0.3, 300, 2500), W("kick", wd), 0.35)

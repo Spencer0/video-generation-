@@ -2,12 +2,21 @@
 function fadeInOut(tb,b,a0=0.2){return smooth(0,a0,tb)*(1-smooth(b.duration-0.3,b.duration-0.05,tb))}
 function slowmoTag(alpha){ pill('SLOW MOTION  4×',W-70,250,{align:'right',size:32,bg:'rgba(8,10,16,0.75)',fg:'rgba(255,255,255,0.85)',alpha}); }
 
+function beatFlash(tb,t,b){
+  // flash-forward: the fountain fully up, with the hook quote
+  const out=1-smooth(b.duration-0.25,b.duration-0.03,tb);
+  const k1=tb-0.05; if(k1>0){ const s=lerp(1.4,1,easeOutBack(k1/0.3)); ctx.save(); ctx.translate(W/2,450); ctx.scale(s,s); ctx.globalAlpha=smooth(0,0.08,k1)*out;
+    text('THIS CHAIN IS',0,-60,{size:84,weight:900}); text('STANDING UP',0,50,{size:112,weight:900,color:C.yellow}); ctx.restore(); }
+  const tOwn=wordTime('flash','on'); const k2=t-tOwn; if(k2>0){ const s=lerp(1.8,1,easeOutBack(k2/0.3)); ctx.save(); ctx.translate(W/2,680); ctx.scale(s,s); ctx.globalAlpha=smooth(0,0.08,k2)*out;
+    pill('ON ITS OWN.  NO HANDS.',0,0,{size:46,bg:'rgba(255,45,85,0.95)',padX:36}); ctx.restore(); }
+  slowmoTag(out);
+}
 function beatHook(tb,t,b){
   const out=1-smooth(b.duration-0.35,b.duration-0.05,tb);
-  const k1=tb-0.2; if(k1>0){ const s=lerp(1.5,1,easeOutBack(k1/0.3)); ctx.save(); ctx.translate(W/2,360); ctx.scale(s,s); ctx.globalAlpha=smooth(0,0.1,k1)*out;
-    text('BEAD CHAIN + BEAKER',0,0,{size:82,weight:900}); ctx.restore(); }
-  const tQ=wordTime('hook','beaker'); const k2=t-tQ; if(k2>0){ const s=lerp(2.2,1,easeOutBack(k2/0.35))*(1+0.03*Math.sin(k2*8)); ctx.save(); ctx.translate(W/2,540); ctx.scale(s,s); ctx.globalAlpha=smooth(0,0.08,k2)*out;
-    text('= ?',0,0,{size:150,weight:900,color:C.yellow}); ctx.restore(); }
+  const k1=tb-0.1; if(k1>0){ const s=lerp(1.8,1,easeOutBack(k1/0.3))*(1+0.02*Math.sin(k1*7)); ctx.save(); ctx.translate(W/2,360); ctx.scale(s,s); ctx.globalAlpha=smooth(0,0.08,k1)*out;
+    text('WHY?',0,0,{size:170,weight:900,color:C.yellow,strokeW:20}); ctx.restore(); }
+  const tW=wordTime('hook','watch'); if(t>tW){ ctx.save(); ctx.globalAlpha=smooth(0,0.15,t-tW)*out; pill('WATCH CLOSELY 👀',W/2,540,{size:42,bg:'rgba(8,10,16,0.8)',border:C.yellow}); ctx.restore(); }
+  const tB=wordTime('hook','bucket'); if(t>tB){ ctx.save(); ctx.globalAlpha=smooth(0,0.15,t-tB)*out; pill('BEAD CHAIN + BUCKET',W/2,1180,{size:40,bg:'rgba(8,10,16,0.8)'}); ctx.restore(); }
   slowmoTag(smooth(0.3,0.6,tb));
 }
 function beatObvious(tb,t,b){
@@ -17,7 +26,7 @@ function beatObvious(tb,t,b){
 function beatReversal(tb,t,b){
   slowmoTag(1-smooth(b.duration-0.4,b.duration-0.1,tb));
   const tLift=wordTime('reversal','lifts'); stamp('IT CLIMBS OUT ⬆️',W/2,1000,tLift+0.05,t,{color:C.green,size:104,rot:-0.08});
-  const tHov=wordTime('reversal','hovers'); if(t>tHov){ const k=t-tHov; ctx.save(); ctx.globalAlpha=smooth(0,0.15,k)*(1-smooth(b.duration-0.4,b.duration-0.1,tb));
+  const tHov=wordTime('reversal','floats'); if(t>tHov){ const k=t-tHov; ctx.save(); ctx.globalAlpha=smooth(0,0.15,k)*(1-smooth(b.duration-0.4,b.duration-0.1,tb));
     pill('A FLOATING LOOP  •  NO HANDS',W/2,1180,{size:42,bg:'rgba(8,10,16,0.8)',fg:C.blue,border:C.blue}); ctx.restore(); }
   const tHow=wordTime('reversal','how'); const kh=t-tHow; if(kh>0){ const s=lerp(2.4,1,easeOutBack(kh/0.35))*(1+0.04*Math.sin(kh*9));
     ctx.save(); ctx.translate(W/2,760); ctx.scale(s,s); ctx.globalAlpha=smooth(0,0.08,kh); text('HOW?',0,0,{size:190,weight:900,color:C.yellow,strokeW:22}); ctx.restore(); flash(t,tHow,{dur:0.2,peak:0.3}); }
@@ -46,7 +55,7 @@ function beatKick(tb,t,b){
   if(t>tRod && t<tYank+0.4){ ctx.save(); ctx.globalAlpha=0.5+0.5*Math.sin(t*10); ctx.strokeStyle=C.yellow; ctx.lineWidth=6; ctx.setLineDash([16,12]); ctx.beginPath(); ctx.ellipse(cx,cy0,len/2+50,70,0,0,Math.PI*2); ctx.stroke(); ctx.restore(); }
   beadRod(cx,cy,ang,len,'#E8ECF2');
   const fx=cx+Math.cos(ang)*len/2, fy=cy+Math.sin(ang)*len/2, bx=cx-Math.cos(ang)*len/2, by=cy-Math.sin(ang)*len/2;
-  if(t>tYank){ arrow(fx+10,fy-40,fx+10,fy-200-60*lift,C.orange,10,28); text('PULL',fx+10,fy-290,{size:36,weight:900,color:C.orange,stroke:false}); }
+  if(t>tYank){ const top=Math.max(fy-200-60*lift, py+190); arrow(fx+10,fy-40,fx+10,top,C.orange,10,28); text('PULL',fx+60,top-10,{size:36,weight:900,color:C.orange,align:'left',stroke:false}); }
   if(t>tKick){ arrow(bx-10,by+40,bx-10,by+150,C.red,10,28); text('KICKS DOWN',bx-10,by+200,{size:32,weight:900,color:C.red,stroke:false}); }
   if(t>tBack){ const k=t-tBack; const s=lerp(1.6,1,easeOutBack(k/0.3)); arrow(bx+70,pileTop+150,bx+70,pileTop-10-40*lift,C.green,12,32);
     ctx.save(); ctx.translate(W/2,py+ph+60); ctx.scale(s,s); ctx.globalAlpha=smooth(0,0.1,k); pill('THE PILE KICKS BACK  •  NEWTON’S 3RD LAW',0,0,{size:38,bg:'rgba(61,220,132,0.95)',fg:'#06210f'}); ctx.restore(); }
@@ -111,7 +120,7 @@ function beatCta(tb,t,b){
   const fo=smooth(b.duration-0.45,b.duration-0.02,tb); if(fo>0){ctx.fillStyle=`rgba(0,0,0,${fo})`; ctx.fillRect(0,0,W,H)}
 }
 window.BEATS = {
-  draw: {hook:beatHook,obvious:beatObvious,reversal:beatReversal,kick:beatKick,equation:beatEquation,scale:beatScale,cta:beatCta},
-  cutFlash: ['kick','equation','scale','cta'],
-  keywords: ['chain','beaker','slides','drops','lifts','hovers','loop','empty','rigid','rod','yanks','kicks','back','alpha','eighth','height','meters','twenty','balcony','tall','obviously','falls'],
+  draw: {flash:beatFlash,hook:beatHook,obvious:beatObvious,reversal:beatReversal,kick:beatKick,equation:beatEquation,scale:beatScale,cta:beatCta},
+  cutFlash: ['hook','kick','equation','scale','cta'],
+  keywords: ['chain','bucket','standing','own','why','watch','pull','trick','hands','slides','drops','lifts','hovers','loop','empty','rigid','rod','yanks','kicks','back','alpha','eighth','height','meters','twenty','balcony','tall','obviously','falls'],
 };
