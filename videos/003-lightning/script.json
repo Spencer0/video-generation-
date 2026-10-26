@@ -1,0 +1,194 @@
+{
+  "id": "003-lightning",
+  "title": "How does lightning work?",
+  "fps": 24,
+  "width": 1080,
+  "height": 1920,
+  "voice": {
+    "engine": "kokoro",
+    "name": "af_heart",
+    "speed": 1.12,
+    "lang": "en-us"
+  },
+  "scene": "pipeline/blender/scene_lightning.py",
+  "shots": {
+    "S": 192,
+    "T": 132
+  },
+  "bg_plan": {
+    "flash": [
+      "S",
+      97
+    ],
+    "hook": [
+      "S",
+      0
+    ],
+    "cloud": [
+      "S",
+      0
+    ],
+    "charge": [
+      "S",
+      0
+    ],
+    "field": [
+      "S",
+      0
+    ],
+    "leader": [
+      "S",
+      0
+    ],
+    "streamer": [
+      "T",
+      0
+    ],
+    "return": [
+      "S",
+      100
+    ],
+    "heat": [
+      "S",
+      150
+    ],
+    "thunder": [
+      "S",
+      0
+    ],
+    "flicker": [
+      "S",
+      104
+    ],
+    "payoff": [
+      "S",
+      0
+    ],
+    "cta": [
+      "S",
+      150
+    ]
+  },
+  "blur_beats": [
+    "thunder"
+  ],
+  "beats": [
+    {
+      "id": "flash",
+      "pad_before": 0.1,
+      "pad_after": 0.15,
+      "min_duration": 2.6,
+      "lines": [
+        "This bolt is five times hotter than the surface of the Sun."
+      ]
+    },
+    {
+      "id": "hook",
+      "pad_before": 0.15,
+      "pad_after": 0.3,
+      "min_duration": 4.0,
+      "lines": [
+        "How does lightning actually work? And why does it travel up, not down?"
+      ]
+    },
+    {
+      "id": "cloud",
+      "pad_before": 0.2,
+      "pad_after": 0.4,
+      "min_duration": 7.0,
+      "lines": [
+        "It starts inside a storm cloud. Updrafts hurl ice crystals past heavier hail, and every collision steals charge."
+      ]
+    },
+    {
+      "id": "charge",
+      "pad_before": 0.2,
+      "pad_after": 0.4,
+      "min_duration": 5.5,
+      "lines": [
+        "Positive at the top. Negative at the bottom. And the ground below? It goes positive."
+      ]
+    },
+    {
+      "id": "field",
+      "pad_before": 0.2,
+      "pad_after": 0.5,
+      "min_duration": 6.0,
+      "lines": [
+        "There are now hundreds of millions of volts between cloud and ground. Air is a great insulator... until it isn't."
+      ]
+    },
+    {
+      "id": "leader",
+      "pad_before": 0.2,
+      "pad_after": 0.4,
+      "min_duration": 7.0,
+      "lines": [
+        "A faint channel of ionized air creeps down in fifty meter steps, branching, searching. The stepped leader."
+      ]
+    },
+    {
+      "id": "streamer",
+      "pad_before": 0.2,
+      "pad_after": 0.3,
+      "min_duration": 5.5,
+      "lines": [
+        "Near the ground, trees and towers reach up with streamers of their own. And when one connects..."
+      ]
+    },
+    {
+      "id": "return",
+      "pad_before": 0.1,
+      "pad_after": 0.5,
+      "min_duration": 7.5,
+      "lines": [
+        "Boom. The return stroke. A wave of current races up the channel at a third the speed of light. That's the flash. Going up."
+      ]
+    },
+    {
+      "id": "heat",
+      "pad_before": 0.2,
+      "pad_after": 0.4,
+      "min_duration": 5.5,
+      "lines": [
+        "Thirty thousand degrees in microseconds. The air explodes outward. That's thunder."
+      ]
+    },
+    {
+      "id": "thunder",
+      "pad_before": 0.2,
+      "pad_after": 0.5,
+      "min_duration": 6.5,
+      "lines": [
+        "Sound is slow. Count the seconds between flash and bang, divide by three, and that's the distance in kilometers."
+      ]
+    },
+    {
+      "id": "flicker",
+      "pad_before": 0.2,
+      "pad_after": 0.4,
+      "min_duration": 5.5,
+      "lines": [
+        "And the flicker? Each flash is three to five strokes down the same channel, milliseconds apart."
+      ]
+    },
+    {
+      "id": "payoff",
+      "pad_before": 0.2,
+      "pad_after": 0.5,
+      "min_duration": 3.5,
+      "lines": [
+        "About fifty bolts hit Earth every second."
+      ]
+    },
+    {
+      "id": "cta",
+      "pad_before": 0.15,
+      "pad_after": 0.8,
+      "min_duration": 2.6,
+      "lines": [
+        "Follow for more!"
+      ]
+    }
+  ]
+}
