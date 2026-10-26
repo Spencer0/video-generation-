@@ -194,6 +194,28 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
 - Film-glass trick needs a dim glossy weight (fresnel × 0.45) in a dark
   studio, or a tall glass reads as a black cylinder.
 
+## Video 003 notes (lightning)
+
+- Bolt = seeded midpoint-displacement polyline (main channel rough 0.10, 7
+  levels; 9 branches rough 0.18) as bevelled POLY curves. Growth via
+  `bevel_factor_end`; the return-stroke wave is a shader mask on the curve's
+  UV X (runs along the spline) so brightness sweeps bottom->top.
+- Exposure is the whole game: a strike point light of ~1e8 W at 300 m plus
+  cloud-base emission 0.2 reads as a flash; 4e9 W whites out the frame.
+- Night frames never converge: 14 samples + OIDN look the same as 24 at
+  ~2/3 the time. Dark scenes = fewer samples.
+- Mostly-2D video: 13 beats, only 5 backed by 3D (324 frames). The canvas
+  explainer (cloud cross-section, charges, voltmeter, stepped leader,
+  upward wave, heat gauge, thunder math, globe) carries the middle. Opaque
+  2D beats just paint their own sky; the assembler's footage is irrelevant.
+- A 2D "takeover" mid-beat (switch to an opaque scene on a word) is the fix
+  when a beat is longer than the usable 3D footage.
+- Physics (keep): charge separation by graupel/ice collisions in updrafts;
+  cloud + top / − base, ground induced +; 10^8–10^9 V; stepped leader ~50 m
+  steps; upward streamers; return stroke ~1/3 c, ~30 kA, ~30,000 °C (5x the
+  Sun's surface); thunder d = 343 m/s·t (÷3 km, ÷5 miles); 3–5 strokes per
+  flash ~40 ms apart; ~44–50 flashes/s worldwide.
+
 ## Workflow for a new video
 
 1. Copy `videos/001-water-bag/script.json`, write beats (3 words/sec pacing,
