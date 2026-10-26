@@ -7,7 +7,7 @@ from audiolib import *
 
 def cues(tl, B, W, sfx, music, D, N):
     rng = np.random.default_rng(11)
-    t_release = B["hook"]["start"] + 1.0            # scene_chain.py T_RELEASE
+    t_release = B["hook"]["start"] + 3.8            # scene_chain.py T_RELEASE (the tug)
     def speed(t):                                   # mirrors scene_chain.speed(), normalized 0..1
         u = max(0.0, min(1.0, (t - t_release) / 4.5)); return u * u * (3 - 2 * u)
     # bead rattle: random metallic clicks, density ~ speed, slightly pitched down for slow-mo

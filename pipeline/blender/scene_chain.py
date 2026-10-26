@@ -87,7 +87,7 @@ def add_box(name, dims, loc, mat, rot=(0, 0, 0), bevel=0.002):
 # ----------------------------------------------------------------------------- constants (metres, scene seconds)
 SLOWMO = 4.0
 STOOL_H = 1.15
-BEAKER_R, BEAKER_H = 0.072, 0.25
+BEAKER_R, BEAKER_H = 0.078, 0.25   # stainless bucket, top radius (tapers to 0.065 at the base)
 Z_BASE = STOOL_H; Z_RIM = STOOL_H + BEAKER_H
 H1 = Z_RIM                      # drop height to the floor
 ALPHA = 0.12
@@ -95,22 +95,22 @@ H_FOUNTAIN = ALPHA * H1 / (1 - ALPHA)   # ~0.19 m, Biggins & Warner
 V_REAL = math.sqrt(9.81 * H1 / (1 - ALPHA))
 V_SCENE = V_REAL / SLOWMO
 BEAD_R, PITCH = 0.0030, 0.0080  # ~#13 bead chain (6 mm balls)
-T_RELEASE = 1.0
+T_RELEASE = 3.8                 # the tug (just after "obviously" starts)
+HANG0 = 0.12                    # how far the free end hangs below the rim before the tug
 T_EMPTY = 30.0                  # beaker runs out ~ at the end of the explainer
 
+RAMP = 4.5
 def speed(t):
-    return V_SCENE * smoothstep(T_RELEASE, T_RELEASE + 4.5, t)
+    return V_SCENE * smoothstep(T_RELEASE, T_RELEASE + RAMP, t)
 def travelled(t):
-    # integral of speed; smoothstep integral done numerically once per call (cheap: closed form of cubic)
-    a, b = T_RELEASE, T_RELEASE + 4.5
-    if t <= a: return 0.0
-    if t >= b: return V_SCENE * ((b - a) / 2 + (t - b))
-    u = (t - a) / (b - a); return V_SCENE * (b - a) * (u ** 3 - u ** 4 / 2)
+    """Chain arc length that has flowed past any point: a 25 cm tug over 0.3 s, then the ramp-up (closed-form smoothstep integral)."""
+    tug = 0.25 * smoothstep(T_RELEASE, T_RELEASE + 0.3, t)
+    a, b = T_RELEASE, T_RELEASE + RAMP
+    if t <= a: return tug
+    if t >= b: return tug + V_SCENE * ((b - a) / 2 + (t - b))
+    u = (t - a) / (b - a); return tug + V_SCENE * (b - a) * (u ** 3 - u ** 4 / 2)
 def fountain_h(t):
-    return 0.02 * smoothstep(1.6, 5.8, t) + (H_FOUNTAIN - 0.02) * smoothstep(5.8, 9.6, t)
-def pile_z(t):
-    full, empty = Z_RIM - 0.035, Z_BASE + 0.02
-    return lerp(full, empty, smoothstep(T_RELEASE, T_EMPTY, t))
+    return 0.02 * smoothstep(T_RELEASE + 0.6, T_RELEASE + 3.6, t) + (H_FOUNTAIN - 0.02) * smoothstep(T_RELEASE + 3.6, T_RELEASE + 6.8, t)
 
 def bezier(p0, p1, p2, p3, n):
     pts = []
@@ -119,20 +119,48 @@ def bezier(p0, p1, p2, p3, n):
         pts.append(p0 * v ** 3 + p1 * 3 * v * v * u + p2 * 3 * v * u * u + p3 * u ** 3)
     return pts
 
+PILE = {}   # filled by build_pile(): "pts" (list of Vector along the helix, bottom->top), "cum" (arc length), "len"
+
+def helix_at(L):
+    """Point and unit tangent on the pile helix at arc length L from the bottom (clamped)."""
+    pts, cum = PILE["pts"], PILE["cum"]
+    L = max(0.0, min(L, cum[-1] - 1e-6))
+    import bisect
+    i = max(1, bisect.bisect_right(cum, L)); i = min(i, len(pts) - 1)
+    u = (L - cum[i - 1]) / max(cum[i] - cum[i - 1], 1e-9)
+    p = pts[i - 1].lerp(pts[i], u); tg = (pts[i] - pts[i - 1]).normalized()
+    return p, tg
+
+def pile_remaining(t):
+    return PILE["len"] - travelled(t)
+
 def chain_path(t):
-    """Points of the chain path from inside the pile, over the arch, down to the floor (and under it)."""
+    """Points of the chain path: leaves the top of the pile tangentially, swirls up into the arch,
+    over the rim and down to the floor (and a little under it, so surplus beads are hidden)."""
     h = fountain_h(t); hf = h / H_FOUNTAIN
     sway_x = (0.010 * n1(t * 0.7, 1) + 0.004 * n1(t * 2.1, 2)) * hf
     sway_y = (0.010 * n1(t * 0.6, 3) + 0.004 * n1(t * 1.9, 4)) * hf
-    S = Vector((-0.02 + 0.01 * n1(t * 0.3, 5), 0.0, pile_z(t)))
-    A = Vector((lerp(BEAKER_R, 0.045, hf) + sway_x, sway_y, Z_RIM + 0.004 + h))
+    S, tg = helix_at(pile_remaining(t))
+    A = Vector((lerp(BEAKER_R, 0.05, hf) + sway_x, sway_y, Z_RIM + 0.004 + h))
     F0 = Vector((BEAKER_R + 0.035, 0.0, Z_RIM - 0.18))
     F1 = Vector((BEAKER_R + 0.035, 0.0, -0.05))
-    dz1 = A.z - S.z; dz2 = A.z - F0.z
-    pts = bezier(S, S + Vector((0, 0, 0.55 * dz1)), A - Vector((0.035 * (0.3 + hf), 0, 0)), A, 40)
-    pts += bezier(A, A + Vector((0.035 * (0.3 + hf), 0, 0)), F0 + Vector((0, 0, 0.5 * dz2)), F0, 40)[1:]
+    # the pick-up point whips around the coil; keep that inside the bucket by routing the rising leg through a
+    # fixed point M just under the rim, then up to a rounded apex (horizontal handles both sides)
+    M = Vector((lerp(0.058, 0.032, hf) + 0.3 * sway_x, 0.3 * sway_y, Z_RIM - 0.012))
+    dzM = max(A.z - M.z, 0.01); dz2 = A.z - F0.z
+    hl = 0.015 + 0.045 * hf
+    pts = bezier(S, S + tg * 0.06, M - Vector((0, 0, 0.06)), M, 30)
+    pts += bezier(M, M + Vector((0, 0, 0.5 * dzM)), A - Vector((hl, 0, 0)), A, 30)[1:]
+    pts += bezier(A, A + Vector((hl, 0, 0)), F0 + Vector((0, 0, 0.5 * dz2)), F0, 40)[1:]
     pts += [F0.lerp(F1, i / 12) for i in range(1, 13)]
     return pts
+
+def path_length(pts, upto_z=None):
+    L = 0.0
+    for a, b in zip(pts[:-1], pts[1:]):
+        if upto_z is not None and b.z < upto_z and a.x > BEAKER_R: return L + (a.z - upto_z) / max(a.z - b.z, 1e-9) * (b - a).length
+        L += (b - a).length
+    return L
 
 # ----------------------------------------------------------------------------- build
 def bead_unit(mat):
@@ -163,6 +191,26 @@ def chain_on_curve(name, bead_me, curve_ob, count):
     cv = ob.modifiers.new("curve", "CURVE"); cv.object = curve_ob; cv.deform_axis = "POS_X"
     return ob, ar
 
+def build_pile():
+    """Chain coiled flat, layer on layer, like a rope coil: each layer is a spiral between the wall (r=0.066)
+    and the centre (r=0.028), alternating inward/outward so the chain is continuous. The top layer spirals
+    outward so the chain leaves the coil at the wall, right under the rim. Fills PILE with arc lengths."""
+    pts = []; z = Z_BASE + 0.006; z_top = Z_RIM - 0.032; layer_h = 0.0066
+    n_layers = int((z_top - z) / layer_h)
+    r_out, r_in, turns = 0.066, 0.028, 3.0
+    for L in range(n_layers):
+        outward = (n_layers - 1 - L) % 2 == 0          # last layer ends at the wall
+        n = int(turns * 72)
+        for i in range(n):
+            u = i / n; r = lerp(r_in, r_out, u) if outward else lerp(r_out, r_in, u)
+            ang = u * turns * 2 * math.pi + L * 0.7
+            jitter = 0.0012 * mnoise.noise(Vector((ang * 0.9, L * 1.3, 0.2)))
+            pts.append(Vector(((r + jitter) * math.cos(ang), (r + jitter) * math.sin(ang), z + L * layer_h + u * layer_h * 0.35 + 0.0008 * mnoise.noise(Vector((ang, L, 0.7))))))
+    cum = [0.0]
+    for a, b in zip(pts[:-1], pts[1:]): cum.append(cum[-1] + (b - a).length)
+    PILE["pts"], PILE["cum"], PILE["len"] = pts, cum, cum[-1]
+    return pts
+
 def helix_points(r_fn, z0, z1, turns_per_m, n_per_turn=48, phase=0.0):
     pts = []; turns = (z1 - z0) * turns_per_m; N = int(turns * n_per_turn)
     for i in range(N):
@@ -191,26 +239,27 @@ def build_set():
         for sy in (-1, 1):
             add_cylinder(f"leg{sx}{sy}", 0.014, STOOL_H - 0.03, (SX + sx * 0.14, sy * 0.14, (STOOL_H - 0.03) / 2), dark)
     add_box("stool_brace", (0.30, 0.02, 0.02), (SX, -0.14, 0.35), dark); add_box("stool_brace2", (0.02, 0.30, 0.02), (SX + 0.14, 0, 0.35), dark)
-    # beaker (thin film glass): open cylinder with a bottom disc
-    glass = film_glass("beaker_glass")
-    bm = bmesh.new(); bmesh.ops.create_cone(bm, cap_ends=False, segments=96, radius1=BEAKER_R, radius2=BEAKER_R, depth=BEAKER_H)
-    me = bpy.data.meshes.new("beaker"); bm.to_mesh(me); bm.free(); me.materials.append(glass)
+    # stainless bucket: tapered, rolled rim, opaque (the coil is shown from above, not through glass)
+    bm = bmesh.new(); bmesh.ops.create_cone(bm, cap_ends=False, segments=96, radius1=0.065, radius2=BEAKER_R, depth=BEAKER_H)
+    me = bpy.data.meshes.new("bucket"); bm.to_mesh(me); bm.free(); me.materials.append(steel)
     for p in me.polygons: p.use_smooth = True
-    bk = link_obj("beaker", me); bk.location = (0, 0, Z_BASE + BEAKER_H / 2)
-    sol = bk.modifiers.new("solid", "SOLIDIFY"); sol.thickness = 0.003; sol.offset = 1.0
-    add_cylinder("beaker_bottom", BEAKER_R, 0.004, (0, 0, Z_BASE + 0.002), glass, segs=96)
-    # a white graduation strip hint
-    add_box("grad", (0.002, 0.03, 0.14), (BEAKER_R + 0.0035, 0.0, Z_BASE + 0.12), principled("grad", (0.9, 0.9, 0.9), 0.6), bevel=0)
+    bk = link_obj("bucket", me); bk.location = (0, 0, Z_BASE + BEAKER_H / 2)
+    sol = bk.modifiers.new("solid", "SOLIDIFY"); sol.thickness = 0.0025; sol.offset = 1.0
+    add_cylinder("bucket_bottom", 0.065, 0.004, (0, 0, Z_BASE + 0.002), principled("bucket_in", (0.25, 0.25, 0.26), 0.4, 1.0), segs=96)
+    # rolled rim = a torus ring (NOT a disc)
+    bpy.ops.mesh.primitive_torus_add(major_segments=96, minor_segments=12, major_radius=BEAKER_R + 0.001, minor_radius=0.0035, location=(0, 0, Z_RIM - 0.002))
+    rim = bpy.context.object; rim.name = "rim"; rim.data.materials.append(steel)
+    for p in rim.data.polygons: p.use_smooth = True
     # chain material + unit
     bead_m = principled("bead", (0.80, 0.80, 0.82), 0.22, 1.0)
     bead_me = bead_unit(bead_m)
+    # pile: a messy heap of loops (random radius / centre per turn), top turns hugging the wall so the chain
+    # lifts off near the rim. Built once; consumption = shrinking the array from the top.
+    S["pile_curve"] = poly_curve("pile_path", build_pile())
+    S["pile"], S["pile_ar"] = chain_on_curve("pile", bead_me, S["pile_curve"], 10)
     # flowing chain
     S["path"] = poly_curve("chain_path", chain_path(0.0))
     S["chain"], S["chain_ar"] = chain_on_curve("chain", bead_me, S["path"], int(2.6 / PITCH))
-    # pile in beaker: double helix stack (two radii) from the bottom to pile_z(t)
-    S["pile_curve"] = poly_curve("pile_path", helix_points(lambda u, a: 0.056 if int(a / (2 * math.pi)) % 2 == 0 else 0.042, Z_BASE + 0.006, Z_RIM, 1 / 0.0085))
-    S["pile"], S["pile_ar"] = chain_on_curve("pile", bead_me, S["pile_curve"], 10)
-    S["pile_len"] = sum((b - a).length for a, b in zip(S["pile_curve"].data.splines[0].points[:-1], S["pile_curve"].data.splines[0].points[1:])) if False else None
     # heap on the floor: flat spiral at the landing point
     hp = []
     for i in range(1400):
@@ -229,6 +278,7 @@ def build_set():
     S["rim"] = light("rim", "AREA", (-1.3, 1.1, 2.0), 150.0, (0.35, 0.55, 1.0), size=0.8, rot=(math.radians(-50), 0, math.radians(-130)))
     S["fill"] = light("fill", "AREA", (-1.2, -1.6, 1.0), 14.0, (0.6, 0.75, 1.0), size=2.5, rot=(math.radians(70), 0, math.radians(-35)))
     S["spot"] = light("spot", "AREA", (0.4, -0.5, 2.3), 70.0, (1.0, 0.85, 0.7), size=0.3, rot=(math.radians(15), 0, math.radians(40)))
+    S["top"] = light("top", "AREA", (0.05, -0.05, Z_RIM + 0.9), 40.0, (1.0, 0.95, 0.9), size=0.35, rot=(0, 0, 0))
     # camera
     cd = bpy.data.cameras.new("cam"); cam = link_obj("cam", cd); bpy.context.scene.camera = cam
     tgt = link_obj("cam_target", None)
@@ -239,26 +289,40 @@ def build_set():
 
 STATE = {}
 
+def catmull(keys, t):
+    """Catmull-Rom through (time, Vector) keys, clamped."""
+    ts = [k[0] for k in keys]
+    if t <= ts[0]: return keys[0][1].copy()
+    if t >= ts[-1]: return keys[-1][1].copy()
+    i = max(j for j in range(len(ts) - 1) if ts[j] <= t)
+    p0 = keys[max(i - 1, 0)][1]; p1 = keys[i][1]; p2 = keys[i + 1][1]; p3 = keys[min(i + 2, len(keys) - 1)][1]
+    u = (t - ts[i]) / (ts[i + 1] - ts[i]); u = u * u * (3 - 2 * u)
+    return 0.5 * ((2 * p1) + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u * u + (-p0 + 3 * p1 - 3 * p2 + p3) * u * u * u)
+
+# shot A choreography: look into the bucket at the coil -> tilt to the hanging end -> the tug, hold on the rim
+# while the coil unwinds -> pull out as the fountain grows.   (time, camera position), (time, look-at), (time, lens)
+CAM_A = [(0.0, Vector((0.16, -0.26, Z_RIM + 0.46))), (3.0, Vector((0.30, -0.40, Z_RIM + 0.24))), (6.6, Vector((0.44, -0.46, Z_RIM + 0.08))),
+         (10.5, Vector((0.42, -0.86, 1.56))), (14.3, Vector((0.38, -0.96, 1.62)))]
+TGT_A = [(0.0, Vector((0.0, 0.0, Z_RIM - 0.06))), (3.0, Vector((0.08, 0.0, Z_RIM - 0.03))), (6.6, Vector((0.11, 0.0, Z_RIM + 0.0))),
+         (10.5, Vector((0.06, 0.0, Z_RIM + 0.08))), (14.3, Vector((0.06, 0.0, Z_RIM + 0.10)))]
+LENS_A = [(0.0, 40.0), (3.0, 40.0), (6.6, 42.0), (10.5, 36.0), (14.3, 36.0)]
+
 def update(t):
     S = STATE["S"]; cam, tgt = S["cam"], S["cam_target"]
-    # chain flow + path
-    set_curve(S["path"], chain_path(t))
+    pts = chain_path(t); set_curve(S["path"], pts)
     d = travelled(t)
+    # free end: hangs HANG0 below the rim before the tug, then runs down the path and onto the floor
+    if "hang_len" not in STATE: STATE["hang_len"] = path_length(pts, upto_z=Z_RIM - HANG0)
+    end_len = STATE["hang_len"] + d
     S["chain"].location.x = -(d % PITCH)
-    # pile shrinks from the top as chain is consumed; heap grows
-    pile_pts = S["pile_curve"].data.splines[0].points
-    seg = 2 * math.pi * 0.049 / 48  # approx arc per helix sample
-    n_pile_max = int(len(pile_pts) * seg / PITCH)
-    frac = (pile_z(t) - (Z_BASE + 0.006)) / (Z_RIM - (Z_BASE + 0.006))
-    S["pile_ar"].count = max(2, int(n_pile_max * frac))
-    S["heap_ar"].count = max(1, min(1390 * 3, int(d / PITCH)))
-    apex = Vector((0.05, 0, Z_RIM + fountain_h(t)))
+    S["chain_ar"].count = max(2, min(int(end_len / PITCH), int(2.6 / PITCH)))
+    S["pile_ar"].count = max(2, int(pile_remaining(t) / PITCH))
+    S["heap_ar"].count = max(1, min(1390 * 3, int(max(0.0, end_len - path_length(pts) + 0.05) / PITCH)))
     if SHOT == "A":
-        k = ease_in_out(min(t / T_SHOT, 1.0))
-        cam.location = vlerp((0.46, -0.86, 1.44), (0.37, -0.70, 1.52), k)
-        tgt.location = vlerp((0.06, 0, 1.36), (0.06, 0, 1.46), k)
-        cam.data.lens = lerp(34, 40, k); cam.data.dof.aperture_fstop = 4.0
-    else:  # C hero close-up
+        tt = min(t, SHOT_DUR["A"])
+        cam.location = catmull(CAM_A, tt); tgt.location = catmull(TGT_A, tt)
+        cam.data.lens = catmull([(k[0], Vector((k[1], 0, 0))) for k in LENS_A], tt).x; cam.data.dof.aperture_fstop = 3.2
+    else:  # C hero close-up orbit of the hovering loop
         k = min(t / T_SHOT, 1.0)
         ang = math.radians(lerp(-25, 20, k)); rad = lerp(0.55, 0.48, ease_in_out(k))
         cam.location = Vector((0.05 + rad * math.sin(ang), -rad * math.cos(ang), Z_RIM + 0.17 + 0.08 * ease_in_out(k)))
@@ -266,7 +330,7 @@ def update(t):
 
 def shot_time(frame_float):
     # shot C shows steady state: start its clock 12 s into the event
-    return frame_float / FPS + (12.0 if SHOT == "C" else 0.0)
+    return frame_float / FPS + (14.0 if SHOT == "C" else 0.0)
 
 def on_frame(scene):
     update(shot_time(scene.frame_current_final if hasattr(scene, "frame_current_final") else scene.frame_current + scene.frame_subframe))
