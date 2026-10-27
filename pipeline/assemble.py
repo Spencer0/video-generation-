@@ -24,7 +24,7 @@ BLUR_BEATS = ("equation", "ceiling")
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("video_id"); ap.add_argument("--out", default=None); ap.add_argument("--preview", action="store_true")
-    ap.add_argument("--crf", type=int, default=17)
+    ap.add_argument("--crf", type=int, default=17); ap.add_argument("--overlay-dir", default="overlay")
     a = ap.parse_args()
     vd = video_dir(video_id := a.video_id); bd = os.path.join(vd, "build")
     tl = load_json(os.path.join(bd, "timeline.json")); fps = tl["fps"]
@@ -50,29 +50,50 @@ def main():
         j = bisect.bisect_left(idx, i); j = min(max(j, 0), len(idx) - 1)
         if j > 0 and abs(idx[j - 1] - i) < abs(idx[j] - i): j -= 1
         return files[j]
-    lines = []
+    lines, top_lines, split_windows = [], [], []
     for b in tl["beats"]:
-        s, off = bg_plan[b["id"]]
+        plan = bg_plan[b["id"]]; s, off = plan[0], plan[1]
+        split = plan[2]["split"] if len(plan) > 2 and isinstance(plan[2], dict) and "split" in plan[2] else None
         off += b.get("bg_offset", 0)   # script.json can shift a beat's footage (e.g. ignition on a word)
         n_avail = (max(shots[s][0]) + 1) if shots[s][0] else 1
+        if split:
+            split_windows.append((b["start"], b["start"] + split[2] / fps))
         for k in range(b["frames"]):
             i = off + k
             if i >= n_avail and shots[s][0]: i = idx_wrap(i, n_avail, off)
-            lines.append(f"file '{os.path.abspath(shot_frame(s, i))}'\nduration {1/fps:.6f}")
-    lines.append(lines[-1].split("\n")[0])  # concat demuxer needs the last file repeated
+            main = os.path.abspath(shot_frame(s, i))
+            lines.append(f"file '{main}'\nduration {1/fps:.6f}")
+            if split and k < split[2]:
+                s2, off2 = split[0], split[1]; n2 = (max(shots[s2][0]) + 1) if shots[s2][0] else 1
+                j = off2 + k
+                if j >= n2 and shots[s2][0]: j = idx_wrap(j, n2, off2)
+                top_lines.append(f"file '{os.path.abspath(shot_frame(s2, j))}'\nduration {1/fps:.6f}")
+            else:
+                top_lines.append(f"file '{main}'\nduration {1/fps:.6f}")
+    lines.append(lines[-1].split("\n")[0]); top_lines.append(top_lines[-1].split("\n")[0])  # concat demuxer needs the last file repeated
     concat = os.path.join(bd, "bg_concat.txt"); open(concat, "w").write("\n".join(lines) + "\n")
+    concat_top = os.path.join(bd, "bg_concat_top.txt"); open(concat_top, "w").write("\n".join(top_lines) + "\n")
     if missing: print(f"warning: {missing} background frames substituted with nearest rendered frame")
     W, H = tl["width"], tl["height"]
     enable = "+".join(f"between(t,{b['start']:.3f},{b['end']:.3f})" for b in tl["beats"] if b["id"] in blur_beats)
-    vf = (f"[0:v]scale={W}:{H}:flags=lanczos,setsar=1,format=yuv420p,"
-          f"gblur=sigma=14:enable='{enable}',eq=brightness=-0.12:saturation=0.85:enable='{enable}'[bg];"
-          f"[1:v]format=rgba[ov];[bg][ov]overlay=0:0:format=auto,format=yuv420p[v]")
+    blur = f"gblur=sigma=14:enable='{enable}',eq=brightness=-0.12:saturation=0.85:enable='{enable}'," if enable else ""
+    if split_windows:
+        # split screen: top half from the 'top' sequence, bottom half from the main one, each cropped to its centre band
+        sw = "+".join(f"between(t,{a:.3f},{b:.3f})" for a, b in split_windows)
+        vf = (f"[0:v]scale={W}:{H}:flags=lanczos,setsar=1,format=yuv420p,{blur}split[bgA][bgB];"
+              f"[3:v]scale={W}:{H}:flags=lanczos,setsar=1,format=yuv420p,crop={W}:{H//2}:0:{H//4}[top];"
+              f"[bgB]crop={W}:{H//2}:0:{H//4}[bot];[top][bot]vstack,drawbox=y={H//2-3}:w={W}:h=6:color=black@0.9:t=fill[sp];"
+              f"[bgA][sp]overlay=0:0:enable='{sw}'[bg];[1:v]format=rgba[ov];[bg][ov]overlay=0:0:format=auto,format=yuv420p[v]")
+    else:
+        vf = (f"[0:v]scale={W}:{H}:flags=lanczos,setsar=1,format=yuv420p,{blur}null[bg];"
+              f"[1:v]format=rgba[ov];[bg][ov]overlay=0:0:format=auto,format=yuv420p[v]")
     out = a.out or os.path.join(vd, "out", ("preview.mp4" if a.preview else "final.mp4"))
     os.makedirs(os.path.dirname(out), exist_ok=True)
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-stats",
            "-f", "concat", "-safe", "0", "-r", str(fps), "-i", concat,
-           "-framerate", str(fps), "-i", os.path.join(bd, "overlay", "ov_%04d.png"),
+           "-framerate", str(fps), "-i", os.path.join(bd, a.overlay_dir, "ov_%04d.png"),
            "-i", os.path.join(bd, "mix.wav"),
+           "-f", "concat", "-safe", "0", "-r", str(fps), "-i", concat_top,
            "-filter_complex", vf, "-map", "[v]", "-map", "2:a",
            "-c:v", "libx264", "-preset", ("veryfast" if a.preview else "slow"), "-crf", str(a.crf if not a.preview else 23),
            "-pix_fmt", "yuv420p", "-r", str(fps), "-movflags", "+faststart",

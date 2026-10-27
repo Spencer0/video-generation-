@@ -11,7 +11,7 @@ from playwright.sync_api import sync_playwright
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("video_id"); ap.add_argument("--start", type=int, default=0)
-    ap.add_argument("--end", type=int, default=None); ap.add_argument("--every", type=int, default=1); ap.add_argument("--out", default=None)
+    ap.add_argument("--end", type=int, default=None); ap.add_argument("--every", type=int, default=1); ap.add_argument("--out", default=None); ap.add_argument("--no-captions", action="store_true")
     a = ap.parse_args()
     vd = video_dir(a.video_id); tl = load_json(os.path.join(vd, "build", "timeline.json"))
     out = a.out or os.path.join(vd, "build", "overlay"); os.makedirs(out, exist_ok=True)
@@ -26,6 +26,7 @@ def main():
         page.evaluate("document.fonts.load('900 80px Inter'); document.fonts.load('700 40px Inter')")
         page.wait_for_timeout(300)
         page.evaluate("tl => window.setTimeline(tl)", tl)
+        if a.no_captions: page.evaluate("window.NO_CAPTIONS = true")
         t0 = time.time(); n = 0
         for f in range(a.start, end, a.every):
             path = os.path.join(out, f"ov_{f:04d}.png")

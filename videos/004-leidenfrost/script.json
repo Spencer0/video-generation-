@@ -1,0 +1,122 @@
+{
+  "id": "004-leidenfrost",
+  "title": "The water that refuses to touch the pan (Leidenfrost effect)",
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "voice": {
+    "engine": "kokoro",
+    "name": "af_heart",
+    "speed": 1.06,
+    "lang": "en-us"
+  },
+  "scene": "pipeline/blender/scene_leidenfrost.py",
+  "shots": {
+    "M": 300,
+    "C": 150,
+    "X": 365,
+    "G": 210,
+    "P": 240
+  },
+  "bg_plan": {
+    "hook": [
+      "M",
+      0
+    ],
+    "compare": [
+      "M",
+      108,
+      {
+        "split": [
+          "C",
+          0,
+          90
+        ]
+      }
+    ],
+    "reveal": [
+      "X",
+      0
+    ],
+    "glide": [
+      "X",
+      163
+    ],
+    "name": [
+      "G",
+      0
+    ],
+    "payoff": [
+      "P",
+      0
+    ],
+    "loop": [
+      "M",
+      225
+    ]
+  },
+  "blur_beats": [],
+  "beats": [
+    {
+      "id": "hook",
+      "pad_before": 0.05,
+      "pad_after": 0.35,
+      "min_duration": 3.2,
+      "lines": [
+        "This pan is so hot that water stops behaving like water."
+      ]
+    },
+    {
+      "id": "compare",
+      "pad_before": 0.1,
+      "pad_after": 0.2,
+      "min_duration": 5.0,
+      "lines": [
+        "On a cooler surface, a drop spreads and evaporates. But on a very hot one, something strange happens."
+      ]
+    },
+    {
+      "id": "reveal",
+      "pad_before": 0.3,
+      "pad_after": 0.4,
+      "min_duration": 5.0,
+      "lines": [
+        "The bottom of the drop vaporizes almost instantly, creating a thin layer of steam."
+      ]
+    },
+    {
+      "id": "glide",
+      "pad_before": 0.2,
+      "pad_after": 0.4,
+      "min_duration": 6.0,
+      "lines": [
+        "That vapor partly separates the water from the metal, so the drop glides instead of spreading across the surface."
+      ]
+    },
+    {
+      "id": "name",
+      "pad_before": 0.25,
+      "pad_after": 0.4,
+      "min_duration": 6.5,
+      "lines": [
+        "That's the Leidenfrost effect. The drop is still evaporating, but it lasts far longer than you'd expect."
+      ]
+    },
+    {
+      "id": "payoff",
+      "pad_before": 0.25,
+      "pad_after": 1.0,
+      "min_duration": 8.0,
+      "lines": [
+        "So a hotter surface doesn't just make the drop vanish faster. Under the right conditions, it rides on its own vapor."
+      ]
+    },
+    {
+      "id": "loop",
+      "pad_before": 0.0,
+      "pad_after": 0.0,
+      "min_duration": 2.5,
+      "lines": []
+    }
+  ]
+}

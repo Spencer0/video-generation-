@@ -10,9 +10,10 @@ OUT=$ROOT/videos/$VID/build/frames
 # scene script + shot frame counts come from videos/<id>/script.json ("scene", "shots")
 SCENE=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['scene'])" "$ROOT/videos/$VID/script.json")
 SHOTS=$(python3 -c "import json,sys; print(' '.join(f'{k}:{v}' for k,v in json.load(open(sys.argv[1]))['shots'].items()))" "$ROOT/videos/$VID/script.json")
+FPS=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('fps',24))" "$ROOT/videos/$VID/script.json")
 echo "scene=$SCENE shots=$SHOTS (res=$RES samples=$SAMPLES)"
 for KV in $SHOTS; do
   S=${KV%%:*}; N=${KV##*:}
-  $BLENDER -b -noaudio -P "$ROOT/$SCENE" -- --shot $S --start 0 --end $N --out "$OUT/$S" --res $RES --samples $SAMPLES 2>&1 | grep --line-buffered -E "^FRAME|Error|Traceback"
+  $BLENDER -b -noaudio -P "$ROOT/$SCENE" -- --shot $S --start 0 --end $N --out "$OUT/$S" --res $RES --samples $SAMPLES --fps $FPS 2>&1 | grep --line-buffered -E "^FRAME|Error|Traceback"
 done
 echo "all shots done"

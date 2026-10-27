@@ -82,16 +82,18 @@ function buildChunks(){
   CHUNKS.forEach((c,i)=>{const nx=CHUNKS[i+1]; c.hide = nx ? Math.min(c.end+0.6, nx.start) : c.end+0.9;});
 }
 function drawCaptions(t){
+  if(window.NO_CAPTIONS) return;
+  const CS=(window.BEATS&&window.BEATS.caption)||{}; const POP=CS.pop||1.12, KEYCOL=CS.keywordColor||C.orange;
   const c=CHUNKS.find(c=>t>=c.start-0.04 && t<c.hide); if(!c)return;
-  const size=78, gap=22; font(900,size);
+  const size=CS.size||78, gap=22; font(900,size);
   const info=c.words.map(w=>{ const active = t>=w.start-0.02 && t<w.end+0.02; const spoken = t>=w.start-0.02;
     const key = KEYWORDS.has(w.word.toLowerCase().replace(/[^a-z']/g,'')) || /\d/.test(w.word);
-    const ws = active ? lerp(1.0,1.12,easeOutBack((t-w.start)/0.12)) : 1;
-    return {w, ws, width:ctx.measureText(w.word.toUpperCase()).width*ws, col: active ? C.yellow : (spoken && key ? C.orange : C.white)}; });
+    const ws = active ? lerp(1.0,POP,easeOutBack((t-w.start)/0.12)) : 1;
+    return {w, ws, width:ctx.measureText(w.word.toUpperCase()).width*ws, col: active ? C.yellow : (spoken && key ? KEYCOL : C.white)}; });
   const total=info.reduce((a,b)=>a+b.width,0)+gap*(info.length-1);
   const scaleAll = total>960 ? 960/total : 1;
-  const y=CAPTION_Y; let x=W/2-total*scaleAll/2;
-  const pop = lerp(0.85,1,easeOutBack((t-c.start)/0.16));
+  const y=CS.y||CAPTION_Y; let x=W/2-total*scaleAll/2;
+  const pop = CS.pop ? 1 : lerp(0.85,1,easeOutBack((t-c.start)/0.16));
   info.forEach((it,i)=>{
     const s = it.ws*pop*scaleAll; const cx = x+it.width*scaleAll/2;
     ctx.save(); ctx.translate(cx,y); ctx.scale(s,s);

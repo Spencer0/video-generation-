@@ -29,7 +29,7 @@ def main(video_id):
     mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
     mod.cues(tl, B, W, sfx, music, D, N)
     # caption chunk ticks (very subtle), same chunking rule as the overlay
-    words = [w for b in tl["beats"] for l in b["lines"] for w in l["words"]]
+    words = [w for b in tl["beats"] for l in b["lines"] for w in l["words"]] if getattr(mod, "CAPTION_TICKS", True) else []
     cur = 0
     for w in words:
         if cur == 0: place(sfx, tick(2400, 0.02), w["start"], 0.07)

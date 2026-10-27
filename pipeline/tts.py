@@ -37,7 +37,7 @@ def main(video_id):
             lines_out.append({"text": text, "start": round(t, 3), "end": round(t + dur, 3), "wav": path,
                               "words": estimate_word_times(text, t, t + dur)})
             master.append((t, wav)); t += dur + LINE_GAP
-        t = t - LINE_GAP + beat.get("pad_after", 0.3)
+        t = (t - LINE_GAP if beat["lines"] else t) + beat.get("pad_after", 0.3)
         t = max(t, b_start + beat.get("min_duration", 0))
         # snap beat boundaries to whole frames so shots concatenate cleanly
         t = round(round(t * fps) / fps, 4)
