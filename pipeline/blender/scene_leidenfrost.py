@@ -13,7 +13,7 @@ Shots (nominal lengths in SHOT_DUR):
   M  macro tracking shot, one drop: enters right at t=0, skitters, exits left at the end (loop-friendly)
   C  cooler pan: a drop lands, spreads into a puddle (for the split comparison)
   X  cutaway: half-droplet on a cross-sectioned pan, exaggerated vapor layer + escaping vapor
-  G  four droplets of different sizes, tracking the leader; the smallest evaporates away
+  G  wide on the whole skillet with a dozen droplets dancing, one continuous push-in onto a single droplet
   P  payoff: macro drop -> cutaway pull-back -> drop skitters out of frame, hold on the metal
 """
 import bpy, bmesh, math, random, sys, os, time
@@ -50,6 +50,10 @@ def new_mat(name):
     m = bpy.data.materials.new(name); m.use_nodes = True; nt = m.node_tree
     for n in list(nt.nodes): nt.nodes.remove(n)
     return m, nt, nt.nodes.new("ShaderNodeOutputMaterial")
+def principled(name, color, rough=0.5, metallic=0.0):
+    m, nt, out = new_mat(name); p = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    p.inputs["Base Color"].default_value = (*color, 1); p.inputs["Roughness"].default_value = rough; p.inputs["Metallic"].default_value = metallic
+    nt.links.new(p.outputs[0], out.inputs[0]); return m
 def link_obj(name, data):
     ob = bpy.data.objects.new(name, data); bpy.context.collection.objects.link(ob); return ob
 
@@ -67,7 +71,7 @@ def pan_material(warm=1.0):
     bump = n.new("ShaderNodeBump"); bump.inputs["Strength"].default_value = 0.08; L.new(brush.outputs["Fac"], bump.inputs["Height"]); L.new(bump.outputs[0], p.inputs["Normal"])
     smud = n.new("ShaderNodeTexNoise"); smud.inputs["Scale"].default_value = 0.35; smud.inputs["Detail"].default_value = 3; L.new(tc.outputs["Object"], smud.inputs["Vector"])
     rough = n.new("ShaderNodeMapRange"); rough.inputs["From Min"].default_value = 0.35; rough.inputs["From Max"].default_value = 0.65
-    rough.inputs["To Min"].default_value = 0.22; rough.inputs["To Max"].default_value = 0.42; L.new(smud.outputs["Fac"], rough.inputs["Value"]); L.new(rough.outputs[0], p.inputs["Roughness"])
+    rough.inputs["To Min"].default_value = 0.26; rough.inputs["To Max"].default_value = 0.38; L.new(smud.outputs["Fac"], rough.inputs["Value"]); L.new(rough.outputs[0], p.inputs["Roughness"])
     L.new(p.outputs[0], out.inputs[0]); return m
 
 def water_material():
@@ -150,6 +154,21 @@ def add_plane(name, size, loc, mat):
     me = bpy.data.meshes.new(name); bm.to_mesh(me); bm.free()
     if mat: me.materials.append(mat)
     ob = link_obj(name, me); ob.location = loc; return ob
+def build_skillet(mat, handle_mat):
+    """Lathe a skillet profile (flat floor, sloped wall, rolled lip) + a dark handle."""
+    prof = [(0.0, 0.0), (11.6, 0.0), (12.9, 1.7), (13.25, 1.85), (13.4, 1.7), (13.1, 1.55), (12.6, 1.55), (11.4, -0.25), (0.0, -0.25)]
+    bm = bmesh.new()
+    verts = [bm.verts.new((r, 0.0, z)) for r, z in prof]
+    edges = [bm.edges.new((verts[i], verts[i + 1])) for i in range(len(verts) - 1)]
+    bmesh.ops.spin(bm, geom=verts + edges, cent=(0, 0, 0), axis=(0, 0, 1), angle=2 * math.pi, steps=160, use_merge=True)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-4)
+    me = bpy.data.meshes.new("skillet"); bm.to_mesh(me); bm.free(); me.materials.append(mat)
+    for p in me.polygons: p.use_smooth = True
+    ob = link_obj("skillet", me)
+    h = add_box("handle", (17, 2.6, 1.1), (21.0, 0.0, 1.9), handle_mat); h.rotation_euler = (0, math.radians(-4), 0)
+    add_box("handle_neck", (3.0, 3.4, 0.6), (13.6, 0.0, 1.6), handle_mat)
+    return ob
+
 def add_box(name, dims, loc, mat):
     bm = bmesh.new(); bmesh.ops.create_cube(bm, size=1.0); me = bpy.data.meshes.new(name); bm.to_mesh(me); bm.free(); me.materials.append(mat)
     ob = link_obj(name, me); ob.scale = dims; ob.location = loc; return ob
@@ -210,8 +229,12 @@ def build_set():
     S = {}; build_world()
     water = water_material()
     cut = SHOT == "X" or SHOT == "P"
-    if SHOT in ("M", "G", "C", "P"):
+    if SHOT in ("M", "C", "P"):
         S["pan"] = add_plane("pan", 60, (0, 0, 0), pan_material(0.7 if SHOT == "C" else 1.0))
+    if SHOT == "G":
+        handle = principled("handle", (0.015, 0.015, 0.016), 0.5)
+        S["skillet"] = build_skillet(pan_material(), handle)
+        add_plane("stove", 80, (0, 0, -0.3), principled("stove", (0.012, 0.012, 0.014), 0.7))
     if cut:
         # cross-sectioned pan: the block's top face is the brushed surface, the front face (y=0) glows amber inside
         S["block"] = add_box("block", (14, 6, 2.5), (0, 3, -1.25), hot_block_material())
@@ -230,7 +253,7 @@ def build_set():
     bm_, nt_, out_ = new_mat("backdrop"); pb = nt_.nodes.new("ShaderNodeBsdfPrincipled"); pb.inputs["Base Color"].default_value = (0.03, 0.035, 0.05, 1); pb.inputs["Roughness"].default_value = 0.9
     nt_.links.new(pb.outputs[0], out_.inputs[0]); back.data.materials.append(bm_)
     S["top"] = light("top", "AREA", (0, 2, 14), 650.0, (0.9, 0.86, 0.8), size=16.0, rot=(0, 0, 0))
-    S["drops"] = [sphere_mesh(f"drop{i}", 1.0, water) for i in range(4)]
+    S["drops"] = [sphere_mesh(f"drop{i}", 1.0, water) for i in range(16)]
     for d in S["drops"]: d.hide_render = True
     # lighting: grazing warm key, cool rim from behind, soft fill
     S["key"] = light("key", "AREA", (6, -4, 2.2), 1300.0, (1.0, 0.86, 0.70), size=5.0, rot=(math.radians(62), 0, math.radians(55)))
@@ -245,10 +268,13 @@ def build_set():
     # paths
     S["paths"] = {
         "M": Skitter(4, None, None, 10.0, waypoints=[(0, 3.1, 0.4), (1.5, 1.6, -0.5), (3.0, 0.2, 0.9), (4.5, -1.2, -0.3), (6.0, 0.6, -1.0), (7.5, -1.0, 0.8), (8.6, -2.6, 0.2), (10.0, -5.8, -0.4)]),
-        "G0": Skitter(11, (7.0, 0.5), (-6.0, -0.5), 7.0, jitter=1.0), "G1": Skitter(12, (5.0, 2.2), (-4.0, 1.6), 7.0, jitter=0.9),
-        "G2": Skitter(13, (6.0, -1.8), (-3.0, -1.2), 7.0, jitter=0.8), "G3": Skitter(14, (3.0, -0.4), (0.5, 0.9), 7.0, jitter=0.5),
+        "G0": Skitter(11, (2.6, 1.4), (0.6, -0.4), 7.0, jitter=0.9),
         "P": Skitter(21, (2.5, 0.3), (-2.5, -0.3), 3.0, jitter=0.6), "P2": Skitter(22, (0.0, 0.0), (9.0, 0.8), 1.4, jitter=0.4, n=3),
     }
+    rngG = random.Random(77)
+    for i in range(1, 16):
+        a0, a1 = rngG.uniform(0, 2 * math.pi), rngG.uniform(0, 2 * math.pi); r0, r1 = rngG.uniform(2, 9.5), rngG.uniform(2, 9.5)
+        S["paths"][f"G{i}"] = Skitter(100 + i, (r0 * math.cos(a0), r0 * math.sin(a0)), (r1 * math.cos(a1), r1 * math.sin(a1)), 7.0, jitter=2.2)
     return S
 
 STATE = {}
@@ -269,9 +295,14 @@ def update(t):
         r = place_drop(drops[0], S["paths"]["M"], t, 0.21, 1.0, life=60.0)
         cam_follow(S, drops[0].location, "lagM", t, 3.0, (0.9, -3.2, 0.95), 95, 2.8)
     elif SHOT == "G":
-        rs = (0.22, 0.16, 0.11, 0.075); lives = (90, 60, 40, 6.2)
-        for i, d in enumerate(drops): place_drop(d, S["paths"][f"G{i}"], t, rs[i], 2.0 + i, life=lives[i])
-        cam_follow(S, drops[0].location, "lagG", t, 3.5, (1.4, -4.6, 1.5), 85, 3.2)
+        rsz = [0.26] + [0.11 + 0.14 * ((i * 7919) % 10) / 10 for i in range(1, 16)]
+        for i, d in enumerate(drops): place_drop(d, S["paths"][f"G{i}"], t, rsz[i], 2.0 + i, life=(120 if i else 200))
+        lead = drops[0].location
+        k = ease_in_out(min(t / 6.4, 1.0))
+        wide_cam, wide_tgt = Vector((2.0, -31.0, 37.0)), Vector((0.0, 1.0, 0.3))
+        near_cam, near_tgt = lead + Vector((0.9, -3.2, 0.95)), lead + Vector((0, 0, 0.0))
+        cam.location = wide_cam.lerp(near_cam, k); tgt.location = wide_tgt.lerp(near_tgt, k)
+        cam.data.lens = lerp(40, 95, k); cam.data.dof.aperture_fstop = lerp(9.0, 4.0, k); cam.data.dof.focus_object = drops[0]
     elif SHOT == "C":
         d = drops[0]; d.hide_render = False
         k = smoothstep(0.15, 0.55, t); z0 = 1.2 * (1 - smoothstep(0.0, 0.22, t)) ** 1.0
