@@ -14,6 +14,6 @@ FPS=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('fps',
 echo "scene=$SCENE shots=$SHOTS (res=$RES samples=$SAMPLES)"
 for KV in $SHOTS; do
   S=${KV%%:*}; N=${KV##*:}
-  $BLENDER -b -noaudio -P "$ROOT/$SCENE" -- --shot $S --start 0 --end $N --out "$OUT/$S" --res $RES --samples $SAMPLES --fps $FPS 2>&1 | grep --line-buffered -E "^FRAME|Error|Traceback"
+  $BLENDER -b -noaudio -P "$ROOT/$SCENE" -- --shot $S --start 0 --end $N --out "$OUT/$S" --res $RES --samples $SAMPLES --fps $FPS 2>&1 | grep --line-buffered -E "^FRAME|Error|Traceback" || true   # grep exits 1 when a shot is already complete; do not abort the loop
 done
 echo "all shots done"
