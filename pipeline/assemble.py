@@ -53,7 +53,8 @@ def main():
     lines, top_lines, split_windows = [], [], []
     for b in tl["beats"]:
         plan = bg_plan[b["id"]]; s, off = plan[0], plan[1]
-        split = plan[2]["split"] if len(plan) > 2 and isinstance(plan[2], dict) and "split" in plan[2] else None
+        opts = plan[2] if len(plan) > 2 and isinstance(plan[2], dict) else {}
+        split = opts.get("split"); cuts = opts.get("cuts", [])   # cuts: [[shot, shot_offset, beat_frame, nframes], ...] mid-beat cutaways
         off += b.get("bg_offset", 0)   # script.json can shift a beat's footage (e.g. ignition on a word)
         n_avail = (max(shots[s][0]) + 1) if shots[s][0] else 1
         if split:
@@ -62,6 +63,11 @@ def main():
             i = off + k
             if i >= n_avail and shots[s][0]: i = idx_wrap(i, n_avail, off)
             main = os.path.abspath(shot_frame(s, i))
+            for cs, coff, ck, cn in cuts:      # a cutaway window inside the beat (reuses frames from any shot)
+                if ck <= k < ck + cn:
+                    nc = (max(shots[cs][0]) + 1) if shots[cs][0] else 1; j = coff + (k - ck)
+                    if j >= nc and shots[cs][0]: j = idx_wrap(j, nc, coff)
+                    main = os.path.abspath(shot_frame(cs, j))
             lines.append(f"file '{main}'\nduration {1/fps:.6f}")
             if split and k < split[2]:
                 s2, off2 = split[0], split[1]; n2 = (max(shots[s2][0]) + 1) if shots[s2][0] else 1
