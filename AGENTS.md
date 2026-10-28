@@ -368,7 +368,8 @@ unambiguous), `sim_on_panels`, `allow_blue` (answer posts only), `review`
 - `coin(cx,cy,r,'H'|'T')` gold heads / silver tails, milled rim, raised
   ring, embossed letter, drop shadow; `coinRow(faces,cx,cy,{r,gap})`
   returns centres for circling a run. `testStrip`, `dotGrid` (population
-  of N dots with marked ones).
+  of N dots with marked ones), `confidenceScale(x0,x1,y)` (1-10 ruler,
+  10 circled).
 - panels.html adds `problem(fn)` / `withKind(kind, fn)` to tag text, and
   the corner tags (handle + `i/n` + swipe arrow, inside the safe area).
 
@@ -408,6 +409,13 @@ checks.txt; render twice and compare after touching helpers.
   brief's pinned comment "flip a coin 20 times and count" would hand people
   a refutation: in one long run HH and HT occur equally often; only the
   wait for the first one differs. Pinned comment now says replay each game.
+- Slide 3 must never name an answer. The brief's "Most people say their
+  the same. MOST PEOPLE ARE WRONG." (and "its 99%" + a crossed-out 99%)
+  ruled one option out and halved the puzzle. It is now "Most people are
+  CONFIDENTLY WRONG. Are you?" over a 1-10 scale circled at 10
+  (`confidenceScale`), which also sets up the confidence ask on slide 4.
+  The deliberate typo lived in the leaking sentence, so c001/c003 have no
+  typo now (`meta.typos: []`); if one comes back it must not touch an answer.
 - Base-rate question: define "99 % accurate" as 99 % sensitivity and 99 %
   specificity, and say "tested at random" so the prior is the 1 in 10,000.
 - Permanent Marker has no lowercase (it renders small caps); fine for

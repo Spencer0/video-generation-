@@ -47,17 +47,14 @@ function p2(){
 }
 
 function p3(){
-  ink('Most people say', CX, 350, {size:76, weight:700});
-  ink('their the same.', CX, 446, {size:76, weight:700});
-  // HH = HT, with the equals sign struck out
-  const y = 720, r = 74;
-  coin(205, y, r, 'H'); coin(365, y, r, 'H');
-  coin(715, y, r, 'H'); coin(875, y, r, 'T');
-  ctx.save(); ctx.fillStyle = PAPER.ink; rr(500, y-30, 80, 16, 8); ctx.fill(); rr(500, y+14, 80, 16, 8); ctx.fill(); ctx.restore();
-  markerLine(492, y+62, 590, y-66, {width:14});
-  markerText('MOST PEOPLE', CX, 1060, {size:124, rot:-0.06});
-  markerText('ARE WRONG.', CX, 1210, {size:136, rot:-0.06});
-  markerUnderline(260, 850, 1320, {width:13, slope:-34, double:true});
+  // never name an answer here: anything that rules one out leaks the solution
+  ink('Most people are', CX, 345, {size:80, weight:700});
+  markerText('CONFIDENTLY', CX, 500, {size:132, rot:-0.05});
+  markerText('WRONG.', CX, 650, {size:150, rot:-0.05});
+  markerUnderline(330, 760, 735, {width:13, slope:-14});
+  const xs = confidenceScale(150, 930, 960);
+  markerArrow(xs[9] - 260, 820, xs[9] - 50, 920, {bend:-0.25, width:9, head:24});
+  const w = ink('Are you?', CX, 1300, {size:150, weight:900});
 }
 
 function p4(){
@@ -83,17 +80,17 @@ window.PANELS = {
     hashtags: ['#math', '#probability', '#puzzle', '#brainteaser', '#sciencetok', '#youshouldbeabletosolvethis'],
     pinned: 'Solution tomorrow. No googling. Drop HH, HT or SAME and your confidence 1–10.',
     sound_note: 'Trending sound at low volume, no lyrics over the first 3 s (the hook is read, not heard).',
-    typos: [{panel: 3, text: 'their the'}],     // deliberate: "Most people say their the same."
+    typos: [],
     spell_ok: ['googling'],
     required_phrases: ['fair coin', 'immediately followed by', 'on average', 'start over', 'count every flip'],
     sim_on_panels: [],
     allow_blue: false,
-    extra: [["note on the typo", "\"their the same\" on panel 3 is deliberate. Do not correct it in replies; let the correction crowd comment."], ["truth check", "The answer (HH 6 flips, HT 4) is verified by sim.py next to panels.js and by carousels/c002-coin-flips-answer/sim.py."]],
+    extra: [["truth check", "The answer (HH 6 flips, HT 4) is verified by sim.py next to panels.js and by carousels/c002-coin-flips-answer/sim.py."]],
     review: {
       thumbnail: 'viewed out/thumb.png at 135x240: the 3-line headline reads clearly, the two gold H coins read as coins, the marker line is secondary; nothing competes.',
-      accent: 'red only on the headline underline, the target circle, the struck-out equals sign, MOST PEOPLE ARE WRONG and no googling. No blue.',
+      accent: 'red only on the headline underline, the target circle, CONFIDENTLY WRONG + its underline, the circle and arrow on 10 of the confidence scale, no googling. No blue.',
       statement: 'p1 + p2 card: fair coin, count every flip, stop the first time heads is immediately followed by heads (HH) / tails (HT), start over between games, on average. One reading only.',
-      flow: 'p1 half a puzzle (HH) -> p2 the other half + the question -> p3 the reversal without the answer -> p4 one-word comment + promise. Every panel but the last ends unresolved; counter carries a swipe arrow.',
+      flow: 'p1 half a puzzle (HH) -> p2 the other half + the question -> p3 "most people are confidently wrong.. are you?" with a 1-10 scale circled at 10 (names no answer, rules none out) -> p4 one-word comment + promise. Every panel but the last ends unresolved; counter carries a swipe arrow.',
       overlays: 'helpers.js refactor: overlays for 001-005 rendered at every 15th frame before and after (418 frames, same fake timeline.json since Kokoro is not installed here): 0 pixels differ.',
     },
   },

@@ -17,9 +17,6 @@ Solution tomorrow. No googling. Drop HH, HT or SAME and your confidence 1–10.
 SOUND:
 Trending sound at low volume, no lyrics over the first 3 s (the hook is read, not heard).
 
-NOTE ON THE TYPO:
-"their the same" on panel 3 is deliberate. Do not correct it in replies; let the correction crowd comment.
-
 TRUTH CHECK:
 The answer (HH 6 flips, HT 4) is verified by sim.py next to panels.js and by carousels/c002-coin-flips-answer/sim.py.
 

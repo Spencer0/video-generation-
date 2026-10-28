@@ -196,3 +196,12 @@ function dotGrid(x0,y0,cols,rows,step,{r=1.8,color='rgba(22,22,22,0.55)',mark=[]
   ctx.fillStyle=markColor; for(const i of mark){ const [x,y]=pos(i); ctx.beginPath(); ctx.arc(x,y,markR||r*2.2,0,Math.PI*2); ctx.fill(); }
   ctx.restore(); return pos;
 }
+// A hand-drawn 1..n ruler (confidence scale): marker baseline, ticks, end labels, `mark` circled in red.
+function confidenceScale(x0,x1,y,{n=10,mark=n,labels=true}={}){
+  markerLine(x0-8,y+2,x1+8,y-2,{color:PAPER.ink,width:8,wobble:1.2,streaks:false});
+  const xs=[]; for(let k=0;k<n;k++){ const x=lerp(x0,x1,k/(n-1)); xs.push(x); const h=(k===0||k===n-1)?34:22;
+    markerLine(x,y-h,x+1,y+h,{color:PAPER.ink,width:7,wobble:0.6,streaks:false}); }
+  if(labels){ ink('1',x0,y+100,{size:52,weight:900}); ink(String(n),x1,y+100,{size:52,weight:900}); }
+  if(mark) markerCircle(xs[mark-1],y,52,64,{width:11});
+  return xs;
+}

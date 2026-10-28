@@ -64,7 +64,10 @@ def render(pd, out, sim, only):
         page = br.new_page(viewport={"width": W, "height": H}, device_scale_factor=1)
         page.goto("file://" + html); page.wait_for_load_state("load")
         page.evaluate("s => { window.SIM = s; }", sim)
+        errors = []; page.on("pageerror", lambda e: errors.append(str(e)))
         page.add_script_tag(path=os.path.join(pd, "panels.js"))
+        if errors or not page.evaluate("() => !!(window.PANELS && window.PANELS.draw)"):
+            sys.exit(f"panels.js did not load: {errors or 'window.PANELS.draw missing'}")
         page.evaluate("""() => Promise.all([document.fonts.load('900 80px Inter'), document.fonts.load('800 80px Inter'),
                          document.fonts.load('700 40px Inter'), document.fonts.load('80px "Permanent Marker"')])""")
         ok = page.evaluate("() => document.fonts.check('80px \"Permanent Marker\"') && document.fonts.check('900 80px Inter')")

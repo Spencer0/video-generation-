@@ -45,13 +45,14 @@ function p2(){
 }
 
 function p3(){
-  ink('Most people say', CX, 350, {size:76, weight:700});
-  ink('its 99%.', CX, 446, {size:76, weight:700});
-  ink('99%', CX, 740, {size:230, weight:900});
-  markerCross(CX, 730, 190, {width:16});
-  markerText('MOST PEOPLE', CX, 1060, {size:124, rot:-0.06});
-  markerText('ARE WRONG.', CX, 1210, {size:136, rot:-0.06});
-  markerUnderline(260, 850, 1320, {width:13, slope:-34, double:true});
+  // never name an answer here: anything that rules one out leaks the solution
+  ink('Most people are', CX, 345, {size:80, weight:700});
+  markerText('CONFIDENTLY', CX, 500, {size:132, rot:-0.05});
+  markerText('WRONG.', CX, 650, {size:150, rot:-0.05});
+  markerUnderline(330, 760, 735, {width:13, slope:-14});
+  const xs = confidenceScale(150, 930, 960);
+  markerArrow(xs[9] - 260, 820, xs[9] - 50, 920, {bend:-0.25, width:9, head:24});
+  const w = ink('Are you?', CX, 1300, {size:150, weight:900});
 }
 
 function p4(){
@@ -75,17 +76,17 @@ window.PANELS = {
     hashtags: ['#math', '#probability', '#puzzle', '#brainteaser', '#sciencetok', '#youshouldbeabletosolvethis'],
     pinned: 'Solution tomorrow. No googling. Drop 99%, 50% or 1% and your confidence 1–10.',
     sound_note: 'Trending sound at low volume, no lyrics over the first 3 s.',
-    typos: [{panel: 3, text: 'its 9'}],        // deliberate: "Most people say its 99%."
+    typos: [],
     spell_ok: ['googling'],
     required_phrases: ['1 in 10,000', '99% accurate', '99% of people who have it', "99% of people who don't", 'tested at random', 'test positive'],
     sim_on_panels: [],
     allow_blue: false,
-    extra: [["note on the typo", "\"its 99%\" on panel 3 is deliberate (it's). Do not correct it in replies."], ["truth check", "Answer: about 1% (0.98%). Per 1,000,000 people tested: 100 have it, 99 test positive; 999,900 don't, 9,999 of them test positive anyway. 99 / (99 + 9,999) = 0.98%. sim.py simulates 100,000,000 people."]],
+    extra: [["truth check", "Answer: about 1% (0.98%). Per 1,000,000 people tested: 100 have it, 99 test positive; 999,900 don't, 9,999 of them test positive anyway. 99 / (99 + 9,999) = 0.98%. sim.py simulates 100,000,000 people."]],
     review: {
       thumbnail: 'viewed out/thumb.png at 135x240: headline reads, the positive test cassette reads as a test.',
-      accent: 'red on underline, circles, the arrow, 1 has it, the cross over 99%, MOST PEOPLE ARE WRONG, no googling. No blue.',
+      accent: 'red on underline, circles, the arrow, 1 has it, CONFIDENTLY WRONG + its underline, the circle and arrow on 10 of the confidence scale, no googling. No blue.',
       statement: '99% accurate is defined on the panel as 99% sensitivity and 99% specificity; tested at random (no symptoms) fixes the prior. Answer ~0.98% (sim.py).',
-      flow: 'same arc as c001: hook -> setup + question -> reversal -> comment + promise.',
+      flow: 'same arc as c001: hook -> setup + question -> "confidently wrong.. are you?" (names no answer) -> comment + promise.',
       overlays: 'helpers.js refactor: overlays for 001-005 rendered at every 15th frame before and after (418 frames, same fake timeline.json since Kokoro is not installed here): 0 pixels differ.',
     },
   },

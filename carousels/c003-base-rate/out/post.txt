@@ -17,9 +17,6 @@ Solution tomorrow. No googling. Drop 99%, 50% or 1% and your confidence 1–10.
 SOUND:
 Trending sound at low volume, no lyrics over the first 3 s.
 
-NOTE ON THE TYPO:
-"its 99%" on panel 3 is deliberate (it's). Do not correct it in replies.
-
 TRUTH CHECK:
 Answer: about 1% (0.98%). Per 1,000,000 people tested: 100 have it, 99 test positive; 999,900 don't, 9,999 of them test positive anyway. 99 / (99 + 9,999) = 0.98%. sim.py simulates 100,000,000 people.
 
