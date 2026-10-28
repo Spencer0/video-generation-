@@ -216,6 +216,40 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
   Sun's surface); thunder d = 343 m/s·t (÷3 km, ÷5 miles); 3–5 strokes per
   flash ~40 ms apart; ~44–50 flashes/s worldwide.
 
+## Video 004 notes (Leidenfrost, produced from a client-style brief)
+
+- 30 fps works end to end: `script.json` "fps" flows to tts/overlays/assembler,
+  and render_all passes `--fps` to the scene. Beats may have no lines (silent
+  loop beat).
+- Scale the scene 100x (1 unit = 1 cm) for millimetre droplets; Cycles ray
+  epsilons misbehave at true scale.
+- Water that looks like water needs something to reflect: a graphite
+  backdrop plane + a dim overhead panel. Pure black world = glass marbles.
+- Macro droplets: Glass IOR 1.333 on a UV sphere, volume-preserving wobble,
+  elongation along velocity, 0.78 flattening, hover gap, radius shrinking
+  for evaporation; motion blur on. ~16 s/frame at 540p (DoF + glass +
+  motion blur). Focus the camera on the droplet object, f/4 or slower.
+- Camera tracking with a lag + clamp lets the drop enter and exit the frame
+  (needed for the seamless-loop ending) while staying readable mid-shot.
+- Cutaway: half-sphere via `bmesh.ops.bisect_plane` + `holes_fill`, cut
+  face gets its own milky material (index 1). Vapor layer as a flat
+  ellipsoid with a scrolling-noise emissive/transparent shader. Billboard
+  wisps read as bubbles when out of focus; next time use thin vertical
+  streak quads (tall aspect) and keep them in the focal plane.
+- `bmesh.ops.create_grid(size=s)` spans [-s, s] (half-extent). It hid the
+  cross-section face for an hour.
+- Split-screen comparison: `bg_plan` entry `["M", off, {"split": [shot2,
+  off2, nframes]}]`; the assembler crops the centre band of each and
+  vstacks them for that window.
+- `--no-captions` export: render_overlays `--no-captions --out
+  build/overlay_nocap`, then assemble `--overlay-dir overlay_nocap`.
+- Stems for revision live in build/ (vo.wav, music.wav, sfx.wav); copy to
+  out/stems/ for delivery (git-ignored).
+- render_all.sh under `set -e`: a shot with all frames present makes the
+  filtering grep exit 1 and aborted the loop. Fixed with `|| true`.
+  Container restarts kill detached renders; launch long renders through the
+  harness background runner and rely on the frame-skip resume.
+
 ## Workflow for a new video
 
 1. Copy `videos/001-water-bag/script.json`, write beats (3 words/sec pacing,

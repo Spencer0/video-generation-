@@ -81,7 +81,7 @@ def main():
         # split screen: top half from the 'top' sequence, bottom half from the main one, each cropped to its centre band
         sw = "+".join(f"between(t,{a:.3f},{b:.3f})" for a, b in split_windows)
         vf = (f"[0:v]scale={W}:{H}:flags=lanczos,setsar=1,format=yuv420p,{blur}split[bgA][bgB];"
-              f"[3:v]scale={W}:{H}:flags=lanczos,setsar=1,format=yuv420p,crop={W}:{H//2}:0:{H//4}[top];"
+              f"[3:v]scale={W}:{H}:flags=lanczos,setsar=1,format=yuv420p,crop={W}:{H//2}:0:{H//4},eq=brightness=0.07:contrast=1.08[top];"
               f"[bgB]crop={W}:{H//2}:0:{H//4}[bot];[top][bot]vstack,drawbox=y={H//2-3}:w={W}:h=6:color=black@0.9:t=fill[sp];"
               f"[bgA][sp]overlay=0:0:enable='{sw}'[bg];[1:v]format=rgba[ov];[bg][ov]overlay=0:0:format=auto,format=yuv420p[v]")
     else:
