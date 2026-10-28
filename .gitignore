@@ -8,3 +8,4 @@ tools/
 build_tmp/
 videos/*/out/preview*.mp4
 videos/*/out/stems/
+carousels/*/out/preview.mp4

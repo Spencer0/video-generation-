@@ -18,7 +18,9 @@ pipeline/            reusable tooling (video-agnostic)
   blender/scene_leidenfrost.py, scene_kaye.py   videos 004 and 005
   checks.py          measured acceptance checks (duration, VO onset, luma, safe area, loop seam, loudness)
   blender/render_all.sh    renders every shot listed in script.json "shots" with the "scene" script
-  overlays/overlay.html    canvas overlay engine: captions, helpers, renderFrame (video-agnostic)
+  overlays/helpers.js      shared canvas helpers (text, pill, easing, paper, marker, coins) for overlays + carousels
+  overlays/overlay.html    canvas overlay engine: captions, renderFrame (video-agnostic)
+  carousel/panels.html, render_panels.py   photo-carousel renderer (see Carousels below)
   overlays/render_overlays.py  loads videos/<id>/beats.js into overlay.html, screenshots PNG+alpha
   audiolib.py        synth primitives (noise, pops, whoosh, ding, thud, filters, place)
   sfx.py             generic mixer: VO + videos/<id>/sfx_cues.py cues + music -> build/mix.wav
@@ -319,3 +321,99 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
 5. `sfx.py`, then `assemble.py --preview` early (it tolerates missing 3D
    frames) to check pacing; full render in the background; `assemble.py` at
    the end.
+
+## Carousels (TikTok photo posts, "you should be able to solve this")
+
+Brief: `carousels/BRIEF.md`. Photo carousels are the comment-and-save format
+and cost no render time: 4-6 opaque 1080x1920 PNGs per post, one per day.
+
+```
+pipeline/overlays/helpers.js         shared with overlay.html (loaded before the page script)
+pipeline/carousel/panels.html        opaque canvas; window.renderPanel(i) -> {text log}
+pipeline/carousel/render_panels.py   <id> [--only N] [--contact] [--preview-mp4] [--no-sim] [--no-checks]
+pipeline/carousel/fonts/             Permanent Marker (Apache-2.0), the hand-lettering
+carousels/<id>/panels.js             window.PANELS = {draw:[fn,...], meta:{caption, hashtags, pinned, ...}}
+carousels/<id>/sim.py                verifies the answer; writes out/sim.json (injected as window.SIM)
+carousels/<id>/out/                  01.png..., contact.png, thumb.png, post.txt, checks.txt (preview.mp4 git-ignored)
+```
+
+**Adding a post**: copy a `panels.js` (c001 for a question, c002 for an
+answer), write `sim.py` if any number appears or is implied, run
+`python3 pipeline/carousel/render_panels.py <id> --contact`, look at
+`out/contact.png` and `out/thumb.png`, write what you saw into
+`meta.review`, re-run. The script exits 1 on any failed automated check.
+Put numbers from the simulation on the panels via `p.sim` (the `sim`
+argument of each draw fn), never typed by hand; list their `display` keys in
+`meta.sim_on_panels` and check 7 asserts they appear.
+
+**meta fields**: `caption`, `hashtags`, `pinned`, `sound_note`, `extra`
+(`[[title, text], ...]` copied into post.txt: reply templates, notes for the
+human), `typos` (the deliberate ones, `[{panel, text}]`: check 5 fails on
+any other), `spell_ok`, `required_phrases` (what makes the problem
+unambiguous), `sim_on_panels`, `allow_blue` (answer posts only), `review`
+(by-eye verdicts: thumbnail, accent, statement, flow, overlays).
+
+**Helpers** (all globals in helpers.js; panels.js wraps itself in an IIFE):
+- `paperBg(seed)` warm paper, faint grid, mottling, sparse flecks/fibres,
+  corner vignette. `PAPER` = palette (bg, ink, red, blue, grid, soft).
+- `markerPath(pts, {color, width, alpha, wobble, seed})` the base stroke:
+  resampled, pushed sideways by smooth seeded noise, width swell, dry
+  streaks; drawn opaque on an offscreen layer then *multiplied* at 90 %.
+  Built on it: `markerLine`, `markerUnderline(x0,x1,y,{double})`,
+  `markerCircle(cx,cy,rx,ry)` (~1.13 turns, ends overshoot),
+  `markerArrow(x0,y0,x1,y1,{bend})`, `markerArrowHead`, `markerCross`,
+  `markerText` (Permanent Marker, multiplied like ink), `bezierPts`.
+- `ink(str,x,y,{size,weight,color,align})` plain text; `inkLine(segs,...)`
+  mixed-weight/colour line, returns word boxes to underline; `fitSize`.
+- `coin(cx,cy,r,'H'|'T')` gold heads / silver tails, milled rim, raised
+  ring, embossed letter, drop shadow; `coinRow(faces,cx,cy,{r,gap})`
+  returns centres for circling a run. `testStrip`, `dotGrid` (population
+  of N dots with marked ones).
+- panels.html adds `problem(fn)` / `withKind(kind, fn)` to tag text, and
+  the corner tags (handle + `i/n` + swipe arrow, inside the safe area).
+
+**Checks** (render_panels.py writes out/checks.txt): every `fillText` and
+`strokeText` (including the offscreen marker layer) is logged with its
+device-space bounds and a kind (`body`, `problem`, `glyph` for coin letters,
+`chrome` for corner tags). From that: safe area asserted on bounds, words
+per panel counted on `body` text only (<= 15), typo audit (pyspellchecker
+if installed + known grammar slips like "their the"), required phrases,
+sim numbers present. Contrast is computed from the palette and measured on
+the rendered ink pixels; blue pixels must be 0 unless `allow_blue`.
+Thumbnail: `out/thumb.png` is the cover at 135x240; look at it. Renders are
+byte-stable (all randomness seeded from the panel index): the sha1s are in
+checks.txt; render twice and compare after touching helpers.
+
+**What worked / what cost time**
+- Moving helpers out of overlay.html: top-level `function` names in a later
+  script silently replace earlier ones, a repeated `const` is a
+  SyntaxError, and beats.js files already define `arrow`, `bar`, `label`,
+  `INK`... so new helpers get prefixed names (`marker*`, `paper*`, `ink*`).
+  Regression: render overlays of 001-005 with `--every 15 --out <dir>`
+  before/after and compare pixels (418 frames, 0 differ). Kokoro is not in
+  the container, so a fake timeline.json from script.json (3 words/s) was
+  used for both sides; delete it afterwards, it is not a real timeline.
+- The Python `playwright` package was missing (`pip install playwright`;
+  the browser at /opt/pw-browsers is already there).
+- Paper grain is sparse flecks + low-frequency mottling, not per-pixel
+  noise (which PNG cannot compress and TikTok's recompression smears
+  anyway); panels come out ~1.1-1.6 MB.
+- `markerCircle` drew a random phase per point -> jagged circles at full
+  size that looked fine on the contact sheet. Always look at one panel at
+  100 %, not only the 0.4x contact sheet.
+- Word cap: label diagram edges with mini coins instead of "H"/"T" text,
+  and bars with coin pairs instead of "HH"/"HT"; it reads faster too.
+- Honesty traps caught in review: "we flipped a coin 1,000,000 times" was
+  really 1M *games* (~10M flips) -> "1,000,000 simulated games each". The
+  brief's pinned comment "flip a coin 20 times and count" would hand people
+  a refutation: in one long run HH and HT occur equally often; only the
+  wait for the first one differs. Pinned comment now says replay each game.
+- Base-rate question: define "99 % accurate" as 99 % sensitivity and 99 %
+  specificity, and say "tested at random" so the prior is the 1 in 10,000.
+- Permanent Marker has no lowercase (it renders small caps); fine for
+  annotations, use Inter for anything longer than a line.
+
+**Backlog** (from the brief, in order): c003 answer post (0.98 %; 99 true
+vs 9,999 false positives per million), Penney's game, 100 prisoners (31 %),
+lottery 1-2-3-4-5-6 vs random, Newton-Pepys. Avoid Monty Hall and the
+two-child problem.

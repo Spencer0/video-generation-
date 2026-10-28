@@ -1,0 +1,12 @@
+# acceptance checks, c002-coin-flips-answer, 2026-10-28 17:48
+[PASS] 1 thumbnail: largest cover line 'YOU WERE' is 15.6px tall at 135x240 (want >= 9); out/thumb.png. By eye: viewed out/thumb.png at 135x240: YOU WERE WRONG plus the big red 6 and blue 4 read; works cold.
+[PASS] 2 safe area: 132 text runs, union bounds x 67..1013, y 277..1496 inside x 60..1020, y 250..1500
+[PASS] 3 contrast: palette ink/paper 15.9:1; measured on rendered ink text min 12.3:1 over 19 runs; red/paper 4.0:1 (accent only); blue pixels 56010 (allowed: answer post); red text runs: ['6', '6 flips', '6.01', 'HH', 'difference.', 'this is the whole']. By eye: red = HH series + emphasis marks (underlines, the back-to-start arrow and its circle); blue = HT series only.
+[PASS] 4 word count: p1: 7, p2: 15, p3: 13, p4: 14, p5: 14 (max 15)
+[PASS] 5 typos: found [], intended [] (pyspellchecker)
+[PASS] 6 problem statement: required phrases ['on average', 'simulated games each'] all present. By eye: answer post: restates HH 6 / HT 4 on average; the proof panel says simulated, 1,000,000 games each (not flips: 1M games is ~10M flips).
+[PASS] 7 simulation: sim.py 0.5s; printed: HH 6.01 vs HT 4.00 average flips (1,000,000 games each); on panels: {'hh': '6.01', 'ht': '4.00', 'trials': '1,000,000'}
+[NOTE] 8 overlay regression: helpers.js refactor: overlays for 001-005 rendered at every 15th frame before and after (418 frames, same fake timeline.json since Kokoro is not installed here): 0 pixels differ.
+[NOTE] 9 flow (contact sheet): p1 claim -> p2 what that looks like -> p3 why (diagram) -> p4 proof with real sim numbers + comment CODE -> p5 tease c003 + follow.
+[NOTE] determinism: sha1 01:3df9e97a32 02:7a46917670 03:5b37be6678 04:d53b4438a1 05:7fb5921401
+[NOTE] text: p1: YOU WERE WRONG. average flips 6 4 | p2: HH  takes  6  flips on average. HT  takes  4 . for example: 6 flips 4 flips | p3: WHY? HT start holding an H done HH this is the whole difference. | p4: PROOF. Average flips, 1,000,000 simulated games each. 6.01 4.00 Want the code? Comment CODE. | p5: NEXT ONE IS WORSE. A 99% accurate test says you're sick. Are you? Follow.

@@ -1,0 +1,12 @@
+# acceptance checks, c001-coin-flips, 2026-10-28 17:48
+[PASS] 1 thumbnail: largest cover line 'YOU SHOULD' is 13.2px tall at 135x240 (want >= 9); out/thumb.png. By eye: viewed out/thumb.png at 135x240: the 3-line headline reads clearly, the two gold H coins read as coins, the marker line is secondary; nothing competes.
+[PASS] 2 safe area: 78 text runs, union bounds x 67..1014, y 288..1496 inside x 60..1020, y 250..1500
+[PASS] 3 contrast: palette ink/paper 15.9:1; measured on rendered ink text min 12.3:1 over 30 runs; red/paper 4.0:1 (accent only); blue pixels 0 (must be 0); red text runs: ['ARE WRONG.', 'MOST PEOPLE', 'no googling.']. By eye: red only on the headline underline, the target circle, the struck-out equals sign, MOST PEOPLE ARE WRONG and no googling. No blue.
+[PASS] 4 word count: p1: 7, p2: 3, p3: 10, p4: 12 (max 15)
+[PASS] 5 typos: found [(3, 'their the')], intended [(3, 'their the')] (pyspellchecker)
+[PASS] 6 problem statement: required phrases ['fair coin', 'immediately followed by', 'on average', 'start over', 'count every flip'] all present. By eye: p1 + p2 card: fair coin, count every flip, stop the first time heads is immediately followed by heads (HH) / tails (HT), start over between games, on average. One reading only.
+[PASS] 7 simulation: sim.py 0.9s; printed: SAME is wrong: HH - HT = 1.99 flips (175 standard errors); on panels: {}
+[NOTE] 8 overlay regression: helpers.js refactor: overlays for 001-005 rendered at every 15th frame before and after (418 frames, same fake timeline.json since Kokoro is not installed here): 0 pixels differ.
+[NOTE] 9 flow (contact sheet): p1 half a puzzle (HH) -> p2 the other half + the question -> p3 the reversal without the answer -> p4 one-word comment + promise. Every panel but the last ends unresolved; counter carries a swipe arrow.
+[NOTE] determinism: sha1 01:fe61cc6a87 02:11aac0dc2b 03:62a622bdcf 04:f6f02ea612
+[NOTE] text: p1: YOU SHOULD BE ABLE TO SOLVE THIS. flip a fair coin until you see this. | p2: NOW START OVER. and flip until you see this. THE RULES A  fair coin  is flipped. Count every flip. HH : stop the first time heads is immediately followed by  heads. HT : stop the first time heads is immediately followed by  tails. WHICH TAKES MORE FLIPS, ON AVERAGE? | p3: Most people say their the same. MOST PEOPLE ARE WRONG. | p4: COMMENT: HH HT SAME + your confidence  1–10 Solution tomorrow. Follow. no googling.

@@ -1,0 +1,37 @@
+# c001-coin-flips
+
+ORDER: 01.png, 02.png, 03.png, 04.png (01 is the cover)
+
+CAPTION:
+Don't google it.
+
+HASHTAGS:
+#math #probability #puzzle #brainteaser #sciencetok #youshouldbeabletosolvethis
+
+CAPTION + HASHTAGS (paste as one):
+Don't google it. #math #probability #puzzle #brainteaser #sciencetok #youshouldbeabletosolvethis
+
+PINNED COMMENT (post and pin within a minute):
+Solution tomorrow. No googling. Drop HH, HT or SAME and your confidence 1–10.
+
+SOUND:
+Trending sound at low volume, no lyrics over the first 3 s (the hook is read, not heard).
+
+NOTE ON THE TYPO:
+"their the same" on panel 3 is deliberate. Do not correct it in replies; let the correction crowd comment.
+
+TRUTH CHECK:
+The answer (HH 6 flips, HT 4) is verified by sim.py next to panels.js and by carousels/c002-coin-flips-answer/sim.py.
+
+POSTING INSTRUCTIONS:
+1. Upload the PNGs in order as a photo post; TikTok will offer carousel
+   mode. Panel 1 is the cover.
+2. Add a trending sound at low volume; pick one with no lyrics over the
+   first 3 seconds so the hook is read, not heard.
+3. Paste the caption and hashtags from this file. Post.
+4. Pin the pinned comment from this file within a minute of posting.
+5. Reply to the first 10-20 comments, short, never giving the answer.
+   "Confident?" "Interesting, why?" Replies count as engagement twice.
+6. Question post: post the answer about 24 h later (never later than a day).
+   Answer post: reply to the question post's top comments with "answer's
+   up", and screenshot both analytics pages for review.

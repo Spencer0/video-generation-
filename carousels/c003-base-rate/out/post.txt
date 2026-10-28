@@ -1,0 +1,37 @@
+# c003-base-rate
+
+ORDER: 01.png, 02.png, 03.png, 04.png (01 is the cover)
+
+CAPTION:
+Don't google it. Doctors get this wrong too.
+
+HASHTAGS:
+#math #probability #puzzle #brainteaser #sciencetok #youshouldbeabletosolvethis
+
+CAPTION + HASHTAGS (paste as one):
+Don't google it. Doctors get this wrong too. #math #probability #puzzle #brainteaser #sciencetok #youshouldbeabletosolvethis
+
+PINNED COMMENT (post and pin within a minute):
+Solution tomorrow. No googling. Drop 99%, 50% or 1% and your confidence 1–10.
+
+SOUND:
+Trending sound at low volume, no lyrics over the first 3 s.
+
+NOTE ON THE TYPO:
+"its 99%" on panel 3 is deliberate (it's). Do not correct it in replies.
+
+TRUTH CHECK:
+Answer: about 1% (0.98%). Per 1,000,000 people tested: 100 have it, 99 test positive; 999,900 don't, 9,999 of them test positive anyway. 99 / (99 + 9,999) = 0.98%. sim.py simulates 100,000,000 people.
+
+POSTING INSTRUCTIONS:
+1. Upload the PNGs in order as a photo post; TikTok will offer carousel
+   mode. Panel 1 is the cover.
+2. Add a trending sound at low volume; pick one with no lyrics over the
+   first 3 seconds so the hook is read, not heard.
+3. Paste the caption and hashtags from this file. Post.
+4. Pin the pinned comment from this file within a minute of posting.
+5. Reply to the first 10-20 comments, short, never giving the answer.
+   "Confident?" "Interesting, why?" Replies count as engagement twice.
+6. Question post: post the answer about 24 h later (never later than a day).
+   Answer post: reply to the question post's top comments with "answer's
+   up", and screenshot both analytics pages for review.

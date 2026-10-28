@@ -1,0 +1,43 @@
+# c002-coin-flips-answer
+
+ORDER: 01.png, 02.png, 03.png, 04.png, 05.png (01 is the cover)
+
+CAPTION:
+Most of you said SAME. Here's the proof.
+
+HASHTAGS:
+#math #probability #puzzle #brainteaser #sciencetok #youshouldbeabletosolvethis
+
+CAPTION + HASHTAGS (paste as one):
+Most of you said SAME. Here's the proof. #math #probability #puzzle #brainteaser #sciencetok #youshouldbeabletosolvethis
+
+PINNED COMMENT (post and pin within a minute):
+Still don’t believe it? Grab a coin and play each game 5 times (start over after every finish). Post your average flips for HH and HT.
+
+SOUND:
+Trending sound at low volume, no lyrics over the first 3 s.
+
+CAPTION CHECK:
+The caption assumes most c001 comments said SAME. If most said HT, use: "Most of you said HT. Here's the proof." Keep the rest.
+
+WHY THE PINNED COMMENT IS NOT "FLIP 20 TIMES AND COUNT":
+In one long run of flips HH and HT each show up equally often (every adjacent pair is HH or HT with chance 1/4). Counting them would 'disprove' us. What differs is the wait for the FIRST one, so viewers have to replay each game from scratch. 5 games each is noisy but usually shows it; HH's spread is wide (median 4, mean 6).
+
+REPLY TO WHY COMMENTS:
+From "holding an H": in HT, another H keeps you holding an H, so you only ever wait for a T. In HH, a T throws you back to the start. Expected flips E from start: HT: E = 2 (to get an H) + 2 (to get a T) = 4. HH: E = 1 + E1/2 + E/2 and E1 = 1 + E/2 give E = 6.
+
+REPLY TO CODE COMMENTS:
+Paste carousels/c002-coin-flips-answer/sim.py (40 lines, numpy) or the 20-line pure-Python one in carousels/c001-coin-flips/sim.py.
+
+POSTING INSTRUCTIONS:
+1. Upload the PNGs in order as a photo post; TikTok will offer carousel
+   mode. Panel 1 is the cover.
+2. Add a trending sound at low volume; pick one with no lyrics over the
+   first 3 seconds so the hook is read, not heard.
+3. Paste the caption and hashtags from this file. Post.
+4. Pin the pinned comment from this file within a minute of posting.
+5. Reply to the first 10-20 comments, short, never giving the answer.
+   "Confident?" "Interesting, why?" Replies count as engagement twice.
+6. Question post: post the answer about 24 h later (never later than a day).
+   Answer post: reply to the question post's top comments with "answer's
+   up", and screenshot both analytics pages for review.

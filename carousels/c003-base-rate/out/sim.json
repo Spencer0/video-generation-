@@ -1,0 +1,12 @@
+{
+ "people": 100000000,
+ "sick": 10039,
+ "sick_positive": 9943,
+ "healthy_positive": 1000474,
+ "p_sick_given_positive": 0.00984049159901308,
+ "exact": 0.009803921568627442,
+ "display": {
+  "answer": "0.98%",
+  "exact": "0.98%"
+ }
+}
