@@ -297,8 +297,21 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
   with motion-blurred droplets reads better at panel size than translucent
   pale water, which vanishes against a white plate.
 - Cost at 576x1024, 12 samples, motion blur + DoF, two area lights: ~10 s/frame
-  solo (full shots), ~3.5 s/frame for the 576x342 panels; 720 was 21 s/frame
-  so it went to 576 per the brief's 12 s/frame rule. 1050 frames total.
+  solo (full shots), ~3.7 s/frame for the 576x342 panels; 720 was 21 s/frame
+  so it went to 576 per the brief's 12 s/frame rule. 1050 frames, ~2.3 h.
+  Two Blender processes at once run at 30 s/frame each (worse than
+  sequential); chain shots, never overlap them. The harness background
+  runner caps at 2 h, so a chained render needs one relaunch (frame-skip
+  resume makes that free).
+- Measured on the final: 29.33 s, VO onset 0.10 s, mean luma Y 130.8 (first
+  3 s) / 129.3 (whole), darkest frame 99.9 (blurred footage under the
+  explainer panel), -14.2 LUFS, TP -1.5 dBTP, loop seam 3.2/255 (captions
+  differ; the footage itself differs by 0.17/255).
+- Water splash droplets have to be exaggerated (r 0.4-0.6 cm) to survive
+  motion blur and lanczos downscaling at panel size; realistic sizes vanish.
+- Caption chunks were scaled to fit 960 px, but the 14 px stroke pushed wide
+  chunks to x=55; the engine now fits 940 px. `assemble.py` adds half a frame
+  to `-t` so the last frame is no longer dropped (880 frames, not 879).
 - Overlay engine: vignette strength is now per video (`BEATS.vignette`, 0.15
   here); the default 0.5 darkened a bright set visibly. Light explainer
   panels (cream, dark ink) instead of the dark panel helper.

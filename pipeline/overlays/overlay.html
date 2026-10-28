@@ -68,7 +68,7 @@ function drawCaptions(t){
     const ws = active ? lerp(1.0,POP,easeOutBack((t-w.start)/0.12)) : 1;
     return {w, ws, width:ctx.measureText(w.word.toUpperCase()).width*ws, col: active ? C.yellow : (spoken && key ? KEYCOL : C.white)}; });
   const total=info.reduce((a,b)=>a+b.width,0)+gap*(info.length-1);
-  const scaleAll = total>960 ? 960/total : 1;
+  const scaleAll = total>940 ? 940/total : 1;   // 940 + the 14 px stroke stays inside the x 60..1020 safe area
   const y=CS.y||CAPTION_Y; let x=W/2-total*scaleAll/2;
   const pop = CS.pop ? 1 : lerp(0.85,1,easeOutBack((t-c.start)/0.16));
   info.forEach((it,i)=>{

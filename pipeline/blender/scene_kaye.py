@@ -195,7 +195,7 @@ def build_set():
         for d in dl: d.hide_render = True
     for b in S["blobs"]: b.hide_render = True
     if FLUID == "water":
-        S["drops"] = [sphere(f"drop{i}", 0.16, fm, 24) for i in range(32)]
+        S["drops"] = [sphere(f"drop{i}", 0.16, fm, 24) for i in range(44)]
         S["puddle"] = sphere("puddle", 1.0, fm, 64)
     if FLUID == "honey":
         S["coil"] = poly_curve("coil", 160, fm, 0.3)
@@ -341,7 +341,7 @@ def update_water(S, t):
     set_curve(S["stream"], pts, radii)
     rng = random.Random(7)
     for i, d in enumerate(S["drops"]):
-        per = rng.uniform(0.7, 1.3); ph0 = rng.uniform(0, per); ang = rng.uniform(0, 2 * math.pi); sp = rng.uniform(45, 90); el = math.radians(rng.uniform(55, 80)); r = rng.uniform(0.26, 0.42)
+        per = rng.uniform(0.7, 1.3); ph0 = rng.uniform(0, per); ang = rng.uniform(0, 2 * math.pi); sp = rng.uniform(40, 85); el = math.radians(rng.uniform(55, 80)); r = rng.uniform(0.38, 0.62)   # exaggerated so they read at panel size
         tau = ((t + ph0) % per) / SLOWMO   # real seconds since launch
         vx, vy, vz = sp * math.cos(el) * math.cos(ang), sp * math.cos(el) * math.sin(ang), sp * math.sin(el)
         z = 0.1 + vz * tau - 0.5 * G * tau * tau

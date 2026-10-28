@@ -14,7 +14,7 @@ from PIL import Image
 def yavg(path):
     """Per-frame mean luma (ffmpeg signalstats YAVG) of a video file."""
     cmd = ["ffprobe", "-v", "error", "-f", "lavfi", "-i", f"movie={path},signalstats", "-show_entries", "frame_tags=lavfi.signalstats.YAVG", "-of", "csv=p=0"]
-    return [float(x) for x in subprocess.run(cmd, capture_output=True, text=True).stdout.split() if x]
+    return [float(x.strip(",")) for x in subprocess.run(cmd, capture_output=True, text=True).stdout.split() if x.strip(",")]
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("video_id"); ap.add_argument("--out", default=None); a = ap.parse_args()
@@ -37,15 +37,18 @@ def main():
     def frame_at(i):
         p = subprocess.run(["ffmpeg", "-v", "error", "-i", final, "-vf", f"select=eq(n\\,{i})", "-vframes", "1", "-f", "image2pipe", "-pix_fmt", "rgb24", "-vcodec", "rawvideo", "-"], capture_output=True).stdout
         return np.frombuffer(p, np.uint8).reshape(tl["height"], tl["width"], 3).astype(float)
-    f0, fl = frame_at(0), frame_at(tl["total_frames"] - 1)
+    nfr = int(subprocess.run(["ffprobe", "-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames", "-of", "csv=p=0", final], capture_output=True, text=True).stdout.strip())
+    f0, fl = frame_at(0), frame_at(nfr - 1)
+    P(f"frames in final: {nfr} (timeline {tl['total_frames']})")
     P(f"loop seam: mean abs pixel difference frame 0 vs last frame = {np.abs(f0 - fl).mean():.1f} / 255 (lower is more seamless)")
     # 5. overlay safe area
     worst = [0, 0, 0, 0]; bad = []
     for f in sorted(glob.glob(os.path.join(bd, "overlay", "ov_*.png")))[::3]:
-        al = np.asarray(Image.open(f).convert("RGBA"))[:, :, 3] > 40
+        al = np.asarray(Image.open(f).convert("RGBA"))[:, :, 3] > 128   # solid text/pills; ignores panel shadows
         ys, xs = np.where(al)
         if len(xs) == 0: continue
         x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()
+        if x0 == 0 and x1 == 1079 and y0 == 0 and y1 == 1919: continue   # full-frame cut flash, by design
         if x0 < 60 or x1 > 1020 or y0 < 250 or y1 > 1500: bad.append((os.path.basename(f), int(x0), int(x1), int(y0), int(y1)))
     P(f"overlay safe area (x 60..1020, y 250..1500): {'all sampled frames inside' if not bad else str(len(bad)) + ' frames outside, e.g. ' + str(bad[:3])}")
     # 6. loudness

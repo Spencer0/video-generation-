@@ -1,0 +1,15 @@
+duration: 29.35 s (timeline 29.33 s)
+  beat hook      2.50 s OK
+  beat compare   5.27 s OK
+  beat why1      5.97 s OK
+  beat why2      6.93 s OK
+  beat tryit     4.47 s OK
+  beat ask       3.00 s OK
+  beat loop      1.20 s OK
+longest beat: 6.93 s
+first spoken word onset (VO stem, 50 ms RMS > -20 dBFS): 0.10 s
+mean luma Y: first 3 s = 130.8, whole = 129.3, darkest frame = 100.0 (frame 235)
+frames in final: 880 (timeline 880)
+loop seam: mean abs pixel difference frame 0 vs last frame = 3.2 / 255 (lower is more seamless)
+overlay safe area (x 60..1020, y 250..1500): all sampled frames inside
+loudness: Input Integrated:    -14.2 LUFS; Input True Peak:      -1.5 dBTP

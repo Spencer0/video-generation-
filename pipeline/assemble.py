@@ -131,7 +131,7 @@ def main():
            "-c:v", "libx264", "-preset", ("veryfast" if a.preview else "slow"), "-crf", str(a.crf if not a.preview else 23),
            "-pix_fmt", "yuv420p", "-r", str(fps), "-movflags", "+faststart",
            "-af", "loudnorm=I=-14:TP=-1.5:LRA=11",   # platform-style loudness so uploads are not re-leveled
-           "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-shortest", "-t", f"{tl['duration']:.3f}", out]
+           "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-shortest", "-t", f"{tl['duration'] + 0.5 / fps:.3f}", out]   # +half a frame so the last frame is not dropped
     print(" ".join(cmd)); subprocess.run(cmd, check=True)
     print("wrote", out)
 
