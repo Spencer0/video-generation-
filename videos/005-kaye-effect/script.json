@@ -1,0 +1,135 @@
+{
+  "id": "005-kaye-effect",
+  "title": "Shampoo can bounce off itself (the Kaye effect)",
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "voice": {
+    "engine": "kokoro",
+    "name": "af_heart",
+    "speed": 1.1,
+    "lang": "en-us"
+  },
+  "scene": "pipeline/blender/scene_kaye.py",
+  "shots": {
+    "A": 240,
+    "X": 210,
+    "B": 150,
+    "H": 150,
+    "W": 150,
+    "S": 150
+  },
+  "bg_plan": {
+    "hook": [
+      "A",
+      0
+    ],
+    "compare": [
+      "A",
+      75,
+      {
+        "stack": [
+          [
+            "H",
+            0
+          ],
+          [
+            "W",
+            0
+          ],
+          [
+            "S",
+            0
+          ]
+        ],
+        "stack_frames": 150
+      }
+    ],
+    "why1": [
+      "A",
+      75
+    ],
+    "why2": [
+      "X",
+      0
+    ],
+    "tryit": [
+      "B",
+      0
+    ],
+    "ask": [
+      "A",
+      120
+    ],
+    "loop": [
+      "A",
+      204
+    ]
+  },
+  "blur_beats": [
+    "why1"
+  ],
+  "beats": [
+    {
+      "id": "hook",
+      "pad_before": 0.0,
+      "pad_after": 0.3,
+      "min_duration": 2.5,
+      "lines": [
+        "Shampoo can bounce off itself."
+      ]
+    },
+    {
+      "id": "compare",
+      "pad_before": 0.15,
+      "pad_after": 0.3,
+      "min_duration": 5.0,
+      "lines": [
+        "Pour honey, it coils. Pour water, it splashes. Pour shampoo slowly, and it leaps."
+      ]
+    },
+    {
+      "id": "why1",
+      "pad_before": 0.2,
+      "pad_after": 0.35,
+      "min_duration": 5.5,
+      "lines": [
+        "Shampoo is shear-thinning: thick when it moves slowly, roughly ten times thinner when it's sheared fast."
+      ]
+    },
+    {
+      "id": "why2",
+      "pad_before": 0.2,
+      "pad_after": 0.25,
+      "min_duration": 6.0,
+      "lines": [
+        "The stream digs a dimple. The layer inside shears so fast it turns slippery, and the stream skids out as a jet."
+      ]
+    },
+    {
+      "id": "tryit",
+      "pad_before": 0.2,
+      "pad_after": 0.3,
+      "min_duration": 4.0,
+      "lines": [
+        "Try it: a plate, a thin stream, a hand-span up. It takes a few tries."
+      ]
+    },
+    {
+      "id": "ask",
+      "pad_before": 0.2,
+      "pad_after": 0.5,
+      "min_duration": 3.0,
+      "lines": [
+        "Does yours bounce? Tell me which one."
+      ]
+    },
+    {
+      "id": "loop",
+      "pad_before": 0.0,
+      "pad_after": 0.0,
+      "min_duration": 1.2,
+      "lines": []
+    }
+  ]
+}

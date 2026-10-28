@@ -15,7 +15,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from timeline import load_json, video_dir
 
 # Background plan lives in videos/<id>/script.json:
-#   "bg_plan": {beat: [shot, start_frame]}  which shot / shot-frame a beat starts on (wraps past the end)
+#   "bg_plan": {beat: [shot, start_frame, {opts}]}  which shot / shot-frame a beat starts on (wraps past the end)
+#       opts: "split": [shot2, off2, n]  two-way split (top = shot2 centre band) for the first n frames of the beat
+#             "stack": [[shot, off], ...], "stack_frames": n   N panels vstacked (each scaled to cover W x H/N, centre-cropped)
+#             "cuts": [[shot, off, beat_frame, n], ...]        mid-beat cutaways to another shot
 #   "blur_beats": [...]                     beats whose footage is blurred + dimmed behind panels
 # (the dicts below are the fallback for video 001)
 BG_PLAN = {"hook": ("A", 0), "empty": ("B", 0), "water": ("C", 0), "temps": ("D", 0), "equation": ("C", 40),
@@ -51,10 +54,14 @@ def main():
         if j > 0 and abs(idx[j - 1] - i) < abs(idx[j] - i): j -= 1
         return files[j]
     lines, top_lines, split_windows = [], [], []
+    stack_windows, stack_over, n_stack = [], [], 0   # stack: N panels vstacked for a window ("stack": [[shot, off], ...], "stack_frames": n)
     for b in tl["beats"]:
         plan = bg_plan[b["id"]]; s, off = plan[0], plan[1]
         opts = plan[2] if len(plan) > 2 and isinstance(plan[2], dict) else {}
         split = opts.get("split"); cuts = opts.get("cuts", [])   # cuts: [[shot, shot_offset, beat_frame, nframes], ...] mid-beat cutaways
+        stack = opts.get("stack"); stack_n = opts.get("stack_frames", 0)
+        if stack:
+            n_stack = len(stack); stack_windows.append((b["start"], b["start"] + stack_n / fps))
         off += b.get("bg_offset", 0)   # script.json can shift a beat's footage (e.g. ignition on a word)
         n_avail = (max(shots[s][0]) + 1) if shots[s][0] else 1
         if split:
@@ -69,6 +76,13 @@ def main():
                     if j >= nc and shots[cs][0]: j = idx_wrap(j, nc, coff)
                     main = os.path.abspath(shot_frame(cs, j))
             lines.append(f"file '{main}'\nduration {1/fps:.6f}")
+            ov = {}
+            if stack and k < stack_n:
+                for pi, (ps, poff) in enumerate(stack):
+                    npn = (max(shots[ps][0]) + 1) if shots[ps][0] else 1; j = poff + k
+                    if j >= npn and shots[ps][0]: j = idx_wrap(j, npn, poff)
+                    ov[pi] = os.path.abspath(shot_frame(ps, j))
+            stack_over.append(ov)
             if split and k < split[2]:
                 s2, off2 = split[0], split[1]; n2 = (max(shots[s2][0]) + 1) if shots[s2][0] else 1
                 j = off2 + k
@@ -79,6 +93,10 @@ def main():
     lines.append(lines[-1].split("\n")[0]); top_lines.append(top_lines[-1].split("\n")[0])  # concat demuxer needs the last file repeated
     concat = os.path.join(bd, "bg_concat.txt"); open(concat, "w").write("\n".join(lines) + "\n")
     concat_top = os.path.join(bd, "bg_concat_top.txt"); open(concat_top, "w").write("\n".join(top_lines) + "\n")
+    mains = [l.split("\n")[0] for l in lines[:-1]]; stack_concats = []
+    for pi in range(n_stack):   # one concat list per panel, main footage outside the window so lengths stay aligned
+        pl = [(("file '" + stack_over[f][pi] + "'") if pi in stack_over[f] else mains[f]) + f"\nduration {1/fps:.6f}" for f in range(len(mains))]
+        pl.append(pl[-1].split("\n")[0]); pth = os.path.join(bd, f"bg_concat_p{pi}.txt"); open(pth, "w").write("\n".join(pl) + "\n"); stack_concats.append(pth)
     if missing: print(f"warning: {missing} background frames substituted with nearest rendered frame")
     W, H = tl["width"], tl["height"]
     enable = "+".join(f"between(t,{b['start']:.3f},{b['end']:.3f})" for b in tl["beats"] if b["id"] in blur_beats)
@@ -90,6 +108,14 @@ def main():
               f"[3:v]scale={W}:{H}:flags=lanczos,setsar=1,format=yuv420p,crop={W}:{H//2}:0:{H//4},eq=brightness=0.07:contrast=1.08[top];"
               f"[bgB]crop={W}:{H//2}:0:{H//4}[bot];[top][bot]vstack,drawbox=y={H//2-3}:w={W}:h=6:color=black@0.9:t=fill[sp];"
               f"[bgA][sp]overlay=0:0:enable='{sw}'[bg];[1:v]format=rgba[ov];[bg][ov]overlay=0:0:format=auto,format=yuv420p[v]")
+    elif n_stack:
+        # N-panel stack: each panel input is scaled to cover W x H/N (panels may be rendered at that aspect) and centre-cropped
+        PH = H // n_stack; sw = "+".join(f"between(t,{a:.3f},{b:.3f})" for a, b in stack_windows)
+        pf = "".join(f"[{4+pi}:v]scale={W}:{PH}:force_original_aspect_ratio=increase:flags=lanczos,crop={W}:{PH},setsar=1,format=yuv420p[p{pi}];" for pi in range(n_stack))
+        boxes = ",".join(f"drawbox=y={PH*(pi+1)-3}:w={W}:h=6:color=white@0.95:t=fill" for pi in range(n_stack - 1))
+        vf = (f"[0:v]scale={W}:{H}:flags=lanczos,setsar=1,format=yuv420p,{blur}null[bgA];{pf}"
+              f"{''.join(f'[p{pi}]' for pi in range(n_stack))}vstack=inputs={n_stack},{boxes}[sp];"
+              f"[bgA][sp]overlay=0:0:enable='{sw}'[bg];[1:v]format=rgba[ov];[bg][ov]overlay=0:0:format=auto,format=yuv420p[v]")
     else:
         vf = (f"[0:v]scale={W}:{H}:flags=lanczos,setsar=1,format=yuv420p,{blur}null[bg];"
               f"[1:v]format=rgba[ov];[bg][ov]overlay=0:0:format=auto,format=yuv420p[v]")
@@ -100,6 +126,7 @@ def main():
            "-framerate", str(fps), "-i", os.path.join(bd, a.overlay_dir, "ov_%04d.png"),
            "-i", os.path.join(bd, "mix.wav"),
            "-f", "concat", "-safe", "0", "-r", str(fps), "-i", concat_top,
+           *[x for pth in stack_concats for x in ("-f", "concat", "-safe", "0", "-r", str(fps), "-i", pth)],
            "-filter_complex", vf, "-map", "[v]", "-map", "2:a",
            "-c:v", "libx264", "-preset", ("veryfast" if a.preview else "slow"), "-crf", str(a.crf if not a.preview else 23),
            "-pix_fmt", "yuv420p", "-r", str(fps), "-movflags", "+faststart",

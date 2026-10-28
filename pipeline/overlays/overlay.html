@@ -42,7 +42,8 @@ function flash(t,at,{dur=0.22,peak=0.55,color='255,255,255'}={}){
   const k=(t-at)/dur; if(k<0||k>1)return; ctx.save(); ctx.fillStyle=`rgba(${color},${peak*(1-easeOutCubic(k))})`; ctx.fillRect(0,0,W,H); ctx.restore();
 }
 function vignette(){
-  const g=ctx.createRadialGradient(W/2,H/2,H*0.22,W/2,H/2,H*0.72); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,0.5)');
+  const k=(window.BEATS&&window.BEATS.vignette!==undefined)?window.BEATS.vignette:0.5; if(k<=0)return;   // per-video strength (bright sets want ~0.15)
+  const g=ctx.createRadialGradient(W/2,H/2,H*0.22,W/2,H/2,H*0.72); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,`rgba(0,0,0,${k})`);
   ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
 }
 function panel(x,y,w,h,alpha=1){ctx.save();ctx.globalAlpha=ctx.globalAlpha*alpha;rr(x,y,w,h,36);ctx.fillStyle='rgba(8,10,16,0.72)';ctx.fill();ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.stroke();ctx.restore()}

@@ -31,5 +31,17 @@ python3 pipeline/assemble.py 001-water-bag                 # -> videos/001-water
 `assemble.py --preview` works at any point during the 3D render (missing
 frames are substituted) so you can check pacing early.
 
+## Build video 005 (Kaye effect) — same five commands, plus the checks
+
+```bash
+python3 pipeline/tts.py 005-kaye-effect && python3 pipeline/sfx.py 005-kaye-effect
+python3 pipeline/overlays/render_overlays.py 005-kaye-effect
+python3 pipeline/overlays/render_overlays.py 005-kaye-effect --no-captions --out videos/005-kaye-effect/build/overlay_nocap
+bash pipeline/blender/render_all.sh 005-kaye-effect 576 12       # ~2 h on 4 cores; resumable
+python3 pipeline/assemble.py 005-kaye-effect
+python3 pipeline/assemble.py 005-kaye-effect --overlay-dir overlay_nocap --out videos/005-kaye-effect/out/final_nocaptions.mp4
+python3 pipeline/checks.py 005-kaye-effect                        # -> out/checks.txt
+```
+
 See `AGENTS.md` for the design decisions, measured render costs and the
 conventions that make the pieces line up.

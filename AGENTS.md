@@ -15,6 +15,8 @@ pipeline/            reusable tooling (video-agnostic)
   timeline.py        shared helpers (word-timing estimate, paths)
   blender/scene_bag.py     procedural Cycles scene for video 001 (water bag over flame)
   blender/scene_chain.py   procedural Cycles scene for video 002 (chain fountain)
+  blender/scene_leidenfrost.py, scene_kaye.py   videos 004 and 005
+  checks.py          measured acceptance checks (duration, VO onset, luma, safe area, loop seam, loudness)
   blender/render_all.sh    renders every shot listed in script.json "shots" with the "scene" script
   overlays/overlay.html    canvas overlay engine: captions, helpers, renderFrame (video-agnostic)
   overlays/render_overlays.py  loads videos/<id>/beats.js into overlay.html, screenshots PNG+alpha
@@ -249,6 +251,60 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
   filtering grep exit 1 and aborted the loop. Fixed with `|| true`.
   Container restarts kill detached renders; launch long renders through the
   harness background runner and rely on the frame-skip resume.
+
+## Video 005 notes (Kaye effect, produced from an analytics-driven brief)
+
+- Brief-level requirements that came from TikTok analytics on 001/002/004 (all
+  stalled at the test-batch ceiling, ~50 % retention by 3 s): claim spoken and
+  on screen on frame 0, the phenomenon large and moving on frame 0, bright
+  frame (mean luma Y >= 110 first 3 s, >= 90 overall) with a recognisable
+  everyday object, something to try + a question to answer, 26-30 s. These
+  are now measured by `pipeline/checks.py` (writes out/checks.txt).
+- Bright is not flat: the first pass (pastel fluid, cream set, big soft
+  lights) hit Y=132 and looked monochrome. What fixed it: the fluid is the
+  darkest, most saturated thing in frame (deep teal Principled, roughness
+  0.06, coat 1.0), neutral light-grey backdrop, mid-tone wood table, one
+  window-shaped 60x90 area light above-left-behind (long highlight streaks on
+  stream, jet and heap), dim fill camera-right, small rim behind opposite the
+  key. Camera near plate height (~11 deg above), 45 mm, f/3.2, focus on the
+  impact point. Y stayed at 135 with far more contrast.
+- Portrait frames are narrow: a jet leaving at 45 deg sideways exits the frame
+  before its apex. Aim the jet away from the camera (+y) so the projected
+  range shrinks and the arc stays inside; it also arcs against the backdrop
+  instead of the table edge.
+- Kinematic fluid, no sim (as in 002): stream = POLY curve with per-point
+  radius (necking from free-fall speed) and a travelling sine wobble; heap =
+  polar grid whose vertex heights are recomputed per frame (dome + skirt +
+  periodic noise lumps + Gaussian dimple at the impact point); jet = POLY
+  curve of fluid parcels on a parabola from the dimple, ages from
+  max(0, tau-T_FEED) to min(tau, T_LAND): the tip grows, the thread stands
+  while fed, then the root detaches and the tail flies out. Keep the point
+  count constant and collapse unused points onto the tip so deformation
+  motion blur keeps working. Three small spheres just past the tip read as
+  spray.
+- Shots are periodic (period = SHOT_DUR, events wrap) so the assembler can
+  wrap them and the loop beat lands exactly on frame 0: `loop` shows A
+  frames 204-239 and the first frame is A 0. The camera sways with
+  sin(2*pi*t/T) for the same reason.
+- Three-panel comparison: new assembler option `"stack": [[shot, off], ...],
+  "stack_frames": n` vstacks N panels, each scaled to cover W x H/N and
+  centre-cropped. Panel shots render at 1080x640 aspect (res_y from the shot
+  id), which costs ~1/3 of a full frame.
+- A flattened Glass sphere as a water puddle renders black (transmission
+  bounces run out in a thin slab). Opaque, saturated blue Principled water
+  with motion-blurred droplets reads better at panel size than translucent
+  pale water, which vanishes against a white plate.
+- Cost at 576x1024, 12 samples, motion blur + DoF, two area lights: ~10 s/frame
+  solo (full shots), ~3.5 s/frame for the 576x342 panels; 720 was 21 s/frame
+  so it went to 576 per the brief's 12 s/frame rule. 1050 frames total.
+- Overlay engine: vignette strength is now per video (`BEATS.vignette`, 0.15
+  here); the default 0.5 darkened a bright set visibly. Light explainer
+  panels (cream, dark ink) instead of the dark panel helper.
+- Physics (keep): Kaye 1963; Versluis et al. 2006. Shear-thinning shampoo;
+  the stream digs a dimple, a thin fast-sheared low-viscosity layer forms,
+  the stream slides along it and exits as a jet lasting a few tenths of a
+  second; stable on a tilted surface. Honey (Newtonian) coils, water
+  splashes. "Roughly ten times thinner" keeps the "roughly".
 
 ## Workflow for a new video
 
