@@ -1,12 +1,12 @@
-# acceptance checks, c003-base-rate, 2026-10-28 18:04
-[PASS] 1 thumbnail: largest cover line 'YOU SHOULD' is 13.2px tall at 135x240 (want >= 9); out/thumb.png. By eye: viewed out/thumb.png at 135x240: headline reads, the positive test cassette reads as a test.
-[PASS] 2 safe area: 49 text runs, union bounds x 67..1014, y 288..1496 inside x 60..1020, y 250..1500
-[PASS] 3 contrast: palette ink/paper 15.9:1; measured on rendered ink text min 12.7:1 over 34 runs; red/paper 4.0:1 (accent only); blue pixels 0 (must be 0); red text runs: ['1 has it.', 'CONFIDENTLY', 'WRONG.', 'no googling.']. By eye: red on underline, circles, the arrow, 1 has it, CONFIDENTLY WRONG + its underline, the circle and arrow on 10 of the confidence scale, no googling. No blue.
+# acceptance checks, c003-base-rate, 2026-10-29 01:33
+[PASS] 1 thumbnail: largest cover line 'YOU SHOULD' is 12.0px tall at 135x240 (want >= 9); out/thumb.png. By eye: viewed out/thumb.png at 135x240: headline reads, the positive test cassette reads as a test.
+[PASS] 2 safe area: 50 text runs, union bounds x 117..959, y 288..1548, none under a TikTok UI zone (pipeline/safe_area.json)
+[PASS] 3 contrast: palette ink/paper 15.9:1; measured on rendered ink text min 12.7:1 over 33 runs; red/paper 4.0:1 (accent only); blue pixels 0 (must be 0); red text runs: ['1 has it.', 'CONFIDENTLY', 'WRONG.', 'no googling.']. By eye: red on underline, circles, the arrow, 1 has it, CONFIDENTLY WRONG + its underline, the circle and arrow on 10 of the confidence scale, no googling. No blue.
 [PASS] 4 word count: p1: 7, p2: 0, p3: 9, p4: 12 (max 15)
-[PASS] 5 typos: found [], intended [] (pyspellchecker)
+[PASS] 5 typos: found [], intended [] (no spellchecker installed (grammar patterns only))
 [PASS] 6 problem statement: required phrases ['1 in 10,000', '99% accurate', '99% of people who have it', "99% of people who don't", 'tested at random', 'test positive'] all present. By eye: 99% accurate is defined on the panel as 99% sensitivity and 99% specificity; tested at random (no symptoms) fixes the prior. Answer ~0.98% (sim.py).
-[PASS] 7 simulation: sim.py 2.9s; printed: P(sick | positive) = 0.98% simulated, 0.98% exact (most people say 99%); on panels: {}
+[PASS] 7 simulation: sim.py 2.1s; printed: P(sick | positive) = 0.98% simulated, 0.98% exact (most people say 99%); on panels: {}
 [NOTE] 8 overlay regression: helpers.js refactor: overlays for 001-005 rendered at every 15th frame before and after (418 frames, same fake timeline.json since Kokoro is not installed here): 0 pixels differ.
 [NOTE] 9 flow (contact sheet): same arc as c001: hook -> setup + question -> "confidently wrong.. are you?" (names no answer) -> comment + promise.
-[NOTE] determinism: sha1 01:061fb77a86 02:2764b1fed4 03:c7cb1f7566 04:148a50b2ee
-[NOTE] text: p1: YOU SHOULD BE ABLE TO SOLVE THIS. you test positive. | p2: 10,000 people 1 has it. THE SETUP 1 in 10,000  people have a disease. The test is  99% accurate : it catches 99% of people who have it  and clears 99% of people who don't . You're  tested at random  and  test positive . WHAT ARE THE ODDS YOU HAVE IT? | p3: Most people are CONFIDENTLY WRONG. 1 10 Are you? | p4: COMMENT: 99% 50% 1% + your confidence  1–10 Solution tomorrow. Follow. no googling.
+[NOTE] determinism: sha1 01:ad05d4aab5 02:61ec3377f5 03:b5a4268e46 04:c761c6ea95
+[NOTE] text: p1: YOU SHOULD BE ABLE TO SOLVE THIS. you test positive. | p2: 10,000 people 1 has it. THE SETUP 1 in 10,000  people have a disease. The test is  99% accurate : it catches  99% of people who have it and clears  99% of people who don't . You're  tested at random and  test positive . WHAT ARE THE ODDS YOU HAVE IT? | p3: Most people are CONFIDENTLY WRONG. 1 10 Are you? | p4: COMMENT: 99% 50% 1% + your confidence  1–10 Solution tomorrow. Follow. no googling.

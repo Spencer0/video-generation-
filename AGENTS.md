@@ -16,7 +16,9 @@ pipeline/            reusable tooling (video-agnostic)
   blender/scene_bag.py     procedural Cycles scene for video 001 (water bag over flame)
   blender/scene_chain.py   procedural Cycles scene for video 002 (chain fountain)
   blender/scene_leidenfrost.py, scene_kaye.py   videos 004 and 005
-  checks.py          measured acceptance checks (duration, VO onset, luma, safe area, loop seam, loudness)
+  checks.py          measured acceptance checks (duration, VO onset, luma, UI-zone safe area, loop seam, loudness)
+  safe_area.json     the TikTok UI zones every renderer and check reads (see 'Where things may go on screen')
+  fake_timeline.py   ESTIMATED timeline from script.json for overlay previews/audits without Kokoro (never assemble with it)
   blender/render_all.sh    renders every shot listed in script.json "shots" with the "scene" script
   overlays/helpers.js      shared canvas helpers (text, pill, easing, paper, marker, coins) for overlays + carousels
   overlays/overlay.html    canvas overlay engine: captions, renderFrame (video-agnostic)
@@ -112,12 +114,55 @@ Measured on the bag scene, 32 samples, adaptive, OIDN denoise:
   emissive bead at rim, charred ring outside) + a shape key that shrinks the
   film toward the heat. Reads as "burn-through" without any physics sim.
 
+## Where things may go on screen (TikTok UI zones)
+
+Measured 2026-10-29 from a feed screenshot (iPhone, 19.5:9): TikTok scales a
+1080x1920 video to fill the screen *height*, so ~54 px are cropped off each
+side (~108 on 20:9 Androids), and its UI sits on top of what is left. The old
+rule "x 60..1020, y 250..1500" let the 005 slow-motion pill sit under the
+comment icon and cropped the 004 headline to "VATER SHOULDN'T DO THI". The
+zones live in `pipeline/safe_area.json` (single source of truth; every
+renderer and check reads it):
+
+| zone | video px | covered by |
+|---|---|---|
+| side crops | x < 110 and x > 970 | off-screen on tall phones |
+| top bar | y < 250 | status bar, Following / For You tabs, search |
+| right column | x > 860 and y > 1040 | avatar, like, comment, save, share, sound disc |
+| bottom caption | y > 1560 and x < 900 | username, caption, sound marquee |
+
+Readable area: x 110..970, y 250..1560, and below y=1040 the right edge is
+860. A centred line may be 846 px wide above y=1040 and 640 px below it.
+This applies to everything readable (panels, pills, labels, diagrams,
+counters, coins), not just captions; decoration (vignette, flashes, blur,
+footage) may cover the zones. Captions default to y=980 now; 1460 (videos
+001-003) was under the icons. Prefer the band y 250..1040 for anything
+wide; put small labels bottom-left, never bottom-right.
+
+Enforcement:
+- `pipeline/checks.py` fails its safe-area line when overlay pixels with
+  alpha > 128 land in a zone (full-frame flashes skipped), per zone with the
+  worst frame and bounding box. `--only-safe-area --overlay-dir <dir>` runs
+  just that on any overlay render.
+- `render_overlays.py --show-safe-area` paints the zones red on every frame:
+  render `--every 30`, tile, look, before any full render.
+- `render_panels.py` fails check 2 when any text run's bounds touch a zone;
+  the carousel corner tags sit at y=1530, right-aligned to x=850.
+- No Kokoro in the container? `pipeline/fake_timeline.py <id>` writes an
+  ESTIMATED timeline (3 words/s) so overlays can be rendered and audited. It
+  is marked `estimated: true`, checks.py warns on it; never assemble with it.
+- Audit 2026-10-29: 001-003 had 940 px explainer panels and y=1460 captions
+  under the icons (shipped as is; fix if ever re-rendered). 004 headline and
+  005 pill / why1 panel / left labels fixed in beats.js, c001-c003 re-laid
+  out; the posted 004/005 mp4s predate the fix.
+
 ## Overlay / caption conventions (what tested well visually)
 
-- Safe area: keep text inside x 60..1020, y 250..1500 (platform UI covers
-  the rest). Captions at y=1460, 78 px Inter 900, uppercase, 14 px black
+- Placement: see the UI zones above. Captions at y=980 by default (per
+  video via `BEATS.caption.y`), 78 px Inter 900, uppercase, 14 px black
   stroke, max 3 words per chunk, active word yellow + 1.12x pop, keyword
-  words orange after they are spoken.
+  words orange after they are spoken; the engine shrinks a chunk to the
+  readable width for its y.
 - Layout widths must include the active word's scale or neighbours overlap.
 - Every helper multiplies into `ctx.globalAlpha` instead of setting it, so
   fades compose through nested calls.

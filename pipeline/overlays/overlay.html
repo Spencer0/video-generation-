@@ -48,7 +48,7 @@ function wordTime(beatId,word,nth=0){ // start time of the nth occurrence of a w
 }
 
 // ---------------------------------------------------------------- captions (TikTok style, word-synced)
-const CAPTION_Y = 1460;
+const CAPTION_Y = 980;   // default caption line: above TikTok's like/comment column (y>1040, x>860), below the headline band; 1460 (videos 001-003) sat under the icons
 let KEYWORDS = new Set();  // per-video, from window.BEATS.keywords
 function buildChunks(){
   WORDS=[]; TL.beats.forEach(b=>b.lines.forEach(l=>l.words.forEach(w=>WORDS.push({...w,beat:b.id}))));
@@ -68,8 +68,9 @@ function drawCaptions(t){
     const ws = active ? lerp(1.0,POP,easeOutBack((t-w.start)/0.12)) : 1;
     return {w, ws, width:ctx.measureText(w.word.toUpperCase()).width*ws, col: active ? C.yellow : (spoken && key ? KEYCOL : C.white)}; });
   const total=info.reduce((a,b)=>a+b.width,0)+gap*(info.length-1);
-  const scaleAll = total>940 ? 940/total : 1;   // 940 + the 14 px stroke stays inside the x 60..1020 safe area
-  const y=CS.y||CAPTION_Y; let x=W/2-total*scaleAll/2;
+  const y=CS.y||CAPTION_Y; const maxW=(y>1040 ? 640 : 846)-14;   // centred line inside the readable area of pipeline/safe_area.json: 110..970 above y=1040 (846 wide), 220..860 below it (640 wide); minus the 14 px stroke
+  const scaleAll = total>maxW ? maxW/total : 1;
+  let x=W/2-total*scaleAll/2;
   const pop = CS.pop ? 1 : lerp(0.85,1,easeOutBack((t-c.start)/0.16));
   info.forEach((it,i)=>{
     const s = it.ws*pop*scaleAll; const cx = x+it.width*scaleAll/2;
@@ -86,6 +87,11 @@ window.renderFrame=function(f){
   for(const b of TL.beats){ if(t>=b.start && t<b.end){ const fn=V.draw[b.id]; if(fn) fn(t-b.start,t,b); } }
   drawCaptions(t);
   for(const id of V.cutFlash){ if(BEATS[id]) flash(t,BEATS[id].start,{dur:0.2,peak:0.45}); }
+  if(window.SHOW_SAFE_ZONES && window.SAFE_ZONES) drawSafeZones();
   return true;
 };
+// Debug only (render_overlays.py --show-safe-area): paint the TikTok UI zones so a contact sheet shows collisions.
+function drawSafeZones(){ ctx.save(); ctx.globalAlpha=1; for(const z of window.SAFE_ZONES.zones){ ctx.fillStyle='rgba(230,40,40,0.28)'; ctx.fillRect(z.x0,z.y0,z.x1-z.x0,z.y1-z.y0);
+    ctx.strokeStyle='rgba(230,40,40,0.9)'; ctx.lineWidth=3; ctx.strokeRect(z.x0,z.y0,z.x1-z.x0,z.y1-z.y0);
+    text(z.id,Math.min(z.x0+12,W-200),Math.min(z.y0+28,H-30),{size:24,weight:800,color:'#FF4444',align:'left',stroke:false,shadow:false}); } ctx.restore(); }
 </script></body></html>

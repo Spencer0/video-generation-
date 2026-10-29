@@ -14,7 +14,10 @@
 // Everything is deterministic: paper and marker wobble are seeded from i.
 const W = 1080, H = 1920;
 const cv = document.getElementById('c'); const ctx = cv.getContext('2d');
-const SAFE = {x0:60, x1:1020, y0:250, y1:1500};
+// Readable area + UI zones from pipeline/safe_area.json (render_panels.py injects window.SAFE_ZONES; this is the fallback copy).
+const SAFE_DEFAULT = {"readable": {"x0": 110, "y0": 250, "x1": 970, "y1": 1560, "x1_below_1040": 860, "_comment": "Anything that must be read goes here. Below y=1040 the right edge is 860, not 970. Centred lines: width <= 860 above y=1040, <= 750 below it."}, "zones": [{"id": "side_crop_left", "x0": 0, "y0": 0, "x1": 110, "y1": 1920, "why": "cropped off on phones taller than 9:16"}, {"id": "side_crop_right", "x0": 970, "y0": 0, "x1": 1080, "y1": 1920, "why": "cropped off on phones taller than 9:16"}, {"id": "top_bar", "x0": 0, "y0": 0, "x1": 1080, "y1": 250, "why": "status bar, Following / For You / Friends tabs, search"}, {"id": "right_column", "x0": 860, "y0": 1040, "x1": 1080, "y1": 1920, "why": "avatar, like, comment, save, share, sound disc"}, {"id": "bottom_caption", "x0": 0, "y0": 1560, "x1": 900, "y1": 1920, "why": "username, caption (2 lines + more), sound marquee"}]};
+const SAFE_AREA = () => (window.SAFE_ZONES || SAFE_DEFAULT);
+const SAFE = {x0:110, x1:970, y0:250, y1:1560, x1Low:860};   // readable rectangle; right edge is x1Low below y=1040
 
 // Every glyph run that reaches a canvas is logged with its device-space bounds
 // and a kind ('body' by default, 'problem' inside problem(), 'glyph' for coin
@@ -35,15 +38,15 @@ ctx.strokeText = (s,x,y,mw)=>{ window.TEXT_HOOK(ctx,s,x,y,'stroke'); return mw==
 function withKind(kind, fn){ const k=window.TEXT_KIND; window.TEXT_KIND=kind; try{ return fn(); } finally { window.TEXT_KIND=k; } }
 function problem(fn){ return withKind('problem', fn); }   // problem-statement text is exempt from the word cap
 
-// Corner tags: handle bottom-left, counter bottom-right with a small swipe arrow
-// (none on the last panel). Both sit inside the safe area.
+// Corner tags: handle bottom-left, counter + swipe arrow (none on the last panel) right-aligned
+// to the LOWER readable edge (x1Low), i.e. left of TikTok's like/comment/save column.
 function cornerTags(i, n){
   withKind('chrome', ()=>{
-    const y = SAFE.y1 - 22, handle = (window.PANELS.meta && window.PANELS.meta.handle) || '@stemhead';
+    const y = SAFE.y1 - 30, handle = (window.PANELS.meta && window.PANELS.meta.handle) || '@stemhead';
     ink(handle, SAFE.x0+6, y, {size:34, weight:800, align:'left', color:PAPER.soft});
-    const last = i===n-1, cx = SAFE.x1 - (last?6:70);
+    const last = i===n-1, right = SAFE.x1Low - 10, cx = right - (last?0:64);
     ink(`${i+1}/${n}`, cx, y, {size:34, weight:800, align:'right', color:PAPER.soft});
-    if(!last) markerArrow(SAFE.x1-56, y+2, SAFE.x1-8, y-2, {bend:0.0, head:16, width:6, color:PAPER.ink, alpha:0.6, wobble:0.8, streaks:false, seed:900+i});
+    if(!last) markerArrow(right-50, y+2, right-2, y-2, {bend:0.0, head:16, width:6, color:PAPER.ink, alpha:0.6, wobble:0.8, streaks:false, seed:900+i});
   });
 }
 

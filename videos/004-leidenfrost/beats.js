@@ -9,7 +9,7 @@ function annot(x0,y0,x1,y1,alpha){ ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a
   ctx.fillStyle=C.yellow; ctx.beginPath(); ctx.arc(x1,y1,7,0,Math.PI*2); ctx.fill(); ctx.restore(); }
 
 function beatHook(tb,t,b){ const a=1-smooth(b.duration-0.35,b.duration-0.05,tb);   // readable on frame 0 ctx.save(); ctx.globalAlpha=a;
-  twoTone([['WATER ',C.white],['SHOULDN’T',C.yellow],[' DO THIS.',C.white]],W/2,CAP_Y-110,74); ctx.restore(); }
+  twoTone([['WATER ',C.white],['SHOULDN’T',C.yellow],[' DO THIS.',C.white]],W/2,CAP_Y-110,58)   // 58 px fits the 846 px readable width; 74 was cropped to 'VATER ... DO THI' on phones; ctx.restore(); }
 function beatCompare(tb,t,b){ const tCool=wordTime('compare','cooler'), tHot=wordTime('compare','hot'); const splitEnd=b.start+150/TL.fps;
   const out=1-smooth(splitEnd-0.35,splitEnd-0.05,t);
   if(t>tCool){ thinLabel('COOLER SURFACE: SPREADS',W/2,300,smooth(0,0.25,t-tCool)*out,40); }

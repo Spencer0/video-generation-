@@ -8,8 +8,11 @@ function twoTone(parts,x,y,size,strokeW=12){ font(900,size); const ws=parts.map(
 function thinLabel(txt,x,y,alpha,size=34,align='center',color=C.white){ ctx.save(); ctx.globalAlpha=ctx.globalAlpha*alpha; text(txt,x,y,{size,weight:800,color,align,strokeW:8}); ctx.restore(); }
 function annot(x0,y0,x1,y1,alpha){ ctx.save(); ctx.globalAlpha=ctx.globalAlpha*alpha; ctx.strokeStyle='rgba(255,255,255,0.95)'; ctx.lineWidth=4; ctx.shadowColor='rgba(0,0,0,0.5)'; ctx.shadowBlur=6;
   ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke(); ctx.fillStyle=C.yellow; ctx.beginPath(); ctx.arc(x1,y1,8,0,Math.PI*2); ctx.fill(); ctx.restore(); }
-function slowmoTag(alpha){ pill('SLOW MOTION 4x',1010,1470,{size:28,weight:800,padX:22,alpha:alpha*0.9,align:'right'}); }
-function headline(parts,alpha,size=72){ ctx.save(); ctx.globalAlpha=ctx.globalAlpha*alpha; twoTone(parts[0],W/2,HEAD_Y,size); if(parts[1]) twoTone(parts[1],W/2,HEAD2_Y,size); ctx.restore(); }
+// slow-mo tag: right edge at 850, left of TikTok's like/comment column (pipeline/safe_area.json)
+function slowmoTag(alpha){ pill('SLOW MOTION 4x',850,1470,{size:28,weight:800,padX:22,alpha:alpha*0.9,align:'right'}); }
+function headline(parts,alpha,size=72){ // fitted to the 846 px readable width (pipeline/safe_area.json): 72 px 'SHAMPOO CAN BOUNCE' was 896 wide and cropped on phones
+  for(const line of parts){ if(!line) continue; font(900,size); const w=line.reduce((a,p)=>a+ctx.measureText(p[0]).width,0); if(w>846) size=Math.floor(size*846/w); }
+  ctx.save(); ctx.globalAlpha=ctx.globalAlpha*alpha; twoTone(parts[0],W/2,HEAD_Y,size); if(parts[1]) twoTone(parts[1],W/2,HEAD2_Y,size); ctx.restore(); }
 const HOOK_HEAD=[[['SHAMPOO CAN ',C.white],['BOUNCE',C.yellow]],[['OFF ITSELF.',C.white]]];
 function lightPanel(x,y,w,h,alpha=1){ ctx.save(); ctx.globalAlpha=ctx.globalAlpha*alpha; ctx.shadowColor='rgba(0,0,0,0.25)'; ctx.shadowBlur=30; ctx.shadowOffsetY=10; rr(x,y,w,h,36); ctx.fillStyle=CREAM; ctx.fill();
   ctx.shadowColor='transparent'; ctx.lineWidth=3; ctx.strokeStyle='rgba(28,26,34,0.12)'; ctx.stroke(); ctx.restore(); }
@@ -22,25 +25,25 @@ function beatHook(tb,t,b){ headline(HOOK_HEAD,1-smooth(b.duration-0.3,b.duration
 function beatCompare(tb,t,b){ const stackEnd=b.start+150/TL.fps; const out=1-smooth(stackEnd-0.3,stackEnd-0.05,t);
   const rows=[['honey','coils','HONEY',' → COILS',590],['water','splashes','WATER',' → SPLASHES',1230],['shampoo','leaps','SHAMPOO',' → LEAPS',1440]];
   for(const [n,v,N,V,y] of rows){ const tn=wordTime('compare',n), tv=wordTime('compare',v); if(t<tn) continue; const a=smooth(0,0.2,t-tn)*out;
-    ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; font(900,44); const w1=ctx.measureText(N).width; text(N,70,y,{size:44,weight:900,align:'left',strokeW:10});
-    if(t>tv){ ctx.globalAlpha=ctx.globalAlpha*smooth(0,0.15,t-tv); text(V,70+w1,y,{size:44,weight:900,align:'left',color:C.yellow,strokeW:10}); } ctx.restore(); }
+    ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; font(900,44); const w1=ctx.measureText(N).width; text(N,120,y,{size:44,weight:900,align:'left',strokeW:10});
+    if(t>tv){ ctx.globalAlpha=ctx.globalAlpha*smooth(0,0.15,t-tv); text(V,120+w1,y,{size:44,weight:900,align:'left',color:C.yellow,strokeW:10}); } ctx.restore(); }
   slowmoTag(out); }
 
 // ---- why1: shear-thinning. Light panel with a two-bar viscosity graphic, bars lit on 'slowly' / 'fast'
 function beatWhy1(tb,t,b){ const tS=wordTime('why1','shearthinning'), tSlow=wordTime('why1','slowly'), tTen=wordTime('why1','ten'), tFast=wordTime('why1','fast');
   const out=1-smooth(b.duration-0.35,b.duration-0.05,tb);
   if(t>tS) headline([[['SHEAR-',C.white],['THINNING',C.yellow]]],smooth(0,0.25,t-tS)*out,70);
-  const a=smooth(0.1,0.45,tb)*out; const px=90,py=600,pw=900,ph=760; lightPanel(px,py,pw,ph,a);
+  const a=smooth(0.1,0.45,tb)*out; const px=110,py=600,pw=750,ph=760,pcx=px+pw/2; lightPanel(px,py,pw,ph,a);   // 110..860: clear of the side crop and the like/comment column
   ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a;
-  inkText('HOW THICK IS SHAMPOO?',W/2,py+70,{size:40,weight:900});
-  inkText('(viscosity, not to scale)',W/2,py+118,{size:26,weight:700,color:'rgba(28,26,34,0.6)'});
+  inkText('HOW THICK IS SHAMPOO?',pcx,py+70,{size:40,weight:900});
+  inkText('(viscosity, not to scale)',pcx,py+118,{size:26,weight:700,color:'rgba(28,26,34,0.6)'});
   const base=py+ph-150, maxH=440; const bars=[[tSlow,'MOVING SLOWLY','THICK',1.0,C.orange,px+150],[tFast,'SHEARED FAST','THIN',0.1,C.yellow,px+pw-150]];
   for(const [t0,lab,word,h,col,cx] of bars){ const k=t>t0?easeOutCubic((t-t0)/0.5):0; const bw=250, bh=Math.max(12,maxH*h*k);
     ctx.save(); ctx.fillStyle='rgba(28,26,34,0.08)'; rr(cx-bw/2,base-maxH,bw,maxH,18); ctx.fill();
     ctx.fillStyle=col; rr(cx-bw/2,base-bh,bw,bh,14); ctx.fill(); ctx.restore();
     inkText(lab,cx,base+46,{size:30,weight:800,alpha:t>t0?1:0.35});
     if(k>0.6) inkText(word,cx,base-bh-34,{size:40,weight:900,alpha:smooth(0.6,1,k)}); }
-  if(t>tTen){ const k=smooth(0,0.3,t-tTen); ctx.save(); ctx.globalAlpha=ctx.globalAlpha*k; pill('≈ 10× THINNER',W/2,base-maxH*0.55,{size:36,weight:900,bg:INK,fg:C.yellow,padX:30}); ctx.restore(); }
+  if(t>tTen){ const k=smooth(0,0.3,t-tTen); ctx.save(); ctx.globalAlpha=ctx.globalAlpha*k; pill('≈ 10× THINNER',pcx,base-maxH*0.55,{size:36,weight:900,bg:INK,fg:C.yellow,padX:30}); ctx.restore(); }
   ctx.restore(); }
 
 // ---- why2: labels over the close-up footage + a cutaway inset (cross-section of the heap) that builds on the spoken words
@@ -63,9 +66,9 @@ function crossSection(x,y,w,h,st,alpha){ // st: {dimple, layer, slide, jet} in 0
 function beatWhy2(tb,t,b){ const tD=wordTime('why2','dimple'), tL=wordTime('why2','layer'), tSl=wordTime('why2','slippery'), tJ=wordTime('why2','jet');
   const out=1-smooth(b.duration-0.35,b.duration-0.05,tb); const st={dimple:t>tD?smooth(0,0.5,t-tD):0, layer:t>tL?smooth(0,0.4,t-tL):0, slide:t>tSl?smooth(0,0.3,t-tSl):0, jet:t>tJ?easeOutCubic((t-tJ)/0.7):0};
   if(t>tD) headline([[['WHY IT ',C.white],['LEAPS',C.yellow]]],smooth(0,0.25,t-tD)*out,70);
-  crossSection(70,570,400,370,st,smooth(0.1,0.4,tb)*out);   // top-left: clear of the stream (x~745) and the jet (goes up-right)
+  crossSection(120,570,400,370,st,smooth(0.1,0.4,tb)*out);   // top-left: clear of the stream (x~745) and the jet (goes up-right)
   // labels on the real footage; the impact point / dimple sits at ~(745,1270) in the X camera (see scene_kaye.py)
-  const L=[[tD,'DIMPLE',70,1290,705,1262],[tL,'THIN, FAST LAYER',70,1350,735,1290],[tSl,'SLIPPERY → IT SKIDS',70,1410,null,null],[tJ,'JET',520,1060,790,1150]];
+  const L=[[tD,'DIMPLE',120,1290,705,1262],[tL,'THIN, FAST LAYER',120,1350,735,1290],[tSl,'SLIPPERY → IT SKIDS',120,1410,null,null],[tJ,'JET',520,1060,790,1150]];
   for(const [t0,lab,x,y,ax,ay] of L){ if(t<t0) continue; const a=smooth(0,0.25,t-t0)*out; thinLabel(lab,x,y,a,40,'left'); if(ax!==null){ font(800,40); annot(x+ctx.measureText(lab).width+16,y,ax,ay,a); } }
   slowmoTag(out); }
 
@@ -74,7 +77,7 @@ function beatTryit(tb,t,b){ const out=1-smooth(b.duration-0.3,b.duration-0.05,tb
   if(t>tT) headline([[['TRY IT',C.yellow],[' AT HOME',C.white]]],smooth(0,0.25,t-tT)*out,70);
   const items=[['plate','A PLATE'],['stream','A THIN STREAM'],['handspan','A HAND-SPAN UP'],['tries','TAKES A FEW TRIES']];
   items.forEach(([w,lab],i)=>{ const t0=wordTime('tryit',w); if(t<t0) return; const k=t-t0; const a=smooth(0,0.2,k)*out; const y=1180+i*86;
-    ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; const s=lerp(0.9,1,easeOutBack(k/0.25)); ctx.translate(70,y); ctx.scale(s,s);
+    ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; const s=lerp(0.9,1,easeOutBack(k/0.25)); ctx.translate(120,y); ctx.scale(s,s);
     pill((i<3?'✓  ':'↻  ')+lab,0,0,{size:36,weight:800,padX:26,align:'left',bg:i<3?'rgba(10,12,18,0.78)':'rgba(255,214,10,0.92)',fg:i<3?C.white:INK}); ctx.restore(); });
   slowmoTag(out); }
 

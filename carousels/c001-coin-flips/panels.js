@@ -4,7 +4,7 @@
 const CX = 540;
 
 // Big stacked Inter 900 headline, fitted to width; returns [{line, y, w}] (y = baseline).
-function headline(lines, top, {maxW=940, max=200, lh=1.0, color=PAPER.ink}={}){
+function headline(lines, top, {maxW=846, max=200, lh=1.0, color=PAPER.ink}={}){
   const size = fitSize(lines, maxW, {weight:900, max}); const out = [];
   lines.forEach((l, k)=>{ const y = top + size*0.73 + k*size*lh; const w = ink(l, CX, y, {size, weight:900, baseline:'alphabetic', color}); out.push({line:l, y, w, size}); });
   return out;
@@ -20,18 +20,18 @@ function p1(){
 }
 
 function p2(){
-  ink('NOW START OVER.', CX, 330, {size:92, weight:900});
+  ink('NOW START OVER.', CX, 330, {size:86, weight:900});   // 92 was 869 px wide: cropped on tall phones
   problem(()=> markerText('and flip until you see this.', CX, 440, {size:62, color:PAPER.ink, rot:-0.03}));
   coin(CX-140, 640, 122, 'H', {rot:0.04}); coin(CX+140, 640, 122, 'T', {rot:-0.05});
   // the rules, textbook style: a ruled card with a margin line
-  const x0 = 90, x1 = 990, y0 = 780, y1 = 1188;
+  const x0 = 110, x1 = 860, y0 = 780, y1 = 1188;   // readable area: the card's lower half is beside TikTok's icon column
   ctx.save(); ctx.shadowColor = 'rgba(60,40,10,0.18)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
   rr(x0, y0, x1-x0, y1-y0, 10); ctx.fillStyle = '#FBF8F1'; ctx.fill(); ctx.restore();
   ctx.strokeStyle = 'rgba(22,22,22,0.10)'; ctx.lineWidth = 2;
   for(let y = y0+92; y < y1-10; y += 56){ ctx.beginPath(); ctx.moveTo(x0+16, y+0.5); ctx.lineTo(x1-16, y+0.5); ctx.stroke(); }
-  ctx.strokeStyle = 'rgba(229,38,30,0.35)'; ctx.beginPath(); ctx.moveTo(x0+86.5, y0+10); ctx.lineTo(x0+86.5, y1-10); ctx.stroke();
+  ctx.strokeStyle = 'rgba(229,38,30,0.35)'; ctx.beginPath(); ctx.moveTo(x0+76.5, y0+10); ctx.lineTo(x0+76.5, y1-10); ctx.stroke();
   problem(()=>{
-    const L = 42, X = x0 + 112;
+    const L = 36, X = x0 + 96;
     ink('THE RULES', X, y0+58, {size:34, weight:900, align:'left', color:PAPER.soft});
     inkLine([['A ', {}], ['fair coin', {weight:900}], [' is flipped. Count every flip.', {}]], X, y0+136, {size:L, align:'left'});
     inkLine([['HH', {weight:900}], [': stop the first time heads is', {}]], X, y0+192, {size:L, align:'left'});
@@ -40,21 +40,22 @@ function p2(){
     inkLine([['immediately followed by', {weight:900}], [' tails.', {}]], X, y0+360, {size:L, align:'left'});
   });
   problem(()=>{
-    ink('WHICH TAKES MORE', CX, 1278, {size:88, weight:900});
-    const w = ink('FLIPS, ON AVERAGE?', CX, 1378, {size:88, weight:900});
-    const wA = measure('ON AVERAGE?', 88, 900); markerUnderline(CX + w/2 - wA, CX + w/2 - 40, 1424, {width:13, slope:-5});
+    const qs = fitSize(['WHICH TAKES MORE', 'FLIPS, ON AVERAGE?'], 640, {weight:900, max:88});   // below y=1040 a centred line may be 640 wide
+    ink('WHICH TAKES MORE', CX, 1278, {size:qs, weight:900});
+    const w = ink('FLIPS, ON AVERAGE?', CX, 1378, {size:qs, weight:900});
+    const wA = measure('ON AVERAGE?', qs, 900); markerUnderline(CX + w/2 - wA, CX + w/2 - 40, 1424, {width:13, slope:-5});
   });
 }
 
 function p3(){
   // never name an answer here: anything that rules one out leaks the solution
   ink('Most people are', CX, 345, {size:80, weight:700});
-  markerText('CONFIDENTLY', CX, 500, {size:132, rot:-0.05});
+  markerText('CONFIDENTLY', CX, 500, {size:120, rot:-0.05});   // 132 was 907 px wide: cropped on tall phones
   markerText('WRONG.', CX, 650, {size:150, rot:-0.05});
   markerUnderline(330, 760, 735, {width:13, slope:-14});
-  const xs = confidenceScale(150, 930, 960);
+  const xs = confidenceScale(170, 820, 960);   // the '10' label sits at y=1060, so it must stay left of TikTok's icon column (x<860)
   markerArrow(xs[9] - 260, 820, xs[9] - 50, 920, {bend:-0.25, width:9, head:24});
-  const w = ink('Are you?', CX, 1300, {size:150, weight:900});
+  const w = ink('Are you?', CX, 1300, {size:140, weight:900});
 }
 
 function p4(){
@@ -67,9 +68,9 @@ function p4(){
     if(faces) coinRow(faces, 790, y, {r:52, gap:10});
   });
   inkLine([['+ your confidence ', {}], ['1–10', {weight:900}]], CX, 1000, {size:64});
-  ink('Solution tomorrow.', CX, 1170, {size:84, weight:900});
+  ink('Solution tomorrow.', CX, 1170, {size:67, weight:900});   // below y=1040 a centred line may be 640 wide
   ink('Follow.', CX, 1268, {size:84, weight:900});
-  markerText('no googling.', 760, 1400, {size:62, rot:-0.08});
+  markerText('no googling.', 620, 1400, {size:62, rot:-0.08});
 }
 
 window.PANELS = {

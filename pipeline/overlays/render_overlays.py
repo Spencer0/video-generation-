@@ -12,6 +12,7 @@ from playwright.sync_api import sync_playwright
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("video_id"); ap.add_argument("--start", type=int, default=0)
     ap.add_argument("--end", type=int, default=None); ap.add_argument("--every", type=int, default=1); ap.add_argument("--out", default=None); ap.add_argument("--no-captions", action="store_true")
+    ap.add_argument("--show-safe-area", action="store_true", help="paint the TikTok UI zones (pipeline/safe_area.json) on every frame; previews only")
     a = ap.parse_args()
     vd = video_dir(a.video_id); tl = load_json(os.path.join(vd, "build", "timeline.json"))
     out = a.out or os.path.join(vd, "build", "overlay"); os.makedirs(out, exist_ok=True)
@@ -27,6 +28,9 @@ def main():
         page.wait_for_timeout(300)
         page.evaluate("tl => window.setTimeline(tl)", tl)
         if a.no_captions: page.evaluate("window.NO_CAPTIONS = true")
+        if a.show_safe_area:
+            sa = load_json(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "safe_area.json"))
+            page.evaluate("sa => { window.SAFE_ZONES = sa; window.SHOW_SAFE_ZONES = true; }", sa)
         t0 = time.time(); n = 0
         for f in range(a.start, end, a.every):
             path = os.path.join(out, f"ov_{f:04d}.png")

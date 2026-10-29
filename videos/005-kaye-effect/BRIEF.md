@@ -161,7 +161,8 @@ longer than 7 s. Keep these beat ids: `hook`, `compare`, `why1`, `why2`,
 5. Contact sheet at 1 frame/s reviewed by you: every frame must have either
    motion in the fluid or a label appearing. No frame may be mostly black.
 6. Spoken numbers carry "about"; no claim outside the physics section above.
-7. Captions never cross the TikTok UI zones (x 60..1020, y 250..1500).
+7. Nothing readable inside the TikTok UI zones of `pipeline/safe_area.json`
+   (readable: x 110..970, y 250..1560, right edge 860 below y=1040).
 
 ## Deliverables
 

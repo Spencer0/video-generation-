@@ -33,8 +33,9 @@ solve this" meme.
 - The first image is the feed thumbnail and the cover. It is the hook. It
   must read at 1/8 scale (135x240 px): one huge line plus one supporting
   line, nothing else.
-- All text lives in the images. Keep text inside x 60..1020, y 250..1500
-  (platform UI covers the rest), same safe area as the videos.
+- All text lives in the images. Keep everything readable out of the TikTok
+  UI zones in `pipeline/safe_area.json` (readable: x 110..970, y 250..1560,
+  right edge 860 below y=1040), same rule as the videos.
 - No video, no voice. Sound is picked at upload time by the human.
 
 ## Engagement playbook (use all of it)
@@ -184,8 +185,9 @@ first is too famous, the second is ambiguous as usually worded.
 
 1. Thumbnail test: downscale panel 1 to 135x240 with ffmpeg and look at it.
    Headline readable, nothing else competing. Fix before anything else.
-2. Safe area: no text outside x 60..1020, y 250..1500 (assert in the
-   renderer by measuring text bounds, not by eye).
+2. Safe area: no text run's bounds inside a TikTok UI zone of
+   `pipeline/safe_area.json` (asserted in the renderer from measured text
+   bounds, not by eye).
 3. Contrast: ink on paper ≥ 10:1; red accent only where listed.
 4. Word count: ≤ 15 words per panel outside the problem statement.
 5. Exactly one typo in the whole post, the intended one, in panel 3 of c001.

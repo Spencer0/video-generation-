@@ -20,7 +20,13 @@ from playwright.sync_api import sync_playwright
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 W, H = 1080, 1920
-SAFE = (60, 250, 1020, 1500)          # x0, y0, x1, y1: platform UI covers the rest
+SA = json.load(open(os.path.join(ROOT, "pipeline", "safe_area.json")))   # TikTok UI zones + readable area, shared with the video checks
+R = SA["readable"]; SAFE = (R["x0"], R["y0"], R["x1"], R["y1"])   # readable rectangle (paper median is measured inside it)
+def in_zone(b):
+    """Which UI zone (if any) a text bounds box [x0,y0,x1,y1] overlaps."""
+    for z in SA["zones"]:
+        if b[0] < z["x1"] and b[2] > z["x0"] and b[1] < z["y1"] and b[3] > z["y0"]: return z["id"]
+    return None
 MAX_WORDS = 15                         # per panel, outside the problem statement
 PAPER, INK = "#F4F0E6", "#161616"      # mirror of PAPER in helpers.js (checked below)
 
@@ -64,6 +70,7 @@ def render(pd, out, sim, only):
         page = br.new_page(viewport={"width": W, "height": H}, device_scale_factor=1)
         page.goto("file://" + html); page.wait_for_load_state("load")
         page.evaluate("s => { window.SIM = s; }", sim)
+        page.evaluate("sa => { window.SAFE_ZONES = sa; }", {"readable": SA["readable"], "zones": SA["zones"]})
         errors = []; page.on("pageerror", lambda e: errors.append(str(e)))
         page.add_script_tag(path=os.path.join(pd, "panels.js"))
         if errors or not page.evaluate("() => !!(window.PANELS && window.PANELS.draw)"):
@@ -164,11 +171,10 @@ def checks(pd, out, n, meta, logs, simres, simrun):
         f"By eye: {review.get('thumbnail', 'NOT REVIEWED')}")
 
     # 2. safe area, measured from every glyph run that reached the canvas
-    bad = [(i + 1, t["str"], t["bounds"]) for i in logs for t in logs[i]
-           if t["bounds"][0] < SAFE[0] or t["bounds"][1] < SAFE[1] or t["bounds"][2] > SAFE[2] or t["bounds"][3] > SAFE[3]]
+    bad = [(i + 1, t["str"], in_zone(t["bounds"]), t["bounds"]) for i in logs for t in logs[i] if in_zone(t["bounds"])]
     ext = [min(t["bounds"][k] for i in logs for t in logs[i]) for k in (0, 1)] + [max(t["bounds"][k] for i in logs for t in logs[i]) for k in (2, 3)]
     res("2 safe area", not bad, (f"{sum(len(v) for v in logs.values())} text runs, union bounds x {ext[0]:.0f}..{ext[2]:.0f}, "
-        f"y {ext[1]:.0f}..{ext[3]:.0f} inside x 60..1020, y 250..1500") if not bad else f"outside: {bad[:6]}")
+        f"y {ext[1]:.0f}..{ext[3]:.0f}, none under a TikTok UI zone (pipeline/safe_area.json)") if not bad else f"under the UI: {bad[:6]}")
 
     # 3. contrast: palette ratio, plus measured ink-vs-paper on the rendered pixels
     pr = ratio(lum(INK), lum(PAPER))

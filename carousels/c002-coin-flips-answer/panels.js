@@ -5,7 +5,7 @@
 const CX = 540, RED = PAPER.red, BLUE = PAPER.blue;
 
 function p1(){
-  const size = fitSize(['YOU WERE'], 900, {weight:900, max:190});
+  const size = fitSize(['YOU WERE'], 846, {weight:900, max:190});
   ink('YOU WERE', CX, 290 + size*0.73, {size, weight:900, baseline:'alphabetic'});
   const w = ink('WRONG.', CX, 290 + size*1.75, {size, weight:900, baseline:'alphabetic'});
   markerUnderline(CX - w/2, CX + w/2 - 40, 290 + size*1.75 + 34, {width:14, slope:-8});
@@ -13,23 +13,23 @@ function p1(){
   const rows = [[['H','H'], '6', RED, 930], [['H','T'], '4', BLUE, 1220]];
   for(const [faces, num, col, y] of rows){
     coinRow(faces, 330, y, {r:105, gap:18});
-    markerText(num, 800, y + 6, {size:250, color:col, rot:-0.05});
+    markerText(num, 755, y + 6, {size:250, color:col, rot:-0.05});   // stays left of x=860 (TikTok icon column)
   }
-  markerLine(130, 1075, 950, 1068, {color:PAPER.ink, width:5, alpha:0.35, wobble:1.5, streaks:false});
+  markerLine(130, 1075, 850, 1068, {color:PAPER.ink, width:5, alpha:0.35, wobble:1.5, streaks:false});
 }
 
 function p2(){
-  inkLine([['HH', {weight:900, color:RED}], [' takes ', {}], ['6', {weight:900, color:RED}], [' flips on average.', {}]], CX, 345, {size:66});
-  inkLine([['HT', {weight:900, color:BLUE}], [' takes ', {}], ['4', {weight:900, color:BLUE}], ['.', {}]], CX, 445, {size:66});
-  markerText('for example:', 250, 590, {size:56, color:PAPER.ink, rot:-0.04});
+  inkLine([['HH', {weight:900, color:RED}], [' takes ', {}], ['6', {weight:900, color:RED}], [' flips on average.', {}]], CX, 345, {size:56});
+  inkLine([['HT', {weight:900, color:BLUE}], [' takes ', {}], ['4', {weight:900, color:BLUE}], ['.', {}]], CX, 445, {size:56});
+  markerText('for example:', 300, 590, {size:56, color:PAPER.ink, rot:-0.04});
   // an HH game: twice an H gets wiped out by a T before H H lands
   const xs = coinRow(['H','T','H','T','H','H'], CX, 760, {r:62, gap:26});
   markerCircle((xs[4]+xs[5])/2, 760, 150, 84, {width:11, color:RED});
   markerText('6 flips', 860, 905, {size:60, color:RED, rot:-0.04});
   // an HT game: the extra H's don't hurt, you're still holding an H
-  const ys = 1140, xt = coinRow(['H','H','H','T'], 390, ys, {r:62, gap:26});
+  const ys = 1140, xt = coinRow(['H','H','H','T'], 420, ys, {r:62, gap:26});
   markerCircle((xt[2]+xt[3])/2, ys, 150, 84, {width:11, color:BLUE});
-  markerText('4 flips', 860, ys + 10, {size:60, color:BLUE, rot:-0.04});
+  markerText('4 flips', 700, ys + 130, {size:60, color:BLUE, rot:-0.04});   // under the row: x>860 at this height is TikTok's icon column
 }
 
 // ---- state diagram pieces
@@ -52,10 +52,10 @@ function doneMark(x, y){ markerPath([[x-30,y+2],[x-8,y+26],[x+34,y-30]], {color:
 
 function p3(){
   ink('WHY?', CX, 330, {size:120, weight:900});
-  const X = [250, 600, 935];
+  const X = [210, 520, 810];   // the lower row sits at y=1050: everything right of x=860 is under TikTok's icon column
   // HT: once you hold an H you can't lose it
   let y = 650;
-  ink('HT', 66, y - 105, {size:64, weight:900, color:BLUE, align:'left'});
+  ink('HT', 120, y - 105, {size:64, weight:900, color:BLUE, align:'left'});
   X.forEach(x => node(x, y));
   selfLoop(X[0], y, 'T', PAPER.ink); selfLoop(X[1], y, 'H', BLUE);
   coin(X[1], y, 46, 'H', {shadow:false}); doneMark(X[2], y);
@@ -65,7 +65,7 @@ function p3(){
   ink('done', X[2], y + NR + 40, {size:34, weight:700, color:PAPER.soft});
   // HH: the same, except a T from "holding an H" throws you back to the start
   y = 1050;
-  ink('HH', 66, y - 105, {size:64, weight:900, color:RED, align:'left'});
+  ink('HH', 120, y - 105, {size:64, weight:900, color:RED, align:'left'});
   X.forEach(x => node(x, y));
   selfLoop(X[0], y, 'T', PAPER.ink);
   coin(X[1], y, 46, 'H', {shadow:false}); doneMark(X[2], y);
@@ -75,8 +75,8 @@ function p3(){
   markerArrowHead(back[back.length-1], back[back.length-5], {color:RED, width:11, head:30});
   coin((X[0]+X[1])/2, y + 170, 34, 'T', {shadow:false});
   markerCircle((X[0]+X[1])/2, y + 158, 245, 92, {width:10, tilt:-0.03});
-  markerText('this is the whole', 760, y + 270, {size:56, rot:-0.06});
-  markerText('difference.', 790, y + 346, {size:56, rot:-0.06});
+  markerText('this is the whole', 600, y + 270, {size:50, rot:-0.06});
+  markerText('difference.', 620, y + 346, {size:50, rot:-0.06});
 }
 
 function p4({sim}){
@@ -84,13 +84,13 @@ function p4({sim}){
   const w = ink('PROOF.', CX, 340, {size:130, weight:900});
   markerUnderline(CX - w/2, CX + w/2 - 20, 410, {width:14, slope:-6});
   ink('Average flips,', CX, 520, {size:56, weight:700});
-  ink(`${S.display.trials} simulated games each.`, CX, 592, {size:56, weight:700});
+  ink(`${S.display.trials} simulated games each.`, CX, 592, {size:50, weight:700});
   // hand-drawn bars, hatched in the series colour; length from the simulation
   const x0 = 300, scale = 590/6.5;
   const bars = [[['H','H'], S.HH.mean, S.display.hh, RED, 800], [['H','T'], S.HT.mean, S.display.ht, BLUE, 1080]];
   markerLine(x0 - 4, 680, x0 - 2, 1210, {color:PAPER.ink, width:7, wobble:1, streaks:false});
   for(const [faces, v, label, col, y] of bars){
-    coinRow(faces, 168, y, {r:52, gap:8});
+    coinRow(faces, 212, y, {r:52, gap:8});   // coin letters clear of the x<110 side crop
     const L = v*scale, h = 150, top = y - h/2;
     markerPath([[x0, top], [x0 + L, top + 2], [x0 + L - 2, top + h], [x0, top + h - 2]], {color:col, width:8, wobble:1.4, streaks:false});
     for(let k = -h; k < L; k += 26){                    // hatching, clipped to the bar
@@ -99,11 +99,11 @@ function p4({sim}){
     }
     markerText(label, Math.min(x0 + L + 20, 1010) , y + 140, {size:84, color:col, align:'right', rot:-0.03});
   }
-  ink('Want the code? Comment CODE.', CX, 1400, {size:50, weight:700});
+  ink('Want the code? Comment CODE.', CX, 1400, {size:38, weight:700});   // below y=1040 a centred line may be 640 wide
 }
 
 function p5(){
-  const size = fitSize(['NEXT ONE'], 860, {weight:900, max:170});
+  const size = fitSize(['NEXT ONE', 'IS WORSE.'], 846, {weight:900, max:170});
   ink('NEXT ONE', CX, 300 + size*0.73, {size, weight:900, baseline:'alphabetic'});
   ink('IS WORSE.', CX, 300 + size*1.73, {size, weight:900, baseline:'alphabetic'});
   testStrip(CX, 830, {rot:-0.08});
