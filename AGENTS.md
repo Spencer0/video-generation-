@@ -479,6 +479,21 @@ checks.txt; render twice and compare after touching helpers.
 - Permanent Marker has no lowercase (it renders small caps); fine for
   annotations, use Inter for anything longer than a line.
 
+**Screenshot posts** (c004, the infinite-captcha prank): put images in
+`carousels/<id>/assets/`; render_panels.py loads every png/jpg there as a
+data URL into `window.IMG[name]` (data URLs, so the canvas is never
+tainted). `coverBlur(img)` fills the frame with a blurred, dimmed copy,
+`shotCard(img, cx, y, w, {crop, maxH, rot})` draws a rounded card and
+returns a box; `shotPt(box, px, py)` maps screenshot pixels to canvas
+pixels so marker circles land on a chat bubble. White outlined text is the
+overlay `text()` helper. `meta.handle: ''` hides the handle, `meta.chrome`
+colours the counter for dark posts, and marker calls take `blend:
+'source-over'` when multiply would vanish on a dark background.
+- Friends' chats: `make_assets.py chats <originals>` pixelates names and
+  locations; only the redacted copies are committed, never the originals.
+  `make_assets.py site` captures the prank page at 390x844 @3x with
+  `Math.random` seeded, so re-captures match.
+
 **Backlog** (from the brief, in order): c003 answer post (0.98 %; 99 true
 vs 9,999 false positives per million), Penney's game, 100 prisoners (31 %),
 lottery 1-2-3-4-5-6 vs random, Newton-Pepys. Avoid Monty Hall and the

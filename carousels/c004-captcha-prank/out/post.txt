@@ -1,0 +1,40 @@
+# c004-captcha-prank
+
+ORDER: 01.png, 02.png, 03.png, 04.png, 05.png, 06.png (01 is the cover)
+
+CAPTION:
+sent my friends a fake ai trading bot. the gains are behind a captcha you can't pass 💀 try it on yours
+
+HASHTAGS:
+#prank #captcha #recaptcha #tradingbot #ai #pranks #fyp
+
+CAPTION + HASHTAGS (paste as one):
+sent my friends a fake ai trading bot. the gains are behind a captcha you can't pass 💀 try it on yours #prank #captcha #recaptcha #tradingbot #ai #pranks #fyp
+
+PINNED COMMENT (post and pin within a minute):
+tag the friend who would sit there for 20 minutes
+
+SOUND:
+Trending sound, normal volume is fine here (nothing to read on slide 1 but the hook). Something smug or a laugh track fits.
+
+TITLE (TIKTOK TITLE FIELD):
+infinite recaptcha prank
+
+IF YOU CANNOT ADD A BIO LINK YET:
+TikTok bio links need 1,000 followers on personal accounts. Swap to a Business account (free) or change slide 6 to "comment LINK and i’ll send it" and reply to those comments.
+
+PRIVACY:
+Friends’ names and the location are pixelated in assets/ (make_assets.py). The unredacted originals are not in the repo. Still worth a "mind if i post this?" text to both friends.
+
+POSTING INSTRUCTIONS:
+1. Upload the PNGs in order as a photo post; TikTok will offer carousel
+   mode. Panel 1 is the cover.
+2. Add a trending sound at low volume; pick one with no lyrics over the
+   first 3 seconds so the hook is read, not heard.
+3. Paste the caption and hashtags from this file. Post.
+4. Pin the pinned comment from this file within a minute of posting.
+5. Reply to the first 10-20 comments, short, never giving the answer.
+   "Confident?" "Interesting, why?" Replies count as engagement twice.
+6. Question post: post the answer about 24 h later (never later than a day).
+   Answer post: reply to the question post's top comments with "answer's
+   up", and screenshot both analytics pages for review.

@@ -78,7 +78,8 @@ function paperGrain(seed, {flecks=2600, fibres=90}={}){
 let MK_LAYER = null;
 function mkLayer(){ if(!MK_LAYER){ MK_LAYER=document.createElement('canvas'); MK_LAYER.width=W; MK_LAYER.height=H; }
   const m=MK_LAYER.getContext('2d'); m.setTransform(1,0,0,1,0,0); m.clearRect(0,0,W,H); m.setTransform(ctx.getTransform()); return m; }
-function mkComposite(alpha){ ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.globalAlpha=ctx.globalAlpha*alpha; ctx.globalCompositeOperation='multiply'; ctx.drawImage(MK_LAYER,0,0); ctx.restore(); }
+// blend 'multiply' = ink on paper; light marks on dark backgrounds need 'source-over'.
+function mkComposite(alpha, blend='multiply'){ ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.globalAlpha=ctx.globalAlpha*alpha; ctx.globalCompositeOperation=blend; ctx.drawImage(MK_LAYER,0,0); ctx.restore(); }
 // Resample a polyline to ~step px and push each point sideways by smooth noise.
 function wobblePts(pts, {wobble=2.6, seed=mkNext(), step=6, freq=70}={}){
   const out=[]; for(let i=0;i<pts.length-1;i++){ const [x0,y0]=pts[i],[x1,y1]=pts[i+1]; const L=Math.hypot(x1-x0,y1-y0), n=Math.max(1,Math.ceil(L/step));
@@ -92,7 +93,7 @@ function wobblePts(pts, {wobble=2.6, seed=mkNext(), step=6, freq=70}={}){
 }
 // One marker stroke along pts ([[x,y],...]): width swells slightly mid-stroke and
 // tapers at the ends; a few dry streaks are knocked out along the path.
-function markerPath(pts, {color=PAPER.red, width=12, alpha=0.9, wobble=2.6, seed=mkNext(), streaks=true}={}){
+function markerPath(pts, {color=PAPER.red, width=12, alpha=0.9, wobble=2.6, seed=mkNext(), streaks=true, blend='multiply'}={}){
   const m=mkLayer(), r=mulberry(seed), P=wobblePts(pts,{wobble,seed}), wn=valueNoise1(seed+1, 12);
   m.strokeStyle=color; m.fillStyle=color; m.lineCap='round'; m.lineJoin='round';
   for(let i=1;i<P.length;i++){ const u=P[i][2]; const w=width*(0.82+0.18*Math.sin(Math.PI*clamp(u*1.2,0,1)))*(1+0.08*wn(u*10));
@@ -103,7 +104,7 @@ function markerPath(pts, {color=PAPER.red, width=12, alpha=0.9, wobble=2.6, seed
       for(let i=a0;i<=a1;i++){ const a=P[Math.max(0,i-1)], b=P[Math.min(P.length-1,i+1)], dx=b[0]-a[0], dy=b[1]-a[1], l=Math.hypot(dx,dy)||1;
         const x=P[i][0]-dy/l*off, y=P[i][1]+dx/l*off; i===a0?m.moveTo(x,y):m.lineTo(x,y); } m.stroke(); }
     m.globalAlpha=1; m.globalCompositeOperation='source-over'; }
-  mkComposite(alpha);
+  mkComposite(alpha, blend);
 }
 function bezierPts(p0, c, p1, n=40){ const o=[]; for(let i=0;i<=n;i++){ const t=i/n, a=(1-t)*(1-t), b=2*(1-t)*t, d=t*t; o.push([a*p0[0]+b*c[0]+d*p1[0], a*p0[1]+b*c[1]+d*p1[1]]); } return o; }
 function markerLine(x0,y0,x1,y1,o={}){ markerPath([[x0,y0],[x1,y1]],o); }
@@ -126,9 +127,9 @@ function markerArrowHead(tip, from, {head=38,headAngle=0.5,...o}={}){ const a=Ma
   markerPath([[tip[0]-Math.cos(a-headAngle)*head, tip[1]-Math.sin(a-headAngle)*head], tip, [tip[0]-Math.cos(a+headAngle)*head, tip[1]-Math.sin(a+headAngle)*head]],{wobble:1.2,streaks:false,...o}); }
 function markerCross(cx,cy,r,o={}){ const s=o.seed??mkNext(); markerLine(cx-r,cy-r*0.9,cx+r,cy+r*0.95,{...o,seed:s}); markerLine(cx+r*0.92,cy-r,cx-r*0.95,cy+r*0.9,{...o,seed:s+2}); }
 // Hand-lettered text in Permanent Marker (pipeline/carousel/fonts), multiplied like the strokes.
-function markerText(str,x,y,{size=72,color=PAPER.red,align='center',rot=-0.03,alpha=0.92,baseline='middle'}={}){
+function markerText(str,x,y,{size=72,color=PAPER.red,align='center',rot=-0.03,alpha=0.92,baseline='middle',blend='multiply'}={}){
   const m=mkLayer(); m.translate(x,y); m.rotate(rot); m.font=`${size}px "Permanent Marker"`; m.textAlign=align; m.textBaseline=baseline; m.fillStyle=color;
-  if(window.TEXT_HOOK) window.TEXT_HOOK(m,str,0,0,'fill'); m.fillText(str,0,0); mkComposite(alpha);
+  if(window.TEXT_HOOK) window.TEXT_HOOK(m,str,0,0,'fill'); m.fillText(str,0,0); mkComposite(alpha, blend);
   m.font=`${size}px "Permanent Marker"`; return m.measureText(str).width; }
 
 // Ink text on paper: no stroke, no shadow. Returns the drawn width.
@@ -205,3 +206,24 @@ function confidenceScale(x0,x1,y,{n=10,mark=n,labels=true}={}){
   if(mark) markerCircle(xs[mark-1],y,52,64,{width:11});
   return xs;
 }
+
+// ---------------------------------------------------------------- screenshots (window.IMG, loaded by render_panels.py from carousels/<id>/assets)
+// Cover the frame with a blurred, dimmed copy of an image: a background that matches the screenshot on top.
+function coverBlur(img,{blur=40,dim=0.5,crop=null}={}){
+  const [sx,sy,sw,sh]=crop||[0,0,img.width,img.height], k=Math.max(W/sw,H/sh)*1.15;
+  ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.filter=`blur(${blur}px)`;
+  ctx.drawImage(img,sx,sy,sw,sh,(W-sw*k)/2,(H-sh*k)/2,sw*k,sh*k); ctx.filter='none';
+  ctx.fillStyle=`rgba(0,0,0,${dim})`; ctx.fillRect(0,0,W,H); ctx.restore();
+}
+// A cropped screenshot as a rounded card with a soft shadow, top-centred at (cx, y), `w` wide
+// (or fitted into maxH). crop = [sx, sy, sw, sh] in image pixels. Returns the card box.
+function shotCard(img,cx,y,w,{crop=null,maxH=null,radius=34,rot=0,shadow=0.45}={}){
+  const [sx,sy,sw,sh]=crop||[0,0,img.width,img.height]; let k=w/sw; if(maxH&&sh*k>maxH) k=maxH/sh;
+  const cw=sw*k, chh=sh*k, x=-cw/2;
+  ctx.save(); ctx.translate(cx,y+chh/2); ctx.rotate(rot); ctx.translate(0,-chh/2);
+  if(shadow){ ctx.save(); ctx.shadowColor=`rgba(0,0,0,${shadow})`; ctx.shadowBlur=50; ctx.shadowOffsetY=18; rr(x,0,cw,chh,radius); ctx.fillStyle='#fff'; ctx.fill(); ctx.restore(); }
+  ctx.save(); rr(x,0,cw,chh,radius); ctx.clip(); ctx.drawImage(img,sx,sy,sw,sh,x,0,cw,chh); ctx.restore();
+  ctx.restore(); return {x0:cx-cw/2, y0:y, x1:cx+cw/2, y1:y+chh, k, sx, sy};
+}
+// Map image-pixel coordinates to canvas coordinates for a box returned by shotCard (rot 0 only).
+function shotPt(box,px,py){ return [box.x0+(px-box.sx)*box.k, box.y0+(py-box.sy)*box.k]; }

@@ -61,6 +61,21 @@ def run_sim(pd, out):
         return json.load(f), {"seconds": dt, "stdout": r.stdout}
 
 
+def load_assets(page, pd):
+    """carousels/<id>/assets/*.png|jpg -> window.IMG[name] (data URLs, so the canvas is never tainted)."""
+    ad = os.path.join(pd, "assets")
+    if not os.path.isdir(ad): return
+    import base64
+    m = {}
+    for f in sorted(os.listdir(ad)):
+        ext = os.path.splitext(f)[1].lower()
+        if ext in (".png", ".jpg", ".jpeg"):
+            mime = "image/png" if ext == ".png" else "image/jpeg"
+            m[os.path.splitext(f)[0]] = f"data:{mime};base64," + base64.b64encode(open(os.path.join(ad, f), "rb").read()).decode()
+    page.evaluate("""m => { window.IMG = {}; return Promise.all(Object.entries(m).map(([k, u]) => new Promise((ok, bad) => {
+        const i = new Image(); i.onload = () => { window.IMG[k] = i; ok(); }; i.onerror = () => bad(k); i.src = u; }))); }""", m)
+
+
 def render(pd, out, sim, only):
     html = os.path.join(HERE, "panels.html")
     logs, meta = {}, {}
@@ -71,6 +86,7 @@ def render(pd, out, sim, only):
         page.goto("file://" + html); page.wait_for_load_state("load")
         page.evaluate("s => { window.SIM = s; }", sim)
         page.evaluate("sa => { window.SAFE_ZONES = sa; }", {"readable": SA["readable"], "zones": SA["zones"]})
+        load_assets(page, pd)
         errors = []; page.on("pageerror", lambda e: errors.append(str(e)))
         page.add_script_tag(path=os.path.join(pd, "panels.js"))
         if errors or not page.evaluate("() => !!(window.PANELS && window.PANELS.draw)"):

@@ -1,0 +1,12 @@
+# acceptance checks, c004-captcha-prank, 2026-10-29 19:46
+[PASS] 1 thumbnail: largest cover line 'infinite captcha' is 12.9px tall at 135x240 (want >= 9); out/thumb.png. By eye: viewed out/thumb.png at 135x240: 'infinite captcha prank' reads; the green P&L card reads as money.
+[PASS] 2 safe area: 32 text runs, union bounds x 127..951, y 257..1544, none under a TikTok UI zone (pipeline/safe_area.json)
+[PASS] 3 contrast: palette ink/paper 15.9:1; measured on rendered ink text min 0.0:1 over 0 runs; red/paper 4.0:1 (accent only); blue pixels 1047219 (allowed: answer post); red text runs: []. By eye: red marker only on the screenshots (the robot checkbox, Kayton's bubble, Garrett's two lines). Blue is the screenshots' own UI (reCAPTCHA, iMessage), so allow_blue.
+[PASS] 4 word count: p1: 11, p2: 12, p3: 7, p4: 5, p5: 9, p6: 8 (max 15)
+[PASS] 5 typos: found [], intended [] (pyspellchecker)
+[PASS] 6 problem statement: required phrases [] all present. By eye: no puzzle. Slide 1 says prank and puts 'ai trading bot' in quotes, so the $4,812 is never presented as real. Friends' names and the location are pixelated.
+[NOTE] 7 simulation: no sim.py for this post
+[NOTE] 8 overlay regression: helpers.js additions (blend option, coverBlur, shotCard) leave c001-c003 byte-identical (same sha1s).
+[NOTE] 9 flow (contact sheet): hook (prank + the bait text) -> the gate -> the captcha never ends -> friend 1 -> friend 2 -> try it on your friends. Each slide answers the previous one and opens the next.
+[NOTE] determinism: sha1 01:5933275280 02:8cbf64b06e 03:1f285164ec 04:55ad1aea96 05:c10ceec914 06:3882a15bc0
+[NOTE] text: p1: infinite captcha prank i sent my friends my “ai trading bot” | p2: the catch: to see the gains you have to prove you're human | p3: you can't. it never lets you in. | p4: friend 1 lasted 20 minutes | p5: friend 2 thought the captcha was the money glitch | p6: try it on your friends link in bio
