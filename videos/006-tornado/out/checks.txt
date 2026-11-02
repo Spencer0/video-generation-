@@ -11,8 +11,8 @@ duration: 29.82 s (timeline 29.80 s)
   beat loop      0.90 s OK
 longest beat: 4.60 s
 first spoken word onset (VO stem, 50 ms RMS > -20 dBFS): 0.05 s
-mean luma Y: first 3 s = 128.7, whole = 133.5, darkest frame = 100.5 (frame 164)
+mean luma Y: first 3 s = 130.9, whole = 133.7, darkest frame = 100.5 (frame 164)
 frames in final: 894 (timeline 894)
-loop seam: mean abs pixel difference frame 0 vs last frame = 8.8 / 255 (lower is more seamless)
+loop seam: mean abs pixel difference frame 0 vs last frame = 9.2 / 255 (lower is more seamless)
 safe area (298 overlay frames sampled against 5 UI zones): PASS, nothing readable under the TikTok UI
 loudness: Input Integrated:    -14.3 LUFS; Input True Peak:      -2.3 dBTP

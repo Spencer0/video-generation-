@@ -93,10 +93,22 @@ function layersPanel(x,y,w,h,st,alpha){ if(alpha<=0)return; lightPanel(x,y,w,h,a
   ctx.restore(); }
 
 const HOOK_HEAD=[[['THIS COW IS DOING',C.white]],[['200 MPH',C.yellow]]];
+const FAST_T=0.5, LOOP_FAST_AT=12/30;   // the hook opens with 0.5 s of shot F (20x); the loop's last 15 frames are F again (script.json bg_plan)
+// slow-motion tag: right edge at 850, left of TikTok's like/comment column (pipeline/safe_area.json)
+function slowmoTag(alpha){ if(alpha<=0)return; pill('SLOW MOTION 20×',850,1470,{size:28,weight:800,padX:22,alpha:alpha*0.9,align:'right'}); }
+// radial speed streaks out from the funnel for the 20x footage
+function speedLines(t,alpha){ if(alpha<=0)return; const r=mulberry(7); ctx.save(); ctx.globalAlpha=ctx.globalAlpha*alpha; ctx.strokeStyle='rgba(255,255,255,0.85)'; ctx.lineCap='round'; ctx.shadowColor='rgba(0,0,0,0.4)'; ctx.shadowBlur=6;
+  for(let i=0;i<46;i++){ const a=r()*Math.PI*2+0.4*Math.sin(t*9+i), r0=420+r()*300, len=90+r()*260, w=2+r()*3; const jit=((t*40+i*7)%5)*12;
+    ctx.lineWidth=w; ctx.beginPath(); ctx.moveTo(540+Math.cos(a)*(r0+jit),1000+Math.sin(a)*(r0+jit)*1.5); ctx.lineTo(540+Math.cos(a)*(r0+len+jit),1000+Math.sin(a)*(r0+len+jit)*1.5); ctx.stroke(); }
+  ctx.restore(); }
+function slowmoStamp(k,alpha){ if(k<0||alpha<=0)return; const a=smooth(0,0.12,k)*(1-smooth(0.9,1.2,k))*alpha; if(a<=0)return; ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; ctx.translate(W/2,1260); const sc=popIn(k,0.35); ctx.scale(sc,sc);
+  pill('SLOW MOTION  20×',0,0,{size:52,weight:900,bg:'rgba(255,214,10,0.96)',fg:INK,padX:40}); ctx.restore(); }
 // ---- hook: claim on frame 0, tag riding the cow, two more debris gags
-function beatHook(tb,t,b){ const out=fadeOut(b,b,0.3); const o=fadeOut(tb,b); headline(HOOK_HEAD,o); 
-  tagAt('cow','COW · 200 MPH',b.start,t,{out:o,instant:true}); tagAt('trampoline','TRAMPOLINE (obviously)',b.start+0.9,t,{fg:C.white,dx:-40,dy:-130,size:28,out:o}); tagAt('gnome','GNOME (not ok)',b.start+1.6,t,{fg:C.white,dx:40,dy:-120,size:28,out:o});
-  thinLabel('toy cow. real physics.',W/2,1300,smooth(1.2,1.5,tb)*o,30); }
+function beatHook(tb,t,b){ const o=fadeOut(tb,b); headline(HOOK_HEAD,o);
+  if(tb<FAST_T){ speedLines(tb,1); return; }                                   // full speed: the ring of debris, no tags
+  flash(t,b.start+FAST_T,{dur:0.25,peak:0.6}); slowmoStamp(tb-FAST_T,o); slowmoTag(o);
+  tagAt('cow','COW · 200 MPH',b.start+FAST_T,t,{out:o,instant:true}); tagAt('trampoline','TRAMPOLINE (obviously)',b.start+1.2,t,{fg:C.white,dx:-40,dy:-130,size:28,out:o}); tagAt('gnome','GNOME (not ok)',b.start+1.8,t,{fg:C.white,dx:40,dy:-120,size:28,out:o});
+  thinLabel('toy cow. real physics.',W/2,1380,smooth(1.9,2.2,tb)*o,30); }
 // ---- skater: thesis panel, funnel = skater, both spinning
 function beatSkater(tb,t,b){ const o=fadeOut(tb,b); const tS=wordTime('skater','skater'), tG=wordTime('skater','giant');
   if(t>tG) headline([[['A TORNADO IS A',C.white]],[['GIANT FIGURE SKATER',C.yellow]]],smooth(0,0.25,t-tG)*o,68);
@@ -130,11 +142,12 @@ function beatSqueeze(tb,t,b){ const o=fadeOut(tb,b); const tSq=wordTime('squeeze
   const g=smooth(0.3,0.7,tb)*o; gauge(330,1300,190,squeezeSpeed(tb),300,g);
   if(t>tSq) headline([[['SQUEEZE THE SPIN',C.white]]],smooth(0,0.25,t-tSq)*o,70);
   if(t>tF) headline([[['SQUEEZE THE SPIN',C.white]],[['= FASTER',C.yellow]]],smooth(0,0.25,t-tF)*o,70);
+  slowmoTag(o);
   if(t>tA){ const k=t-tA; const a=smooth(0,0.2,k)*o; const armsIn=smooth(0.1,0.6,k); const phase=k*lerp(3,8,armsIn)*Math.PI; ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; ctx.translate(700,1480); ctx.scale(popIn(k),popIn(k));
     ctx.fillStyle='rgba(255,250,242,0.9)'; ctx.beginPath(); ctx.ellipse(0,-150,140,200,0,0,Math.PI*2); ctx.fill(); spinLines(0,-120,lerp(110,60,armsIn),24,phase,1,0.8); skaterFig(0,-20,0.72,armsIn,phase,1); ctx.restore(); } }
 // ---- speed: the record on the gauge
 function beatSpeed(tb,t,b){ const o=fadeOut(tb,b); const tO=wordTime('speed','over'), tThree=wordTime('speed','three');
-  const v=t>tThree?lerp(250,302,easeOutCubic((t-tThree)/0.5)):250; gauge(330,1300,190,v,320,o,{red:200});
+  const v=t>tThree?lerp(250,302,easeOutCubic((t-tThree)/0.5)):250; gauge(330,1300,190,v,320,o,{red:200}); slowmoTag(o);
   if(t>tO) headline([[['OVER ',C.white],['300 MPH',C.yellow]]],smooth(0,0.25,t-tO)*o,72);
   if(t>tThree){ const k=t-tThree; const a=smooth(0.2,0.5,k)*o; thinLabel('fastest wind ever measured on Earth',W/2,990,a,30); thinLabel('Doppler radar · Oklahoma, 1999',W/2,1035,a,26,'center','rgba(255,255,255,0.85)'); if(k<0.4) flash(t,tThree,{dur:0.3,peak:0.3,color:'255,59,59'}); } }
 // ---- tryit: chair panel with steps
@@ -148,10 +161,12 @@ function beatTryit(tb,t,b){ const o=fadeOut(tb,b); const tT=wordTime('tryit','tr
 // ---- ask: name the cow
 function beatAsk(tb,t,b){ const tN=wordTime('ask','name'), tC=wordTime('ask','cow');
   if(t>tN) headline([[['NAME ',C.white],['THE COW',C.yellow]]],smooth(0,0.25,t-tN),76);
-  tagAt('cow','???',b.start,t,{dx:0,dy:-240,size:44});
+  tagAt('cow','???',b.start,t,{dx:0,dy:-240,size:44}); slowmoTag(1);
   if(t>tC){ const a=smooth(0,0.25,t-tC); pill('comment her name ↓',W/2,1340,{size:38,weight:900,padX:30,alpha:a}); thinLabel('follow for more chaos',W/2,1420,a*0.85,28); } }
 // ---- loop: footage runs into frame 0; bring the hook headline + cow tag back so the wrap is seamless
-function beatLoop(tb,t,b){ const a=smooth(b.duration-0.6,b.duration-0.1,tb); headline([[['NAME ',C.white],['THE COW',C.yellow]]],1-smooth(0,0.3,tb),76); headline(HOOK_HEAD,a); tagAt('cow','COW · 200 MPH',b.start+b.duration-0.5,t,{instant:true}); }
+function beatLoop(tb,t,b){ headline([[['NAME ',C.white],['THE COW',C.yellow]]],1-smooth(0,0.3,tb),76);
+  if(tb<LOOP_FAST_AT){ slowmoTag(1-smooth(LOOP_FAST_AT-0.15,LOOP_FAST_AT,tb)); return; }
+  flash(t,b.start+LOOP_FAST_AT,{dur:0.2,peak:0.5}); headline(HOOK_HEAD,smooth(LOOP_FAST_AT,LOOP_FAST_AT+0.25,tb)); speedLines(tb,smooth(LOOP_FAST_AT,LOOP_FAST_AT+0.1,tb)); }
 
 window.BEATS = {
   draw: {hook:beatHook,skater:beatSkater,recipe:beatRecipe,roll:beatRoll,tilt:beatTilt,squeeze:beatSqueeze,speed:beatSpeed,tryit:beatTryit,ask:beatAsk,loop:beatLoop},

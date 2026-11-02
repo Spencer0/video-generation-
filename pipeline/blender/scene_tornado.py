@@ -37,7 +37,8 @@ def parse_args():
     return a
 
 ARGS = parse_args(); FPS = ARGS["fps"]; SHOT = ARGS["shot"].upper()
-SHOT_DUR = {"A": 5.0, "R": 7.0, "N": 5.0, "C": 2.5}
+SHOT_DUR = {"A": 5.0, "R": 7.0, "N": 5.0, "C": 2.5, "F": 0.5}
+FAST = 20.0                                        # shot F: the hero scene at FAST x speed (debris + spin), 0.5 s = 2 exact periods, ends on A frame 0
 T_SHOT = SHOT_DUR[SHOT]; T_PERIOD = 5.0          # debris orbit period (A, C, N share it)
 H_CLOUD = 12.0                                     # cloud deck height
 FLAGS = set(os.environ.get("SCENE_FLAGS", "").split(","))
@@ -399,7 +400,9 @@ def axis_offset(z, t, amp=1.0, H=H_CLOUD):
     k = max(0.0, 1 - z / H) ** 1.6; ph = 2 * math.pi * t / T_PERIOD
     return Vector((amp * 0.9 * math.sin(ph) + 0.25 * math.sin(2 * ph + 1.0) * k, amp * 0.9 * math.cos(ph) * 0.8 + 0.2 * math.sin(3 * ph) * k, 0)) * k
 
-def update_funnel(S, t, s=1.0):
+def update_funnel(S, t, s=1.0, t_spin=None):
+    """t drives the sway/wobble, t_spin (default t) the streak scroll, so the fast shot spins without a frantic sway."""
+    if t_spin is None: t_spin = t
     H = H_CLOUD + 0.8
     def fn_in(j, i, a):
         z = H * j / S["funnel"]["nz"]; o = axis_offset(z, t)
@@ -417,9 +420,9 @@ def update_funnel(S, t, s=1.0):
         return (o.x + r * math.cos(a), o.y + r * math.sin(a), z)
     set_rings(S["dust"], fn_dust)
     # spin: scroll the streak noise around the UV. Integer cycles per period keep shot A seamless.
-    S["fm"].node_tree.nodes["scroll"].outputs[0].default_value = -2.0 * t / T_PERIOD * 1.0
-    S["fm2"].node_tree.nodes["scroll"].outputs[0].default_value = -1.0 * t / T_PERIOD * 1.0
-    S["dm"].node_tree.nodes["scroll"].outputs[0].default_value = 2.0 * t / T_PERIOD * 1.0
+    S["fm"].node_tree.nodes["scroll"].outputs[0].default_value = -2.0 * t_spin / T_PERIOD * 1.0
+    S["fm2"].node_tree.nodes["scroll"].outputs[0].default_value = -1.0 * t_spin / T_PERIOD * 1.0
+    S["dm"].node_tree.nodes["scroll"].outputs[0].default_value = 2.0 * t_spin / T_PERIOD * 1.0
 
 def squeeze_scale(t):
     """Shot N: funnel radius scale over the shot (fat wedge -> rope)."""
@@ -469,9 +472,14 @@ def update_tube(S, t):
 def update(t):
     S = STATE["S"]; cam, tgt = S["cam"], S["cam_target"]
     if SHOT in ("A", "C"): t = t % T_PERIOD
+    if SHOT == "F": t = t - T_SHOT   # runs up to scene time 0 (= A frame 0) at FAST x: frame k is scene time FAST*(k-15)/FPS for the debris
     jitter = lambda k: 0.06 * math.sin(2 * math.pi * 3 * t / T_PERIOD + k) + 0.04 * math.sin(2 * math.pi * 5 * t / T_PERIOD + 2 * k)   # periodic handheld
     if SHOT == "A":
         update_funnel(S, t); update_debris(S, t)
+        cam.location = (0.6 + jitter(0), -17.0, 3.2 + jitter(1)); tgt.location = (0.0 + jitter(2), 0.0, 6.0); cam.data.lens = 24
+        S["focus"].location = (0, 0, 4.5)
+    elif SHOT == "F":
+        ts = (FAST * t) % T_PERIOD; update_funnel(S, t % T_PERIOD, 1.0, t_spin=ts); update_debris(S, ts)
         cam.location = (0.6 + jitter(0), -17.0, 3.2 + jitter(1)); tgt.location = (0.0 + jitter(2), 0.0, 6.0); cam.data.lens = 24
         S["focus"].location = (0, 0, 4.5)
     elif SHOT == "N":
@@ -501,7 +509,7 @@ def setup_render(res, samples):
     c.use_denoising = True; c.denoiser = "OPENIMAGEDENOISE"; c.denoising_input_passes = "RGB_ALBEDO_NORMAL"; c.denoising_use_gpu = False
     c.max_bounces = 4; c.diffuse_bounces = 2; c.glossy_bounces = 2; c.transmission_bounces = 2; c.volume_bounces = 0; c.transparent_max_bounces = 10
     c.caustics_reflective = False; c.caustics_refractive = False; c.blur_glossy = 1.0; c.sample_clamp_indirect = 6.0
-    sc.render.use_persistent_data = True; sc.render.use_motion_blur = "noblur" not in FLAGS; sc.render.motion_blur_shutter = 0.5
+    sc.render.use_persistent_data = True; sc.render.use_motion_blur = "noblur" not in FLAGS; sc.render.motion_blur_shutter = 1.0 if SHOT == "F" else 0.5   # full-frame shutter on the fast shot: a continuous smear, no strobing
     sc.render.resolution_x = res; sc.render.resolution_y = res * 16 // 9; sc.render.resolution_percentage = 100
     sc.render.image_settings.file_format = "PNG"; sc.render.image_settings.color_mode = "RGB"; sc.render.image_settings.compression = 20
     sc.render.fps = FPS; sc.view_settings.view_transform = "AgX"

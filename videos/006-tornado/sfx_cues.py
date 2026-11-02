@@ -41,6 +41,15 @@ def whirr(d, speed_fn):
     t = t_axis(d); sp = np.array([speed_fn(x) for x in t]); f = 55 + 260 * sp
     ph = 2 * np.pi * np.cumsum(f) / SR; o = np.sin(ph) + 0.5 * np.sin(2 * ph) + 0.25 * np.sin(3 * ph) + 0.12 * np.sin(4 * ph)
     o *= 1 + 0.25 * np.sin(2 * np.pi * f * 0.5 * t / 10); return o / (np.abs(o).max() + 1e-9) * (0.4 + 0.6 * sp)
+def flutter(d, rate=8.0, rise=(500, 1100)):
+    """Full-speed footage: whooshes passing at `rate` Hz (the cow's orbit rate at 20x) under a rising whine."""
+    t = t_axis(d); n = bandpass_fast(noise(d), 400, 5000); am = 0.35 + 0.65 * (0.5 + 0.5 * np.sin(2 * np.pi * rate * t)) ** 3
+    f = rise[0] + (rise[1] - rise[0]) * t / d; ph = 2 * np.pi * np.cumsum(f) / SR; wh = (np.sin(ph) + 0.3 * np.sin(2 * ph)) * 0.25
+    out = n / (np.abs(n).max() + 1e-9) * am + wh; return out / (np.abs(out).max() + 1e-9)
+def sweep(d, f0, f1):
+    """Tape-speed glide: a buzzy tone sliding from f0 to f1 (down = snapping into slow motion, up = back to full speed)."""
+    t = t_axis(d); f = f0 * (f1 / f0) ** (t / d); ph = 2 * np.pi * np.cumsum(f) / SR
+    o = (np.sin(ph) + 0.5 * np.sin(2 * ph) + 0.25 * np.sin(3 * ph)) * np.sin(np.pi * t / d) ** 0.5; return o / (np.abs(o).max() + 1e-9)
 def pluck(f, d=0.35):
     t = t_axis(d); return (np.sin(2 * np.pi * f * t) + 0.3 * np.sin(2 * np.pi * 2 * f * t) + 0.1 * np.sin(2 * np.pi * 3 * f * t)) * np.exp(-t / 0.09) * np.minimum(1, t / 0.003)
 def kick(d=0.25): t = t_axis(d); return np.sin(2 * np.pi * (48 + 90 * np.exp(-t / 0.03)) * t) * np.exp(-t / 0.08)
@@ -51,16 +60,21 @@ def cues(tl, B, W, sfx, music, D, N):
     env = np.zeros_like(ta)
     for bid, g in (("hook", 1.0), ("skater", 0.35), ("recipe", 0.3), ("roll", 0.6), ("tilt", 0.8), ("squeeze", 1.0), ("speed", 1.0), ("tryit", 0.35), ("ask", 1.1), ("loop", 1.0)):
         b = B[bid]; env += g * np.clip((ta - b["start"] + 0.25) / 0.5, 0, 1) * np.clip((b["end"] - ta + 0.25) / 0.5, 0, 1)
+    FAST_T = 0.5; LOOP_FAST_AT = 12 / fps; tl_fast = B["loop"]["start"] + LOOP_FAST_AT
+    env *= 1 - 0.7 * ((ta < FAST_T) | (ta > tl_fast))   # wind ducks under the full-speed flutter
     place(sfx, wind(D) * np.clip(env, 0, 1.2), 0, 0.22)
+    # full speed -> snap into slow motion (hook), and back up to full speed at the very end (loop)
+    place(sfx, flutter(FAST_T), 0.0, 0.5); place(sfx, sweep(0.35, 1400, 120), FAST_T - 0.05, 0.4); place(sfx, thud(70, 0.4), FAST_T, 0.6)
+    place(sfx, sweep(0.4, 120, 1400), tl_fast - 0.1, 0.35); place(sfx, flutter(D - tl_fast + 0.1, rise=(900, 1100)), tl_fast, 0.45)
     # debris whooshes on the live footage (hero, squeeze, record, close-up): Poisson-ish passes, pitched by size
     for bid, rate in (("hook", 1.6), ("squeeze", 2.2), ("speed", 1.6), ("ask", 2.0), ("loop", 1.6)):
-        b = B[bid]; t = b["start"] + rng.uniform(0, 0.4)
-        while t < b["end"]:
+        b = B[bid]; t = b["start"] + rng.uniform(0, 0.4) + (FAST_T if bid == "hook" else 0)
+        while t < (b["end"] if bid != "loop" else tl_fast):
             lo = rng.uniform(250, 700); place(sfx, whoosh(rng.uniform(0.25, 0.5), lo, lo * 6), t, rng.uniform(0.12, 0.3)); t += rng.exponential(1 / rate) + 0.15
     # the cow: moo on the hook, on 'cow' in the ask, and once in the loop (so the wrap lands on a moo)
-    place(sfx, moo(1.0), 0.12, 0.55); place(sfx, moo(0.9, 105), W("ask", "cow") + 0.1, 0.5); place(sfx, moo(0.8, 125), B["loop"]["start"] + 0.2, 0.35)
-    place(sfx, boing(), B["hook"]["start"] + 0.9, 0.35)                                      # trampoline tag
-    place(sfx, ding(1760, 0.5), B["hook"]["start"] + 1.6, 0.12)                                # gnome tag
+    place(sfx, moo(1.0), 0.62, 0.55); place(sfx, moo(0.9, 105), W("ask", "cow") + 0.1, 0.5); place(sfx, moo(0.8, 125), B["loop"]["start"] + 0.05, 0.3)
+    place(sfx, boing(), B["hook"]["start"] + 1.2, 0.35)                                      # trampoline tag
+    place(sfx, ding(1760, 0.5), B["hook"]["start"] + 1.8, 0.12)                                # gnome tag
     # skater: skate swishes at the spin rate (slow with arms out, fast after 'skater')
     b = B["skater"]; tS = W("skater", "skater"); t = b["start"] + 0.2; k = 0
     while t < b["end"] - 0.2:

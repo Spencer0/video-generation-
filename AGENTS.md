@@ -348,6 +348,17 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
   sequential); chain shots, never overlap them. The harness background
   runner caps at 2 h, so a chained render needs one relaunch (frame-skip
   resume makes that free).
+- Feedback round 1: "that cow is not doing 200 mph". At toy scale 1x footage reads as floating. Fix: a
+  fifth shot F = the hero scene with the debris clock at 20x (scene time FAST*(k-15)/FPS, 15 frames =
+  exactly 2 orbit periods, so F 14 -> A 0 and F 14 -> F 0 are both continuous), shutter 1.0 so the
+  debris smears into a ring instead of strobing, the funnel sway at 1x but its streak scroll at 20x.
+  bg_plan uses "cuts": the hook is F 0-14 then A from 0; the loop is A 123-134 then F 0-14, so the
+  wrap lands mid-spin. Overlay: radial speed lines during F, a white snap + a "SLOW MOTION 20x"
+  stamp, then the corner tag on every slow footage beat. Sound: 8 Hz flutter (the cow's orbit rate at
+  20x) under a rising whine, a tape-style pitch drop into slow motion, the reverse at the end. Cover
+  is frame 15 (first slow frame, cow in front), not frame 0 (a blur ring). Lesson: when the footage
+  is a miniature, show the real speed first or label the slow motion from frame 0; 002/005 did it
+  with a label only, and the brief never asked, but viewers do.
 - Measured on the final: 29.33 s, VO onset 0.10 s, mean luma Y 130.8 (first
   3 s) / 129.3 (whole), darkest frame 99.9 (blurred footage under the
   explainer panel), -14.2 LUFS, TP -1.5 dBTP, loop seam 3.2/255 (captions
@@ -421,7 +432,7 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
   Creek-Moore, Oklahoma, 3 May 1999 (El Reno 2013 reanalyses put it similar or higher). The "cow at
   200 mph" is the bit, labelled as a toy; debris in EF5 winds genuinely travels at a good fraction of
   the wind speed.
-- Measured on the final: 29.82 s, 894 frames at 30 fps, VO onset 0.05 s, mean luma Y 128.7 (first 3 s) / 133.5 (whole), darkest frame 100.5 (blurred footage under the skater panel), -14.3 LUFS, TP -2.3 dBTP, loop seam 8.8/255 (the headline swaps on the wrap; footage wraps on an exact period), safe area PASS, longest beat 4.6 s, render 585 frames at 540x960 / 8 samples in 1 h 55 min.
+- Measured on the final: 29.82 s, 894 frames at 30 fps, VO onset 0.05 s, mean luma Y 128.7 (first 3 s) / 133.5 (whole), darkest frame 100.5 (blurred footage under the skater panel), -14.3 LUFS, TP -2.3 dBTP, loop seam 9.2/255 (both ends are the 20x blur with the headline; the footage clock is continuous across the wrap), safe area PASS, longest beat 4.6 s, render 600 frames at 540x960 / 8 samples in 2 h.
 
 ## Workflow for a new video
 
