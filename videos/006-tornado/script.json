@@ -1,6 +1,6 @@
 {
  "id": "006-tornado",
- "title": "This cow is doing 200 mph (how tornadoes work)",
+ "title": "A tornado carried a whole herd a quarter mile (how tornadoes work)",
  "fps": 30,
  "width": 1080,
  "height": 1920,
@@ -16,7 +16,8 @@
   "R": 210,
   "N": 150,
   "C": 75,
-  "F": 15
+  "F": 15,
+  "L": 140
  },
  "bg_plan": {
   "hook": [
@@ -33,13 +34,25 @@
     ]
    }
   ],
-  "skater": [
+  "fact": [
+   "L",
+   0
+  ],
+  "cheque": [
    "A",
    63
   ],
-  "recipe": [
+  "ask": [
+   "C",
+   0
+  ],
+  "turn": [
    "A",
-   30
+   0
+  ],
+  "skater": [
+   "A",
+   60
   ],
   "roll": [
    "R",
@@ -61,10 +74,6 @@
    "A",
    100
   ],
-  "ask": [
-   "C",
-   0
-  ],
   "loop": [
    "A",
    123,
@@ -81,8 +90,8 @@
   ]
  },
  "blur_beats": [
+  "cheque",
   "skater",
-  "recipe",
   "tryit"
  ],
  "beats": [
@@ -96,81 +105,99 @@
    ]
   },
   {
-   "id": "skater",
-   "pad_before": 0.1,
+   "id": "fact",
+   "pad_before": 0.15,
    "pad_after": 0.25,
-   "min_duration": 2.5,
+   "min_duration": 4.2,
    "lines": [
-    "Because a tornado is a giant figure skater."
+    "True story: a tornado threw a whole herd a quarter mile. All survived."
    ]
   },
   {
-   "id": "recipe",
+   "id": "cheque",
    "pad_before": 0.15,
-   "pad_after": 0.25,
-   "min_duration": 4.4,
+   "pad_after": 0.2,
+   "min_duration": 2.7,
    "lines": [
-    "Warm wet air below, cold dry air above, and wind that twists with height."
+    "A bank check once flew two hundred twenty-three miles."
+   ]
+  },
+  {
+   "id": "ask",
+   "pad_before": 0.1,
+   "pad_after": 0.3,
+   "min_duration": 1.8,
+   "lines": [
+    "Name her in the comments."
+   ]
+  },
+  {
+   "id": "turn",
+   "pad_before": 0.1,
+   "pad_after": 0.2,
+   "min_duration": 1.9,
+   "lines": [
+    "So how does a tornado throw a cow?"
+   ]
+  },
+  {
+   "id": "skater",
+   "pad_before": 0.1,
+   "pad_after": 0.2,
+   "min_duration": 2.0,
+   "lines": [
+    "It's a giant figure skater."
    ]
   },
   {
    "id": "roll",
    "pad_before": 0.15,
    "pad_after": 0.2,
-   "min_duration": 3.6,
+   "min_duration": 3.7,
    "lines": [
-    "That twist rolls the air into a tube. Like a rolling pin."
+    "Slow wind low, fast wind high, so the air rolls into a tube."
    ]
   },
   {
    "id": "tilt",
    "pad_before": 0.1,
-   "pad_after": 0.25,
-   "min_duration": 3.0,
+   "pad_after": 0.2,
+   "min_duration": 2.3,
    "lines": [
-    "A thunderstorm's updraft stands the tube up."
+    "The updraft stands it up."
    ]
   },
   {
    "id": "squeeze",
    "pad_before": 0.15,
    "pad_after": 0.2,
-   "min_duration": 4.6,
+   "min_duration": 4.3,
    "lines": [
-    "Then it stretches thin. Squeeze the spin and it spins faster. Arms in!"
+    "Then it stretches thin. Squeeze the spin, it spins faster. Arms in!"
    ]
   },
   {
    "id": "speed",
    "pad_before": 0.1,
-   "pad_after": 0.25,
-   "min_duration": 2.5,
+   "pad_after": 0.2,
+   "min_duration": 2.0,
    "lines": [
-    "The record: over three hundred miles an hour."
+    "Up to three hundred miles an hour."
    ]
   },
   {
    "id": "tryit",
    "pad_before": 0.15,
-   "pad_after": 0.25,
-   "min_duration": 2.9,
+   "pad_after": 0.2,
+   "min_duration": 2.6,
    "lines": [
     "Try it: spin on a chair, then pull your arms in."
    ]
   },
   {
-   "id": "ask",
-   "pad_before": 0.1,
-   "pad_after": 0.4,
-   "min_duration": 2.1,
-   "lines": [
-    "Now name the cow."
-   ]
-  },
-  {
    "id": "loop",
-   "pad_before": 0,
-   "pad_after": 0,
+   "pad_before": 0.0,
+   "pad_after": 0.0,
    "min_duration": 0.9,
    "lines": []
   }

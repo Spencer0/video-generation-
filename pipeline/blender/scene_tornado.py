@@ -37,7 +37,7 @@ def parse_args():
     return a
 
 ARGS = parse_args(); FPS = ARGS["fps"]; SHOT = ARGS["shot"].upper()
-SHOT_DUR = {"A": 5.0, "R": 7.0, "N": 5.0, "C": 2.5, "F": 0.5}
+SHOT_DUR = {"A": 5.0, "R": 7.0, "N": 5.0, "C": 2.5, "F": 0.5, "L": 4.67}
 FAST = 20.0                                        # shot F: the hero scene at FAST x speed (debris + spin), 0.5 s = 2 exact periods, ends on A frame 0
 T_SHOT = SHOT_DUR[SHOT]; T_PERIOD = 5.0          # debris orbit period (A, C, N share it)
 H_CLOUD = 12.0                                     # cloud deck height
@@ -482,6 +482,23 @@ def update(t):
         ts = (FAST * t) % T_PERIOD; update_funnel(S, t % T_PERIOD, 1.0, t_spin=ts); update_debris(S, ts)
         cam.location = (0.6 + jitter(0), -17.0, 3.2 + jitter(1)); tgt.location = (0.0 + jitter(2), 0.0, 6.0); cam.data.lens = 24
         S["focus"].location = (0, 0, 4.5)
+    elif SHOT == "L":
+        # the fact beat: the cow flies in from the funnel on a parabola, lands a "quarter mile" away in the field, bounces, stands, chews
+        update_funnel(S, t); update_debris(S, t)
+        cow = next(d for d in S["debris"] if d["name"] == "cow")["ob"]; T_L = 1.4; G = 9.8
+        p0, p1 = Vector((6.0, 4.0, 14.0)), Vector((21.0, -8.0, 1.55))
+        v = (p1 - p0) / T_L + Vector((0, 0, 0.5 * G * T_L))
+        if t < T_L:
+            p = p0 + v * t + Vector((0, 0, -0.5 * G * t * t)); cow.location = p
+            cow.rotation_euler = (2 * math.pi * t / T_L * 1.0, 2 * math.pi * t / T_L * 0.5, 0.9 + 1.5 * t); cow.scale = (1.8, 1.8, 1.8)
+        else:
+            k = t - T_L; bounce = 0.9 * abs(math.sin(math.pi * k / 0.45)) * math.exp(-k / 0.25) if k < 0.9 else 0.0
+            squash = 1 - 0.22 * math.exp(-k / 0.12) * (1 if k < 0.3 else 0) + 0.05 * math.sin(2 * math.pi * k / 1.1) * smoothstep(0.9, 1.3, k)   # thud squash, then a slow breathing chew
+            cow.location = (p1.x, p1.y, p1.z + bounce); cow.scale = (1.8 * (1 + (1 - squash) * 0.6), 1.8 * (1 + (1 - squash) * 0.6), 1.8 * squash)
+            cow.rotation_euler = (0.04 * math.sin(2 * math.pi * k / 1.1) * smoothstep(0.9, 1.3, k), 0.03 * math.sin(2 * math.pi * k / 0.7 + 1) * smoothstep(0.9, 1.3, k), 0.9)
+        shake = 0.35 * math.exp(-(t - T_L) / 0.25) * math.sin(60 * t) if t > T_L else 0.0
+        cam.location = (30.0, -22.0, 2.2 + shake); tgt.location = (20.0, -6.0, 2.6 + 0.6 * shake); cam.data.lens = 28; cam.data.dof.aperture_fstop = 4.0
+        S["focus"].location = (p1.x, p1.y, 1.5)
     elif SHOT == "N":
         s = squeeze_scale(t); update_funnel(S, t, s); update_debris(S, t, s)
         cam.location = (-1.0 + 0.3 * math.sin(t), -18.0, 3.2); tgt.location = (0.0, 0.0, 6.0); cam.data.lens = 24

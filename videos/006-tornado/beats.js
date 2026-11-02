@@ -75,23 +75,35 @@ function chairFig(x,y,s,armsIn,phase,alpha=1){ if(alpha<=0)return; ctx.save(); c
   const r=lerp(120,18,armsIn), hy=lerp(-270,-360,armsIn), sy=-272;
   for(const sg of [1,-1]){ const hx=sg*r*Math.cos(phase); const depth=sg*Math.sin(phase); ctx.lineWidth=depth>0?12:9; ctx.beginPath(); ctx.moveTo(0,sy); ctx.quadraticCurveTo(hx*0.5,lerp(sy,hy,0.4),hx,hy); ctx.stroke(); }
   ctx.restore(); }
-// layered-atmosphere diagram for the recipe beat
-function layersPanel(x,y,w,h,st,alpha){ if(alpha<=0)return; lightPanel(x,y,w,h,alpha); ctx.save(); ctx.globalAlpha=ctx.globalAlpha*alpha; ctx.translate(x,y);
-  inkText('THE RECIPE',w/2,52,{size:38,weight:900});
-  const top=100, gy=h-90; const g=ctx.createLinearGradient(0,top,0,gy); g.addColorStop(0,'rgba(77,184,255,0.55)'); g.addColorStop(0.5,'rgba(255,255,255,0)'); g.addColorStop(1,'rgba(255,122,26,0.5)');
-  rr(30,top,w-60,gy-top,24); ctx.fillStyle=g; ctx.fill();
-  ctx.fillStyle='#5B9B3C'; rr(30,gy-8,w-60,40,10); ctx.fill();                       // ground
-  ctx.fillStyle='#F2EDE3'; ctx.fillRect(w/2-40,gy-60,80,56); ctx.fillStyle=C.red; ctx.beginPath(); ctx.moveTo(w/2-52,gy-60); ctx.lineTo(w/2,gy-100); ctx.lineTo(w/2+52,gy-60); ctx.closePath(); ctx.fill();   // tiny house
-  if(st.warm>0){ ctx.globalAlpha=ctx.globalAlpha*st.warm; inkText('WARM, WET AIR',w/2,gy-150,{size:40,weight:900,color:'#D14A00'}); 
-    for(let i=0;i<5;i++){ const xx=90+i*(w-180)/4; ctx.strokeStyle='rgba(209,74,0,0.7)'; ctx.lineWidth=5; ctx.beginPath(); for(let k=0;k<=12;k++){ const yy=gy-20-k*8; const xo=Math.sin(k*0.9+st.t*4+i)*8; k?ctx.lineTo(xx+xo,yy):ctx.moveTo(xx+xo,yy);} ctx.stroke(); }   // steam squiggles
-    ctx.globalAlpha=ctx.globalAlpha/st.warm; }
-  if(st.cold>0){ ctx.globalAlpha=ctx.globalAlpha*st.cold; inkText('COLD, DRY AIR',w/2,top+70,{size:40,weight:900,color:'#1F6FC0'}); text('❄',110,top+70,{size:40,stroke:false,shadow:false}); text('❄',w-110,top+70,{size:40,stroke:false,shadow:false}); ctx.globalAlpha=ctx.globalAlpha/st.cold; }
-  if(st.wind>0){ ctx.globalAlpha=ctx.globalAlpha*st.wind;   // wind arrows turning (and growing) with height, drawn in a flattened plan view
-    for(let i=0;i<5;i++){ const u=i/4; const yy=lerp(gy-200,top+140,u); const ang=lerp(0.15,-1.35,u)*st.twist; const L=lerp(90,190,u); const dx=Math.cos(ang)*L, dy=Math.sin(ang)*L*0.4;
-      arrowLine(w/2-dx/2,yy-dy/2,w/2+dx/2,yy+dy/2,{color:INK,width:9,head:24}); }
-    inkText('WIND TWISTS WITH HEIGHT',w/2,gy-230,{size:30,weight:900,alpha:st.twist}); ctx.globalAlpha=ctx.globalAlpha/st.wind; }
-  ctx.restore(); }
-
+// ---- fact: the cow lands a quarter mile away (shot L), tag rides it, THUD on impact, the source line
+function beatFact(tb,t,b){ const o=fadeOut(tb,b); const tT=wordTime('fact','true'), tQ=wordTime('fact','quarter'), tS=wordTime('fact','survived'); const T_LAND=1.4;
+  if(t>tT) headline([[['TRUE STORY',C.yellow]]],smooth(0,0.25,t-tT)*o,76);
+  if(t>tS) headline([[['TRUE STORY',C.yellow]],[['ALL SURVIVED.',C.white]]],smooth(0,0.25,t-tS)*o,76);
+  if(tb>T_LAND){ const k=tb-T_LAND; const p=trackPos('cow'); if(p&&k<0.9){ ctx.save(); ctx.globalAlpha=ctx.globalAlpha*(1-smooth(0.6,0.9,k)); stamp('THUD!',clamp(p[0],300,780),clamp(p[1]-260,560,1000),b.start+T_LAND,t,{color:C.yellow,size:96,rot:-0.12}); ctx.restore(); } }
+  if(t>tQ) tagAt('cow',t>tS?'ALIVE ✓':'¼ MILE',tQ,t,{fg:t>tS?C.green:C.yellow,dx:40,dy:-150,size:34,out:o});
+  thinLabel('Elgin, Texas, 2017 · confirmed by the NWS',W/2,1400,t>tS?smooth(0.3,0.6,t-tS)*o:0,26,'center','rgba(255,255,255,0.9)'); }
+// ---- cheque: debris record on a sketch map (cream panel over blurred footage)
+function chequeIcon(x,y,rot,s,alpha){ if(alpha<=0)return; ctx.save(); ctx.globalAlpha=ctx.globalAlpha*alpha; ctx.translate(x,y); ctx.rotate(rot); ctx.scale(s,s); ctx.shadowColor='rgba(0,0,0,0.3)'; ctx.shadowBlur=14; ctx.shadowOffsetY=6;
+  rr(-70,-32,140,64,8); ctx.fillStyle='#F7F3E4'; ctx.fill(); ctx.shadowColor='transparent'; ctx.strokeStyle='rgba(28,26,34,0.35)'; ctx.lineWidth=2; ctx.stroke();
+  ctx.strokeStyle='rgba(28,26,34,0.45)'; ctx.lineWidth=3; for(const yy of [-10,4,18]){ ctx.beginPath(); ctx.moveTo(-52,yy); ctx.lineTo(yy===18?10:40,yy); ctx.stroke(); }
+  inkText('$',48,10,{size:30,weight:900,color:'#1F6FC0'}); ctx.restore(); }
+function beatCheque(tb,t,b){ const o=fadeOut(tb,b); const tC=wordTime('cheque','check'), tF=wordTime('cheque','flew'), tN=wordTime('cheque','twentythree');
+  if(t>tC) headline([[['A BANK CHECK FLEW',C.white]],[['223 MILES',C.yellow]]],smooth(0,0.25,t-tC)*o,70);
+  const a=smooth(0.05,0.35,tb)*o; const px=110,py=600,pw=750,ph=800; lightPanel(px,py,pw,ph,a); ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a;
+  inkText('DEBRIS RECORD',px+pw/2,py+56,{size:36,weight:900});
+  const k0=[px+230,py+ph-150], k1=[px+560,py+200];   // Kansas (bottom-left) -> Nebraska (top-right)
+  ctx.strokeStyle='rgba(28,26,34,0.5)'; ctx.lineWidth=5; ctx.setLineDash([16,14]); ctx.beginPath(); ctx.moveTo(k0[0],k0[1]); ctx.quadraticCurveTo(px+200,py+180,k1[0],k1[1]); ctx.stroke(); ctx.setLineDash([]);
+  for(const [p,lab,sub] of [[k0,'KANSAS','Stockton, 1991'],[k1,'NEBRASKA','found on a farm']]){ ctx.fillStyle=C.red; ctx.beginPath(); ctx.arc(p[0],p[1],16,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(p[0],p[1],6,0,Math.PI*2); ctx.fill();
+    inkText(lab,p[0],p[1]+52,{size:34,weight:900}); inkText(sub,p[0],p[1]+88,{size:24,weight:700,color:'rgba(28,26,34,0.6)'}); }
+  const u=t>tF?easeOutCubic((t-tF)/1.3):0; const bx=(1-u)*(1-u)*k0[0]+2*(1-u)*u*(px+200)+u*u*k1[0], by=(1-u)*(1-u)*k0[1]+2*(1-u)*u*(py+180)+u*u*k1[1];
+  chequeIcon(bx,by-30,0.5*Math.sin(t*14)*(u<1?1:0.3)-0.3,0.9,1);
+  if(t>tN){ const k=t-tN; ctx.save(); ctx.globalAlpha=ctx.globalAlpha*smooth(0,0.15,k); ctx.translate(px+pw/2,py+ph-40); ctx.scale(popIn(k),popIn(k)); pill('223 MILES',0,0,{size:46,weight:900,bg:INK,fg:C.yellow,padX:34}); ctx.restore(); }
+  inkText('World Meteorological Organization record',px+pw/2,py+ph+40,{size:22,weight:700,color:'rgba(28,26,34,0.65)'}); ctx.restore(); }
+// ---- turn: the question that earns the physics
+function beatTurn(tb,t,b){ const o=fadeOut(tb,b); const tH=wordTime('turn','how'), tTh=wordTime('turn','throw');
+  if(t>tH) headline([[['SO HOW DOES A TORNADO',C.white]]],smooth(0,0.25,t-tH)*o,64);
+  if(t>tTh){ headline([[['SO HOW DOES A TORNADO',C.white]],[['THROW A COW?',C.yellow]]],smooth(0,0.25,t-tTh)*o,64); tagAt('cow','her again',tTh,t,{fg:C.white,dx:-40,dy:-150,size:28,out:o}); }
+  slowmoTag(o); }
 const HOOK_HEAD=[[['THIS COW IS DOING',C.white]],[['200 MPH',C.yellow]]];
 const FAST_T=0.5, LOOP_FAST_AT=12/30;   // the hook opens with 0.5 s of shot F (20x); the loop's last 15 frames are F again (script.json bg_plan)
 // slow-motion tag: right edge at 850, left of TikTok's like/comment column (pipeline/safe_area.json)
@@ -118,13 +130,10 @@ function beatSkater(tb,t,b){ const o=fadeOut(tb,b); const tS=wordTime('skater','
   funnelIcon(px+205,py+ph-120,1.0,tb*6,a); inkText('=',px+pw/2,py+ph/2+40,{size:120,weight:900,alpha:a,color:'rgba(28,26,34,0.55)'});
   spinLines(px+560,py+ph-250,lerp(150,80,k),30,phase,lerp(0.3,1,k),a*0.8); skaterFig(px+560,py+ph-120,1.0,k,phase,a);
   inkText('same trick',px+pw/2,py+70,{size:36,weight:900,alpha:a,color:'rgba(28,26,34,0.65)'}); }
-// ---- recipe: layered atmosphere panel, pieces on the spoken words
-function beatRecipe(tb,t,b){ const o=fadeOut(tb,b); const tW=wordTime('recipe','warm'), tC=wordTime('recipe','cold'), tWi=wordTime('recipe','wind'), tT=wordTime('recipe','twists');
-  const a=smooth(0.05,0.35,tb)*o; const st={t:tb, warm:t>tW?smooth(0,0.3,t-tW):0, cold:t>tC?smooth(0,0.3,t-tC):0, wind:t>tWi?smooth(0,0.3,t-tWi):0, twist:t>tT?easeOutCubic((t-tT)/0.8):0};
-  layersPanel(110,600,750,900,st,a); }
 // ---- roll: labels + a rotation arrow around the live tube
-function beatRoll(tb,t,b){ const o=fadeOut(tb,b); const tTw=wordTime('roll','twist'), tTube=wordTime('roll','tube'), tRp=wordTime('roll','rolling');
-  if(t>tTw){ const a=smooth(0,0.25,t-tTw)*o; arrowLine(150,1290,330,1290,{alpha:a,width:9}); thinLabel('SLOW WIND',240,1340,a,30); arrowLine(150,760,540,760,{alpha:a,width:12,color:C.yellow}); thinLabel('FAST WIND',345,810,a,30,'center',C.yellow); }
+function beatRoll(tb,t,b){ const o=fadeOut(tb,b); const tSl=wordTime('roll','slow'), tFa=wordTime('roll','fast'), tTube=wordTime('roll','rolls'), tRp=wordTime('roll','tube');
+  if(t>tSl){ const a=smooth(0,0.25,t-tSl)*o; arrowLine(150,1290,330,1290,{alpha:a,width:9}); thinLabel('SLOW WIND',240,1340,a,30); }
+  if(t>tFa){ const a=smooth(0,0.25,t-tFa)*o; arrowLine(150,760,540,760,{alpha:a,width:12,color:C.yellow}); thinLabel('FAST WIND',345,810,a,30,'center',C.yellow); }
   if(t>tTube){ const a=smooth(0,0.3,t-tTube)*o; ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; ctx.strokeStyle=C.yellow; ctx.lineWidth=10; ctx.lineCap='round'; ctx.shadowColor='rgba(0,0,0,0.5)'; ctx.shadowBlur=8;
     const ph=(t*1.2)%1; const a0=-0.4+ph*0.6; ctx.beginPath(); ctx.ellipse(560,1040,230,105,0,a0,a0+2.3); ctx.stroke();   // front arc of a loop around the tube
     const ex=560+230*Math.cos(a0+2.3), ey=1040+105*Math.sin(a0+2.3); const ta=a0+2.3+Math.PI/2; ctx.fillStyle=C.yellow; ctx.beginPath(); ctx.moveTo(ex+22*Math.cos(ta),ey+22*Math.sin(ta)); ctx.lineTo(ex+22*Math.cos(ta+2.5),ey+22*Math.sin(ta+2.5)); ctx.lineTo(ex+22*Math.cos(ta-2.5),ey+22*Math.sin(ta-2.5)); ctx.closePath(); ctx.fill(); ctx.restore();
@@ -146,9 +155,9 @@ function beatSqueeze(tb,t,b){ const o=fadeOut(tb,b); const tSq=wordTime('squeeze
   if(t>tA){ const k=t-tA; const a=smooth(0,0.2,k)*o; const armsIn=smooth(0.1,0.6,k); const phase=k*lerp(3,8,armsIn)*Math.PI; ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; ctx.translate(700,1480); ctx.scale(popIn(k),popIn(k));
     ctx.fillStyle='rgba(255,250,242,0.9)'; ctx.beginPath(); ctx.ellipse(0,-150,140,200,0,0,Math.PI*2); ctx.fill(); spinLines(0,-120,lerp(110,60,armsIn),24,phase,1,0.8); skaterFig(0,-20,0.72,armsIn,phase,1); ctx.restore(); } }
 // ---- speed: the record on the gauge
-function beatSpeed(tb,t,b){ const o=fadeOut(tb,b); const tO=wordTime('speed','over'), tThree=wordTime('speed','three');
+function beatSpeed(tb,t,b){ const o=fadeOut(tb,b); const tO=wordTime('speed','up'), tThree=wordTime('speed','three');
   const v=t>tThree?lerp(250,302,easeOutCubic((t-tThree)/0.5)):250; gauge(330,1300,190,v,320,o,{red:200}); slowmoTag(o);
-  if(t>tO) headline([[['OVER ',C.white],['300 MPH',C.yellow]]],smooth(0,0.25,t-tO)*o,72);
+  if(t>tO) headline([[['UP TO ',C.white],['300 MPH',C.yellow]]],smooth(0,0.25,t-tO)*o,72);
   if(t>tThree){ const k=t-tThree; const a=smooth(0.2,0.5,k)*o; thinLabel('fastest wind ever measured on Earth',W/2,990,a,30); thinLabel('Doppler radar · Oklahoma, 1999',W/2,1035,a,26,'center','rgba(255,255,255,0.85)'); if(k<0.4) flash(t,tThree,{dur:0.3,peak:0.3,color:'255,59,59'}); } }
 // ---- tryit: chair panel with steps
 function beatTryit(tb,t,b){ const o=fadeOut(tb,b); const tT=wordTime('tryit','try'), tSp=wordTime('tryit','spin'), tArms=wordTime('tryit','arms');
@@ -159,7 +168,7 @@ function beatTryit(tb,t,b){ const o=fadeOut(tb,b); const tT=wordTime('tryit','tr
   const steps=[[tSp,'1. SPIN ON A CHAIR'],[tArms,'2. PULL YOUR ARMS IN'],[tArms+0.7,'3. WHEEEEE']];
   steps.forEach(([t0,lab],i)=>{ if(t<t0) return; const k=t-t0; ctx.save(); ctx.globalAlpha=ctx.globalAlpha*smooth(0,0.2,k)*a; ctx.translate(px+40,py+80+i*74); ctx.scale(popIn(k),popIn(k)); pill(lab,0,0,{size:34,weight:900,bg:i<2?INK:'rgba(255,214,10,0.95)',fg:i<2?C.white:INK,padX:24,align:'left'}); ctx.restore(); }); }
 // ---- ask: name the cow
-function beatAsk(tb,t,b){ const tN=wordTime('ask','name'), tC=wordTime('ask','cow');
+function beatAsk(tb,t,b){ const tN=wordTime('ask','name'), tC=wordTime('ask','comments');
   if(t>tN) headline([[['NAME ',C.white],['THE COW',C.yellow]]],smooth(0,0.25,t-tN),76);
   tagAt('cow','???',b.start,t,{dx:0,dy:-240,size:44}); slowmoTag(1);
   if(t>tC){ const a=smooth(0,0.25,t-tC); pill('comment her name ↓',W/2,1340,{size:38,weight:900,padX:30,alpha:a}); thinLabel('follow for more chaos',W/2,1420,a*0.85,28); } }
@@ -169,9 +178,9 @@ function beatLoop(tb,t,b){ headline([[['NAME ',C.white],['THE COW',C.yellow]]],1
   flash(t,b.start+LOOP_FAST_AT,{dur:0.2,peak:0.5}); headline(HOOK_HEAD,smooth(LOOP_FAST_AT,LOOP_FAST_AT+0.25,tb)); speedLines(tb,smooth(LOOP_FAST_AT,LOOP_FAST_AT+0.1,tb)); }
 
 window.BEATS = {
-  draw: {hook:beatHook,skater:beatSkater,recipe:beatRecipe,roll:beatRoll,tilt:beatTilt,squeeze:beatSqueeze,speed:beatSpeed,tryit:beatTryit,ask:beatAsk,loop:beatLoop},
-  cutFlash: ['roll','squeeze','speed','ask'],
-  keywords: ['cow','tornado','skater','warm','wet','cold','dry','wind','twists','tube','rolling','updraft','squeeze','spin','spins','faster','arms','chair','name','record','stretches'],
+  draw: {hook:beatHook,fact:beatFact,cheque:beatCheque,ask:beatAsk,turn:beatTurn,skater:beatSkater,roll:beatRoll,tilt:beatTilt,squeeze:beatSqueeze,speed:beatSpeed,tryit:beatTryit,loop:beatLoop},
+  cutFlash: ['fact','ask','turn','roll','squeeze','speed'],
+  keywords: ['cow','tornado','skater','herd','quarter','survived','check','miles','throw','slow','fast','warm','wet','cold','dry','wind','twists','tube','rolling','updraft','squeeze','spin','spins','faster','arms','chair','name','record','stretches'],
   caption: {y: CAP_Y, size: 60, pop: 1.06, keywordColor: '#FFB020'},
   vignette: 0.15,
 };

@@ -58,7 +58,7 @@ def cues(tl, B, W, sfx, music, D, N):
     rng = np.random.default_rng(66); ta = t_axis(D); fps = tl["fps"]
     # wind bed under every beat; quieter under the blurred explainer panels, loudest on the hero and close-up footage
     env = np.zeros_like(ta)
-    for bid, g in (("hook", 1.0), ("skater", 0.35), ("recipe", 0.3), ("roll", 0.6), ("tilt", 0.8), ("squeeze", 1.0), ("speed", 1.0), ("tryit", 0.35), ("ask", 1.1), ("loop", 1.0)):
+    for bid, g in (("hook", 1.0), ("fact", 0.5), ("cheque", 0.3), ("ask", 1.1), ("turn", 1.0), ("skater", 0.35), ("roll", 0.6), ("tilt", 0.8), ("squeeze", 1.0), ("speed", 1.0), ("tryit", 0.35), ("loop", 1.0)):
         b = B[bid]; env += g * np.clip((ta - b["start"] + 0.25) / 0.5, 0, 1) * np.clip((b["end"] - ta + 0.25) / 0.5, 0, 1)
     FAST_T = 0.5; LOOP_FAST_AT = 12 / fps; tl_fast = B["loop"]["start"] + LOOP_FAST_AT
     env *= 1 - 0.7 * ((ta < FAST_T) | (ta > tl_fast))   # wind ducks under the full-speed flutter
@@ -67,12 +67,12 @@ def cues(tl, B, W, sfx, music, D, N):
     place(sfx, flutter(FAST_T), 0.0, 0.5); place(sfx, sweep(0.35, 1400, 120), FAST_T - 0.05, 0.4); place(sfx, thud(70, 0.4), FAST_T, 0.6)
     place(sfx, sweep(0.4, 120, 1400), tl_fast - 0.1, 0.35); place(sfx, flutter(D - tl_fast + 0.1, rise=(900, 1100)), tl_fast, 0.45)
     # debris whooshes on the live footage (hero, squeeze, record, close-up): Poisson-ish passes, pitched by size
-    for bid, rate in (("hook", 1.6), ("squeeze", 2.2), ("speed", 1.6), ("ask", 2.0), ("loop", 1.6)):
+    for bid, rate in (("hook", 1.6), ("turn", 1.6), ("squeeze", 2.2), ("speed", 1.6), ("ask", 2.0), ("loop", 1.6)):
         b = B[bid]; t = b["start"] + rng.uniform(0, 0.4) + (FAST_T if bid == "hook" else 0)
         while t < (b["end"] if bid != "loop" else tl_fast):
             lo = rng.uniform(250, 700); place(sfx, whoosh(rng.uniform(0.25, 0.5), lo, lo * 6), t, rng.uniform(0.12, 0.3)); t += rng.exponential(1 / rate) + 0.15
     # the cow: moo on the hook, on 'cow' in the ask, and once in the loop (so the wrap lands on a moo)
-    place(sfx, moo(1.0), 0.62, 0.55); place(sfx, moo(0.9, 105), W("ask", "cow") + 0.1, 0.5); place(sfx, moo(0.8, 125), B["loop"]["start"] + 0.05, 0.3)
+    place(sfx, moo(1.0), 0.62, 0.55); place(sfx, moo(0.9, 105), W("ask", "her") + 0.05, 0.5); place(sfx, moo(0.8, 125), B["loop"]["start"] + 0.05, 0.3)
     place(sfx, boing(), B["hook"]["start"] + 1.2, 0.35)                                      # trampoline tag
     place(sfx, ding(1760, 0.5), B["hook"]["start"] + 1.8, 0.12)                                # gnome tag
     # skater: skate swishes at the spin rate (slow with arms out, fast after 'skater')
@@ -80,15 +80,19 @@ def cues(tl, B, W, sfx, music, D, N):
     while t < b["end"] - 0.2:
         fast = t > tS; place(sfx, swish(0.22 if fast else 0.3), t, 0.2 if fast else 0.14); t += (0.14 if fast else 0.45); k += 1
     place(sfx, shimmer(0.6), b["start"] + 0.05, 0.25)
-    # recipe: soft panel shimmer, a warm 'hiss' on warm, an icy tick on cold, a breath of wind on wind
-    b = B["recipe"]; place(sfx, shimmer(0.6), b["start"] + 0.05, 0.25)
-    place(sfx, lowpass_fast(noise(0.6), 900) * env_exp(0.6, 0.25) * 0.4, W("recipe", "warm"), 0.4)
-    for k in range(3): place(sfx, tick(5200 + 400 * k, 0.03), W("recipe", "cold") + 0.08 * k, 0.25)
-    place(sfx, whoosh(0.6, 300, 2500), W("recipe", "wind"), 0.3)
-    for wd in ("twists",): place(sfx, ding(1320, 0.6), W("recipe", wd), 0.14)
+    # fact: falling whistle, a big thud on the landing (shot L lands at 1.4 s), an indignant moo, ding on 'survived'
+    b = B["fact"]; T_LAND = 1.4
+    place(sfx, sweep(1.3, 1600, 500) * 0.6, b["start"] + 0.05, 0.3); place(sfx, thud(60, 0.5), b["start"] + T_LAND, 0.9); place(sfx, lowpass_fast(noise(0.3), 300) * env_exp(0.3, 0.06), b["start"] + T_LAND, 0.5)
+    place(sfx, moo(0.9, 98), b["start"] + T_LAND + 0.45, 0.5); place(sfx, ding(1320, 0.6), W("fact", "quarter"), 0.14); place(sfx, ding(1760, 0.8), W("fact", "survived"), 0.18)
+    # cheque: panel shimmer, paper flutter while it flies, ding on the number
+    b = B["cheque"]; place(sfx, shimmer(0.6), b["start"] + 0.05, 0.25); tF = W("cheque", "flew")
+    fl = bandpass_fast(noise(1.4), 1200, 6000); fl = fl / (np.abs(fl).max() + 1e-9) * (0.4 + 0.6 * (0.5 + 0.5 * np.sin(2 * np.pi * 13 * t_axis(1.4))) ** 2) * np.sin(np.pi * t_axis(1.4) / 1.4) ** 0.5
+    place(sfx, fl, tF, 0.25); place(sfx, ding(1760, 0.8), W("cheque", "twentythree"), 0.18)
+    # turn: record-scratch style brake on 'how' (fast down-sweep + noise), then the question ding
+    tH = W("turn", "how"); place(sfx, sweep(0.22, 900, 140) * 0.8, tH - 0.15, 0.35); place(sfx, bandpass_fast(noise(0.2), 800, 4000) * env_exp(0.2, 0.05) * 0.6, tH - 0.15, 0.3); place(sfx, ding(1320, 0.6), W("turn", "throw"), 0.14)
     # roll: a low rolling rumble under the tube, ding on 'tube', pop on 'rolling'
     b = B["roll"]; rum = lowpass_fast(noise(b["duration"]), 120); place(sfx, rum / (np.abs(rum).max() + 1e-9) * (1 + 0.5 * np.sin(2 * np.pi * 1.1 * t_axis(b["duration"]))), b["start"], 0.35)
-    place(sfx, ding(1320, 0.6), W("roll", "tube"), 0.14); place(sfx, ding(1760, 0.6), W("roll", "rolling"), 0.14)
+    place(sfx, ding(1320, 0.6), W("roll", "rolls"), 0.14); place(sfx, ding(1760, 0.6), W("roll", "tube"), 0.14)
     # tilt: rising whoosh for the updraft, a 'thunk' when it stands
     place(sfx, whoosh(1.4, 200, 3000, rev=True), W("tilt", "updraft"), 0.4); place(sfx, thud(80, 0.4), W("tilt", "stands") + 0.3, 0.5)
     # squeeze: whirr that climbs with the gauge (same curve as beats.js squeezeSpeed), gauge ticks, ding on 'faster', swishes on 'arms'
@@ -112,7 +116,7 @@ def cues(tl, B, W, sfx, music, D, N):
     # ask: ding on 'name', question pop
     place(sfx, ding(1760, 0.7), W("ask", "name"), 0.16); place(sfx, bubble_pop(600, 0.08, 0.4), W("ask", "cow") + 0.3, 0.3)
     # cuts
-    for bid in ("roll", "squeeze", "speed", "ask"): place(sfx, whoosh(0.3, 400, 4000), B[bid]["start"] - 0.12, 0.25)
+    for bid in ("fact", "ask", "turn", "roll", "squeeze", "speed"): place(sfx, whoosh(0.3, 400, 4000), B[bid]["start"] - 0.12, 0.25)
     # music: 122 bpm, bright major-key pluck arpeggio over a kick/hat pulse, kept quiet (the mixer's 0.12 gain -> ~-20 dB)
     bpm = 122; beat = 60 / bpm; chords = [(57, 60, 64, 69), (53, 57, 60, 65), (55, 59, 62, 67), (52, 55, 59, 64)]
     tt = 0.0; k = 0

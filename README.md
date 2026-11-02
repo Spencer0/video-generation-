@@ -50,7 +50,7 @@ conventions that make the pieces line up.
 
 ```bash
 python3 pipeline/tts.py 006-tornado && python3 pipeline/sfx.py 006-tornado
-bash pipeline/blender/render_all.sh 006-tornado 540 8          # ~2 h on 4 cores (5 shots incl. the 20x open); also writes build/tracks/<shot>.json
+bash pipeline/blender/render_all.sh 006-tornado 540 8          # ~2.5 h on 4 cores (6 shots incl. the 20x open and the cow landing); also writes build/tracks/<shot>.json
 python3 pipeline/overlays/render_overlays.py 006-tornado          # labels ride the cow via trackPos('cow')
 python3 pipeline/overlays/render_overlays.py 006-tornado --no-captions --out videos/006-tornado/build/overlay_nocap
 python3 pipeline/assemble.py 006-tornado
