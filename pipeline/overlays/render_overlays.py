@@ -26,6 +26,7 @@ def main():
         page.add_script_tag(path=os.path.join(vd, "beats.js"))   # per-video beat graphics
         page.evaluate("document.fonts.load('900 80px Inter'); document.fonts.load('700 40px Inter')")
         page.wait_for_timeout(300)
+        page.evaluate("s => window.SCRIPT = s", load_json(os.path.join(vd, "script.json")))   # per-video constants beats.js may need (e.g. 006 "years")
         page.evaluate("tl => window.setTimeline(tl)", tl)
         if a.no_captions: page.evaluate("window.NO_CAPTIONS = true")
         if a.show_safe_area:

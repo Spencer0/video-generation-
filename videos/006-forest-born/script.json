@@ -1,0 +1,208 @@
+{
+  "id": "006-forest-born",
+  "title": "How a forest is born (a 120-year timelapse)",
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "voice": {
+    "engine": "kokoro",
+    "name": "af_heart",
+    "speed": 1.1,
+    "lang": "en-us"
+  },
+  "scene": "pipeline/blender/scene_forest.py",
+  "_shots": "M = the master timelapse (every beat from hook to why, contiguous, one continuous camera move); R = the rewind (ask + loop) that runs the clock back to year 0 so the last frame equals frame 0. Frame counts are filled in from timeline.json by the scene (--shot M --end 0 means 'all'); the numbers below are copied from tts.py output.",
+  "shots": {
+    "H": 107,
+    "W": 130,
+    "G": 129,
+    "S": 122,
+    "P1": 90,
+    "P2": 87,
+    "C1": 84,
+    "C2": 90,
+    "Y": 194,
+    "R": 159
+  },
+  "bg_plan": {
+    "hook": [
+      "H",
+      0
+    ],
+    "weeds": [
+      "W",
+      0
+    ],
+    "grass": [
+      "G",
+      0
+    ],
+    "shrubs": [
+      "S",
+      0
+    ],
+    "pioneers": [
+      "P1",
+      0,
+      {
+        "cuts": [
+          [
+            "P2",
+            0,
+            90,
+            87
+          ]
+        ]
+      }
+    ],
+    "climax": [
+      "C1",
+      0,
+      {
+        "cuts": [
+          [
+            "C2",
+            0,
+            84,
+            90
+          ]
+        ]
+      }
+    ],
+    "why": [
+      "Y",
+      0
+    ],
+    "ask": [
+      "R",
+      0
+    ],
+    "loop": [
+      "R",
+      135
+    ]
+  },
+  "blur_beats": [
+    "why"
+  ],
+  "years": {
+    "_comment": "year of the timelapse at the start and end of each beat; the scene (scene_forest.py) and the overlay (beats.js) both interpolate linearly inside a beat so the counter matches the footage. ask/loop rewind to 0 with an ease (see yearAt in both).",
+    "hook": [
+      0,
+      1.5
+    ],
+    "weeds": [
+      1.5,
+      4.5
+    ],
+    "grass": [
+      4.5,
+      12
+    ],
+    "shrubs": [
+      12,
+      25
+    ],
+    "pioneers": [
+      25,
+      60
+    ],
+    "climax": [
+      60,
+      120
+    ],
+    "why": [
+      120,
+      128
+    ],
+    "ask": [
+      128,
+      0
+    ],
+    "loop": [
+      0,
+      0
+    ]
+  },
+  "beats": [
+    {
+      "id": "hook",
+      "pad_before": 0.0,
+      "pad_after": 0.3,
+      "min_duration": 3.2,
+      "lines": [
+        "Leave bare dirt alone, and it grows a forest. By itself."
+      ]
+    },
+    {
+      "id": "weeds",
+      "pad_before": 0.15,
+      "pad_after": 0.3,
+      "min_duration": 4.0,
+      "lines": [
+        "Year one: weeds. Their seeds ride the wind, and all they need is sun."
+      ]
+    },
+    {
+      "id": "grass",
+      "pad_before": 0.15,
+      "pad_after": 0.3,
+      "min_duration": 4.0,
+      "lines": [
+        "Year five: grasses take over. Dead leaves rot into richer soil."
+      ]
+    },
+    {
+      "id": "shrubs",
+      "pad_before": 0.15,
+      "pad_after": 0.3,
+      "min_duration": 3.8,
+      "lines": [
+        "Year fifteen: birds drop berry seeds. Shrubs. The first shade."
+      ]
+    },
+    {
+      "id": "pioneers",
+      "pad_before": 0.15,
+      "pad_after": 0.3,
+      "min_duration": 5.5,
+      "lines": [
+        "Year thirty: birch and pine race up for the light. But they can't grow in shade. Not even their own."
+      ]
+    },
+    {
+      "id": "climax",
+      "pad_before": 0.15,
+      "pad_after": 0.4,
+      "min_duration": 5.5,
+      "lines": [
+        "Year one hundred: oaks and maples rise underneath them, and take over. The forest is born."
+      ]
+    },
+    {
+      "id": "why",
+      "pad_before": 0.2,
+      "pad_after": 0.4,
+      "min_duration": 5.5,
+      "lines": [
+        "Each stage changes the ground, kills the stage before it, and makes room for the next. That's succession."
+      ]
+    },
+    {
+      "id": "ask",
+      "pad_before": 0.2,
+      "pad_after": 0.5,
+      "min_duration": 4.5,
+      "lines": [
+        "Every empty lot is on this clock. What's growing in the cracks near you?"
+      ]
+    },
+    {
+      "id": "loop",
+      "pad_before": 0.0,
+      "pad_after": 0.0,
+      "min_duration": 0.8,
+      "lines": []
+    }
+  ]
+}

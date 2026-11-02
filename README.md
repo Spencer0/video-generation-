@@ -43,5 +43,18 @@ python3 pipeline/assemble.py 005-kaye-effect --overlay-dir overlay_nocap --out v
 python3 pipeline/checks.py 005-kaye-effect                        # -> out/checks.txt
 ```
 
+## Build video 006 (how a forest is born) — the soil-block timelapse
+
+```bash
+# textures (CC0, Poly Haven, ~20 MB, once): excavated_soil_wall dirt_floor grass_ground forest_leaves_03 pine_bark jolcham_oak_bark_01 bark_brown_02
+#   -> /home/user/tools/textures/<name>/{diffuse,normal,rough}.jpg  (1k jpg from https://api.polyhaven.com/files/<name>; see videos/006-forest-born/BRIEF.md)
+python3 pipeline/tts.py 006-forest-born
+$BLENDER -b -noaudio -P pipeline/blender/scene_forest.py -- --list      # shot frame counts (copy into script.json "shots") + build/forest_events.json for the sfx
+python3 pipeline/sfx.py 006-forest-born
+python3 pipeline/overlays/render_overlays.py 006-forest-born && python3 pipeline/checks.py 006-forest-born --only-safe-area
+bash pipeline/blender/render_all.sh 006-forest-born 576 8              # ~4.5 h on 4 cores; resumable
+python3 pipeline/assemble.py 006-forest-born && python3 pipeline/checks.py 006-forest-born
+```
+
 See `AGENTS.md` for the design decisions, measured render costs and the
 conventions that make the pieces line up.

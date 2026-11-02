@@ -366,6 +366,46 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
   second; stable on a tilted surface. Honey (Newtonian) coils, water
   splashes. "Roughly ten times thinner" keeps the "roughly".
 
+## Video 006 notes (how a forest is born: succession timelapse on a cut-open soil block)
+
+- Format borrowed from the "You Built It" 3D backyard shorts via Theo's free
+  rebuild (github.com/Theoxmotion/whatif-3d-studio, 2026-11): a block of land
+  cut open like a cake, camera always at y < 0 looking at the cut face, one
+  framing per beat with a glide, a cut every 2-3 s, action on frame 0, photo
+  textures on anything big, natural shapes, nothing floating. The brief in
+  `videos/006-forest-born/BRIEF.md` lists what was taken and the fact check.
+- The timelapse clock is the spine: `script.json "years"` gives each beat a
+  year range; the scene (`year_at`), the overlay counter (`yearAt`) and the sfx
+  (`year_curve`) interpolate the same way, so the counter always matches the
+  footage. The ask + loop beats *rewind* to year 0 with a quintic ease and the
+  camera glides back to the hook's pose: the last frame is frame 0 (seamless
+  loop) and the rewind itself is a second watch of the growth.
+- Shots are video-time spans, not fixed nominal lengths: the scene reads
+  timeline.json, so a script rewrite means a re-render. `--list` prints the
+  frame counts (copy into "shots") and writes `build/forest_events.json`
+  (pioneer fall years for the sfx, the bg_plan). Mid-beat cuts use the
+  assembler's `cuts` option (P2 at pioneers+90, C2 at climax+84).
+- Everything is a pure function of the year; ~3,600 objects (instanced
+  meshes), deaths from shade precomputed with numpy once at build (0.3 s).
+  Scene sync is 1.6 s/frame; path tracing is the cost (2 s/sample at 576p,
+  foliage never converges so all samples run). 8 samples + OIDN is clean;
+  3 bounces (1 diffuse). ~13 s/frame average, 20 s for the DoF low angle.
+- **AgX made the scene look washed out**: grey sky, pastel greens, white
+  stones, at any exposure. Standard view transform at -0.6 EV keeps the blue
+  sky and saturated greens. Measure on a frame before blaming materials.
+- World `Texture Coordinate > Generated` is the view *direction* (-1..1, z=0
+  horizon), not 0..1: a horizon test at 0.5 gives a flat grey sky.
+- `Bump` node Distance defaults to 1 m: with object-space noise on a 0.3 m
+  stone the normals break and a 0.05-albedo rock renders sky-white. Set
+  Distance to centimetres (0.03 here) on every bump.
+- Roots "on the cut face" must sit *in front* of it (y = -0.05); at +0.04 they
+  are inside the block and invisible. Trunks end at 0.82-0.86 of the tree height
+  so they do not poke out of the crown.
+- Overlay engine: `BEATS.every(t)` is drawn on every frame (the year counter);
+  `render_overlays.py` now injects script.json as `window.SCRIPT`.
+- Poly Haven textures via https://api.polyhaven.com/files/<name> (1k jpg
+  Diffuse / nor_gl / Rough); loaded with BOX projection on Object coords.
+
 ## Workflow for a new video
 
 1. Copy `videos/001-water-bag/script.json`, write beats (3 words/sec pacing,

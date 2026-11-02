@@ -85,6 +85,7 @@ window.renderFrame=function(f){
   const t=f/TL.fps; ctx.clearRect(0,0,W,H); vignette();
   const V=window.BEATS||{draw:{},cutFlash:[]};
   for(const b of TL.beats){ if(t>=b.start && t<b.end){ const fn=V.draw[b.id]; if(fn) fn(t-b.start,t,b); } }
+  if(V.every) V.every(t);   // per-video element drawn on every frame (006: the year counter)
   drawCaptions(t);
   for(const id of V.cutFlash){ if(BEATS[id]) flash(t,BEATS[id].start,{dur:0.2,peak:0.45}); }
   if(window.SHOW_SAFE_ZONES && window.SAFE_ZONES) drawSafeZones();
