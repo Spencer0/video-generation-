@@ -45,3 +45,15 @@ python3 pipeline/checks.py 005-kaye-effect                        # -> out/check
 
 See `AGENTS.md` for the design decisions, measured render costs and the
 conventions that make the pieces line up.
+
+## Build video 006 (tornado) — same commands; the scene also exports object tracks for the overlay
+
+```bash
+python3 pipeline/tts.py 006-tornado && python3 pipeline/sfx.py 006-tornado
+bash pipeline/blender/render_all.sh 006-tornado 540 8          # ~2 h on 4 cores; also writes build/tracks/<shot>.json
+python3 pipeline/overlays/render_overlays.py 006-tornado          # labels ride the cow via trackPos('cow')
+python3 pipeline/overlays/render_overlays.py 006-tornado --no-captions --out videos/006-tornado/build/overlay_nocap
+python3 pipeline/assemble.py 006-tornado
+python3 pipeline/assemble.py 006-tornado --overlay-dir overlay_nocap --out videos/006-tornado/out/final_nocaptions.mp4
+python3 pipeline/checks.py 006-tornado && python3 pipeline/contact.py 006-tornado   # -> out/checks.txt, contact.png, thumb.png
+```

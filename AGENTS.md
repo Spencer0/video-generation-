@@ -366,6 +366,63 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
   second; stable on a tilted surface. Honey (Newtonian) coils, water
   splashes. "Roughly ten times thinner" keeps the "roughly".
 
+## Video 006 notes (tornado, "fun first": toy-diorama farm + a blocky cow)
+
+- Brief was one line ("30 s, viral and fun first, educational second, spinning objects"), so the
+  structure came from the 005 analytics rules: claim spoken and on screen on frame 0 ("This cow is
+  doing 200 mph"), the phenomenon large and moving on frame 0, bright frame with a recognisable
+  everyday scene (a farm), something to try (spin on a chair, pull your arms in), something to say
+  (name the cow), 29.8 s, loop beat lands on frame 0.
+- Humour carries the physics: the physics spine is the figure skater (shear rolls a horizontal tube,
+  the updraft stands it up, stretching narrows it, angular momentum spins it faster). Jokes are
+  visual and short: a blocky Minecraft-style cow (box body + thresholded-noise hide), "TRAMPOLINE
+  (obviously)", "GNOME (not ok)", "toy cow. real physics.", a trampoline boing and a formant-synth moo.
+- Look: toy diorama. Plastic Principled materials (coat 0.35), f/2.8 DoF for the tilt-shift miniature
+  feel (DoF cost nothing measurable here), AgX Punchy, pale warm horizon, bumpy cloud deck with a
+  little emission so it never goes black. Mean luma 136-142 on the wide shots, 112 on the close-up.
+- Funnel = polar grid (56 x 48) rebuilt per frame: radius profile R(z) = 0.5 + 2.9 u^1.7 + 0.5 u^8
+  (times a scale s for the squeeze shot), a wandering base (slow circle, period = shot), plus a
+  second shell 1.28x bigger at 55 % alpha. Shader: Principled mixed with Transparent, alpha =
+  clamp(1.5 - facing) x streaky noise on the funnel's own UV (u = angle, v = height) scrolled by a
+  Value node per frame; a Mapping rotation of ~18 deg tilts the streaks into a spiral. A brown dust
+  skirt is the same trick with a height fade. Two transparent shells are what the render time is
+  (DoF and motion blur toggles changed < 10 %); 720 wide cost 44 s/frame, 540 at 8 samples 12.5 s.
+  8 samples + OIDN is indistinguishable from 16 on this flat-shaded toy look.
+- Debris: parented primitives orbiting a Rankine-style vortex: inner items 3 cycles per 5 s period,
+  outer 1-2 (integer cycles so shot A wraps seamlessly), tumble rates also integer multiples. In the
+  squeeze shot the radii scale with s(t) (1.55 -> 0.5) and the angular rate goes as 1/s^2
+  (integrated per frame with a fixed 1/240 s step so any frame renders standalone). The cow's orbit
+  phase is -pi/2 with zero tumble phase so frame 0 (the cover) has it upright, broadside, in front of
+  the funnel; the first cover had it small and behind the sofa, which cost a 15-minute restart.
+- Shear beat: a translucent tube along local Y with 40 leaves orbiting it as children (the leaves
+  are what makes the rolling readable; the streaks alone did not), then rotation about X 0 -> 90 deg
+  while the centre rises. Camera 3/4 from the end so the roll shows as a spiral.
+- Object tracks -> overlay: the scene writes build/tracks/<shot>.json (screen px + depth per frame
+  via world_to_camera_view) before rendering; render_overlays.py maps them onto output frames with
+  timeline.frame_map (same bg_plan/wrap/cuts rules as assemble.py) and injects window.TRACK;
+  beats.js uses trackPos('cow') to pin pills with a pointer line. Tags clamp their whole pill inside
+  the readable area (the first version clamped the centre and the trampoline tag crossed into the
+  side crop). Playwright evaluate() rejects dicts with int keys: pass JSON text.
+- Close-up shot: the camera rides the cow's orbit (radial + tangential offset, lens 32) and the cow
+  gets its own gentle roll with the face turned ~50 deg toward the camera instead of the tumble.
+- pkill -f render_all.sh killed the shell running the pkill (the gotcha above, again) and left an
+  orphaned blender; kill the binary (`pkill -x blender`), then relaunch render_all and let the
+  frame-skip resume do the rest.
+- Sound: wind bed with 0.6 Hz gusts, Poisson debris whooshes, a cartoon moo (harmonic source through
+  Gaussian formant peaks, "m" opening into "oo"), spring boing, skate swishes at the spin rate, a whirr
+  whose pitch follows the same curve as the gauge, office-chair creaks, plucky 122 bpm major bed.
+  Cartoon sounds were deliberately allowed here (fun first); 005 was told to avoid them.
+- New tool: pipeline/contact.py (contact sheet at 1 fps + 135x240 frame-0 thumbnail), used for the
+  eyes-on checks that the 005 brief did ad hoc.
+- Physics (keep): tornadogenesis from vertical wind shear (horizontal vorticity) tilted into the
+  vertical by the supercell updraft and intensified by vortex stretching (angular momentum
+  conservation: narrower -> faster). Ingredients: warm moist low-level air, cooler dry air aloft, wind
+  changing with height. EF5 winds exceed 200 mph; fastest measured ~302 mph by Doppler radar, Bridge
+  Creek-Moore, Oklahoma, 3 May 1999 (El Reno 2013 reanalyses put it similar or higher). The "cow at
+  200 mph" is the bit, labelled as a toy; debris in EF5 winds genuinely travels at a good fraction of
+  the wind speed.
+- Measured on the final: 29.82 s, 894 frames at 30 fps, VO onset 0.05 s, mean luma Y 128.7 (first 3 s) / 133.5 (whole), darkest frame 100.5 (blurred footage under the skater panel), -14.3 LUFS, TP -2.3 dBTP, loop seam 8.8/255 (the headline swaps on the wrap; footage wraps on an exact period), safe area PASS, longest beat 4.6 s, render 585 frames at 540x960 / 8 samples in 1 h 55 min.
+
 ## Workflow for a new video
 
 1. Copy `videos/001-water-bag/script.json`, write beats (3 words/sec pacing,

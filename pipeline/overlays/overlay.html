@@ -81,8 +81,10 @@ function drawCaptions(t){
 }
 
 window.setTimeline=function(tl){TL=tl; BEATS={}; TL.beats.forEach(b=>BEATS[b.id]=b); KEYWORDS=new Set((window.BEATS&&window.BEATS.keywords)||[]); buildChunks();};
+// Screen position [x, y, depth] of a tracked 3D object on the current frame (window.TRACK from render_overlays.py), or null.
+window.trackPos=function(name){ const r=(window.TRACK||{})[window.CUR_FRAME]; return (r&&r[name])?r[name]:null; };
 window.renderFrame=function(f){
-  const t=f/TL.fps; ctx.clearRect(0,0,W,H); vignette();
+  const t=f/TL.fps; window.CUR_FRAME=f; ctx.clearRect(0,0,W,H); vignette();
   const V=window.BEATS||{draw:{},cutFlash:[]};
   for(const b of TL.beats){ if(t>=b.start && t<b.end){ const fn=V.draw[b.id]; if(fn) fn(t-b.start,t,b); } }
   drawCaptions(t);

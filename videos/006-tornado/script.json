@@ -1,0 +1,157 @@
+{
+ "id": "006-tornado",
+ "title": "This cow is doing 200 mph (how tornadoes work)",
+ "fps": 30,
+ "width": 1080,
+ "height": 1920,
+ "voice": {
+  "engine": "kokoro",
+  "name": "af_heart",
+  "speed": 1.1,
+  "lang": "en-us"
+ },
+ "scene": "pipeline/blender/scene_tornado.py",
+ "shots": {
+  "A": 150,
+  "R": 210,
+  "N": 150,
+  "C": 75
+ },
+ "bg_plan": {
+  "hook": [
+   "A",
+   0
+  ],
+  "skater": [
+   "A",
+   78
+  ],
+  "recipe": [
+   "A",
+   30
+  ],
+  "roll": [
+   "R",
+   0
+  ],
+  "tilt": [
+   "R",
+   114
+  ],
+  "squeeze": [
+   "N",
+   0
+  ],
+  "speed": [
+   "A",
+   60
+  ],
+  "tryit": [
+   "A",
+   100
+  ],
+  "ask": [
+   "C",
+   0
+  ],
+  "loop": [
+   "A",
+   120
+  ]
+ },
+ "blur_beats": [
+  "skater",
+  "recipe",
+  "tryit"
+ ],
+ "beats": [
+  {
+   "id": "hook",
+   "pad_before": 0.0,
+   "pad_after": 0.35,
+   "min_duration": 2.6,
+   "lines": [
+    "This cow is doing two hundred miles an hour."
+   ]
+  },
+  {
+   "id": "skater",
+   "pad_before": 0.1,
+   "pad_after": 0.25,
+   "min_duration": 2.5,
+   "lines": [
+    "Because a tornado is a giant figure skater."
+   ]
+  },
+  {
+   "id": "recipe",
+   "pad_before": 0.15,
+   "pad_after": 0.25,
+   "min_duration": 4.4,
+   "lines": [
+    "Warm wet air below, cold dry air above, and wind that twists with height."
+   ]
+  },
+  {
+   "id": "roll",
+   "pad_before": 0.15,
+   "pad_after": 0.2,
+   "min_duration": 3.6,
+   "lines": [
+    "That twist rolls the air into a tube. Like a rolling pin."
+   ]
+  },
+  {
+   "id": "tilt",
+   "pad_before": 0.1,
+   "pad_after": 0.25,
+   "min_duration": 3.0,
+   "lines": [
+    "A thunderstorm's updraft stands the tube up."
+   ]
+  },
+  {
+   "id": "squeeze",
+   "pad_before": 0.15,
+   "pad_after": 0.2,
+   "min_duration": 4.6,
+   "lines": [
+    "Then it stretches thin. Squeeze the spin and it spins faster. Arms in!"
+   ]
+  },
+  {
+   "id": "speed",
+   "pad_before": 0.1,
+   "pad_after": 0.25,
+   "min_duration": 2.5,
+   "lines": [
+    "The record: over three hundred miles an hour."
+   ]
+  },
+  {
+   "id": "tryit",
+   "pad_before": 0.15,
+   "pad_after": 0.25,
+   "min_duration": 2.9,
+   "lines": [
+    "Try it: spin on a chair, then pull your arms in."
+   ]
+  },
+  {
+   "id": "ask",
+   "pad_before": 0.1,
+   "pad_after": 0.4,
+   "min_duration": 2.1,
+   "lines": [
+    "Now name the cow."
+   ]
+  },
+  {
+   "id": "loop",
+   "pad_before": 0,
+   "pad_after": 0,
+   "min_duration": 0.9,
+   "lines": []
+  }
+ ]
+}

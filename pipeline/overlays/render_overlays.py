@@ -4,9 +4,9 @@ sequence using headless Chromium + the canvas engine in overlay.html.
 
 usage: python3 pipeline/overlays/render_overlays.py <video_id> [--start N] [--end N] [--every K]
 """
-import sys, os, json, time, argparse
+import sys, os, json, time, argparse, glob
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-from timeline import load_json, video_dir
+from timeline import load_json, video_dir, frame_map
 from playwright.sync_api import sync_playwright
 
 def main():
@@ -27,6 +27,16 @@ def main():
         page.evaluate("document.fonts.load('900 80px Inter'); document.fonts.load('700 40px Inter')")
         page.wait_for_timeout(300)
         page.evaluate("tl => window.setTimeline(tl)", tl)
+        # 3D object tracks (scene scripts write build/tracks/<shot>.json: frame -> {name: [x_px, y_px, depth]}), mapped
+        # onto output frames through the bg_plan so beats.js can pin labels to objects with trackPos(name)
+        tdir = os.path.join(vd, "build", "tracks"); tracks = {}
+        if os.path.isdir(tdir):
+            per_shot = {os.path.basename(f)[:-5]: load_json(f) for f in glob.glob(os.path.join(tdir, "*.json"))}
+            for f, (s, i) in enumerate(frame_map(tl, load_json(os.path.join(vd, "script.json")))):
+                row = per_shot.get(s, {}).get(str(i))
+                if row: tracks[f] = row
+            print(f"tracks: {len(tracks)} of {tl['total_frames']} frames have object positions")
+        page.evaluate("tr => { window.TRACK = JSON.parse(tr) }", json.dumps({str(k): v for k, v in tracks.items()}))
         if a.no_captions: page.evaluate("window.NO_CAPTIONS = true")
         if a.show_safe_area:
             sa = load_json(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "safe_area.json"))
