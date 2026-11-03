@@ -25,7 +25,7 @@ function inkText(str,x,y,{size=40,weight=800,align='center',alpha=1,color=INK}={
 function stageTag(label,t0,t,{color=C.yellow,out=1,sub=null}={}){ if(t<t0) return; const k=t-t0; const a=smooth(0,0.2,k)*out; const s=lerp(0.9,1,easeOutBack(k/0.25));
   ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; ctx.translate(120,TAG_Y); ctx.scale(s,s); pill(label,0,0,{size:40,weight:900,padX:28,align:'left',bg:'rgba(10,12,18,0.80)',fg:color});
   if(sub) pill(sub,0,74,{size:30,weight:800,padX:22,align:'left',bg:'rgba(10,12,18,0.65)',fg:C.white}); ctx.restore(); }
-function stamp2(label,x,y,t0,t,{color=C.red,size=64,rot=-0.1}={}){ const k=t-t0; if(k<0)return; const s=lerp(1.6,1,easeOutBack(k/0.28)); const a=smooth(0,0.08,k);
+function stamp2(label,x,y,t0,t,{color=C.red,size=64,rot=-0.1}={}){ const k=t-t0; if(k<0)return; const s=lerp(1.2,1,easeOutBack(k/0.28)); const a=smooth(0,0.08,k);   // small pop: a 1.6x pop pushed the stamp into the side crops
   ctx.save(); ctx.translate(x,y); ctx.rotate(rot); ctx.scale(s,s); ctx.globalAlpha=ctx.globalAlpha*a; font(900,size); const w=ctx.measureText(label).width+60, h=size*1.4;
   rr(-w/2,-h/2,w,h,20); ctx.lineWidth=10; ctx.strokeStyle=color; ctx.stroke(); ctx.fillStyle='rgba(8,10,16,0.55)'; ctx.fill();
   ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle=color; ctx.fillText(label,0,size*0.06); ctx.restore(); if(k<0.3) flash(t,t0,{dur:0.16,peak:0.18}); }
@@ -93,7 +93,7 @@ function beatPioneers(tb,t,b){ const out=1-smooth(b.duration-0.3,b.duration-0.05
   flash(t,b.start+90/TL.fps,{dur:0.2,peak:0.45});   // the mid-beat cut to the low angle (bg_plan cuts P2 at frame 90)
   stageTag('PIONEER TREES',tB,t,{out,sub:'birch & pine · year 30 to 60'});
   if(t>tL) pill('RACE FOR THE LIGHT ↑',W/2,700,{size:36,weight:900,padX:26,alpha:smooth(0,0.2,t-tL)*out,bg:'rgba(255,214,10,0.95)',fg:INK});
-  if(t>tC){ ctx.save(); ctx.globalAlpha=ctx.globalAlpha*out; stamp2("CAN'T GROW IN SHADE",W/2,860,tC,t,{size:56}); ctx.restore(); }
+  if(t>tC){ ctx.save(); ctx.globalAlpha=ctx.globalAlpha*out; stamp2("CAN'T GROW IN SHADE",W/2,860,tC,t,{size:50}); ctx.restore(); }
   if(t>tO) pill('not even their own',W/2,960,{size:30,weight:800,padX:22,alpha:smooth(0,0.2,t-tO)*out}); }
 
 function beatClimax(tb,t,b){ const out=1-smooth(b.duration-0.3,b.duration-0.05,tb); const tO=wordTime('climax','oaks'), tU=wordTime('climax','underneath'), tT=wordTime('climax','take'), tB=wordTime('climax','born');
@@ -102,7 +102,7 @@ function beatClimax(tb,t,b){ const out=1-smooth(b.duration-0.3,b.duration-0.05,t
   if(t>tU&&t<tB) pill('GROW IN THE SHADE ✓',W/2,700,{size:36,weight:900,padX:26,alpha:smooth(0,0.2,t-tU),bg:'rgba(61,220,132,0.95)',fg:INK});
   if(t>tT&&t<tB) pill('PIONEERS DIE OUT',W/2,790,{size:32,weight:800,padX:22,alpha:smooth(0,0.2,t-tT)});
   if(t>tB){ const k=t-tB; const s=lerp(1.15,1,easeOutBack(k/0.3)); ctx.save(); ctx.translate(W/2,HEAD_Y+40); ctx.scale(s,s); ctx.globalAlpha=ctx.globalAlpha*smooth(0,0.08,k)*out;
-    twoTone([['A FOREST ',C.white],['IS BORN',C.yellow]],0,0,76,14);   // 722 px wide x 1.15 pop stays under the 846 px readable width ctx.restore(); if(k<0.4) flash(t,tB,{dur:0.3,peak:0.5}); } }
+    twoTone([['A FOREST ',C.white],['IS BORN',C.yellow]],0,0,76,14); ctx.restore(); if(k<0.4) flash(t,tB,{dur:0.3,peak:0.5}); } }   // 722 px wide x 1.15 pop stays under the 846 px readable width
 
 // why: cream explainer on blurred footage: the five stages in a row, each one changing the ground and crossing out the last
 function beatWhy(tb,t,b){ const a=fadeInOut(tb,b,0,0.3,0.35); const tEach=wordTime('why','each'), tChg=wordTime('why','changes'), tKill=wordTime('why','kills'), tRoom=wordTime('why','room'), tSucc=wordTime('why','succession');

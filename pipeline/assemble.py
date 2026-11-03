@@ -39,7 +39,7 @@ def main():
     shots = {}
     for s in shot_ids:
         fl = sorted(glob.glob(os.path.join(frames_dir, s, f"{s}_*.png")))
-        shots[s] = ([int(os.path.basename(f)[2:6]) for f in fl], fl)
+        shots[s] = ([int(os.path.basename(f).rsplit("_", 1)[1][:4]) for f in fl], fl)   # <shot>_<nnnn>.png; shot ids may be more than one letter (006: P1, C2)
     missing = 0
     def shot_frame(s, i):
         nonlocal missing

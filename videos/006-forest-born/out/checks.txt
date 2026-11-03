@@ -1,0 +1,17 @@
+duration: 39.75 s (timeline 39.73 s)
+  beat hook      3.57 s OK
+  beat weeds     4.33 s OK
+  beat grass     4.30 s OK
+  beat shrubs    4.07 s OK
+  beat pioneers  5.90 s OK
+  beat climax    5.80 s OK
+  beat why       6.47 s OK
+  beat ask       4.50 s OK
+  beat loop      0.80 s OK
+longest beat: 6.47 s
+first spoken word onset (VO stem, 50 ms RMS > -20 dBFS): 0.05 s
+mean luma Y: first 3 s = 147.8, whole = 126.2, darkest frame = 74.1 (frame 609)
+frames in final: 1192 (timeline 1192)
+loop seam: mean abs pixel difference frame 0 vs last frame = 5.4 / 255 (lower is more seamless)
+safe area (398 overlay frames sampled against 5 UI zones): PASS, nothing readable under the TikTok UI
+loudness: Input Integrated:    -14.0 LUFS; Input True Peak:      -1.6 dBTP
