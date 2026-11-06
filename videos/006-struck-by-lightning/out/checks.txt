@@ -1,0 +1,19 @@
+duration: 54.31 s (timeline 54.29 s)
+  beat hook      3.25 s OK
+  beat roy       6.42 s OK
+  beat golf      7.42 s TOO LONG
+  beat how       1.79 s OK
+  beat flash     6.38 s OK
+  beat ground    5.92 s OK
+  beat fern      4.71 s OK
+  beat heart     5.33 s OK
+  beat odds      4.75 s OK
+  beat roymath   5.25 s OK
+  beat cta       3.08 s OK
+longest beat: 7.42 s
+first spoken word onset (VO stem, 50 ms RMS > -20 dBFS): 0.05 s
+mean luma Y: first 3 s = 100.6, whole = 101.6, darkest frame = 34.2 (frame 1102)
+frames in final: 1303 (timeline 1303)
+loop seam: mean abs pixel difference frame 0 vs last frame = 60.1 / 255 (lower is more seamless)
+safe area (435 overlay frames sampled against 5 UI zones): PASS, nothing readable under the TikTok UI
+loudness: Input Integrated:    -14.1 LUFS; Input True Peak:      -1.5 dBTP

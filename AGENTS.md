@@ -405,6 +405,11 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
   second coordinate squashed the pattern to a sliver.
 - Cost at 540x960, 12 samples: H 8 s/frame, R (grass + ring shader) 12.6,
   others 6-10. 867 frames, ~2.5 h with the overlay render competing.
+- Measured on the final: 54.31 s, 1303 frames, VO onset 0.05 s, mean luma Y
+  100.6 (first 3 s) / 101.6 (whole), -14.1 LUFS, TP -1.5 dBTP, safe area PASS.
+  Longest beat 7.42 s (golf). There is no loop ending (seam 60/255).
+- The background runner's 2 h cap stopped the chained render with 83 frames
+  of L left; relaunching render_all.sh resumed from the existing frames.
 - Captions at y=680 (y=860 covered Roy's head and the hair-fire gag; characters fill y 850-1700); the strike counter has to
   sit at y<=1450 because its 1.35x pop crossed into the bottom-caption zone.
 
