@@ -97,41 +97,41 @@ function beatFern(tb,t,b){ const out=1-smooth(b.duration-0.3,b.duration-0.05,tb)
 function beatHeart(tb,t,b){ const out=1-smooth(b.duration-0.3,b.duration-0.05,tb); const tK=wordTime('heart','kills'), tS=wordTime('heart','stopped'), tC=wordTime('heart','cpr'), tW=wordTime('heart','when');
   const a=smooth(0.05,0.35,tb)*out*(1-smooth(tW-0.3,tW,t));
   headline([[['WHAT KILLS?',C.white]]],a,80);
-  ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; darkPanel(130,470,820,330,1);
+  ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; darkPanel(130,750,820,290,1);
   // heart icon
   const beat=t<tS?1+0.08*Math.max(0,Math.sin(t*9)):(t>tC+0.3?1+0.08*Math.max(0,Math.sin(t*9)):1);
-  ctx.save(); ctx.translate(250,555); ctx.scale(beat*1.4,beat*1.5); ctx.fillStyle=(t>tS&&t<tC+0.3)?'#666':C.red; ctx.beginPath(); ctx.moveTo(0,18); ctx.bezierCurveTo(-40,-8,-24,-40,0,-22); ctx.bezierCurveTo(24,-40,40,-8,0,18); ctx.fill(); ctx.restore();
-  text(t>tS&&t<tC+0.3?'HEART STOPS':'HEART',W/2+70,555,{size:52,weight:900,color:t>tS&&t<tC+0.3?C.red:C.white,stroke:false});
+  ctx.save(); ctx.translate(250,820); ctx.scale(beat*1.4,beat*1.5); ctx.fillStyle=(t>tS&&t<tC+0.3)?'#666':C.red; ctx.beginPath(); ctx.moveTo(0,18); ctx.bezierCurveTo(-40,-8,-24,-40,0,-22); ctx.bezierCurveTo(24,-40,40,-8,0,18); ctx.fill(); ctx.restore();
+  text(t>tS&&t<tC+0.3?'HEART STOPS':'HEART',W/2+70,820,{size:52,weight:900,color:t>tS&&t<tC+0.3?C.red:C.white,stroke:false});
   // ECG: beats, flat after 'stopped', beats again after 'CPR'
-  ctx.strokeStyle=ELEC; ctx.lineWidth=6; ctx.lineJoin='round'; ctx.beginPath(); const x0=170, x1=910, yb=730;
+  ctx.strokeStyle=ELEC; ctx.lineWidth=6; ctx.lineJoin='round'; ctx.beginPath(); const x0=170, x1=910, yb=960;
   for(let x=x0;x<=x1;x+=4){ const tt=t-(x1-x)/700; let y=yb; const ph=(tt*1.6)%1;
     const alive=tt<tS||tt>tC+0.2; if(alive && tt>b.start-1){ if(ph>0.30&&ph<0.34) y=yb-80*Math.sin((ph-0.30)/0.04*Math.PI); else if(ph>0.34&&ph<0.37) y=yb+30*Math.sin((ph-0.34)/0.03*Math.PI); }
     if(x===x0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
   ctx.stroke(); ctx.restore();
-  if(t>tC){ ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; tag('CPR SAVES LIVES ✓',W/2,990,t,tC,{bg:C.green,fg:'#05210f',size:46}); ctx.restore(); }
+  if(t>tC){ ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; tag('CPR SAVES LIVES ✓',490,1110,t,tC,{bg:C.green,fg:'#05210f',size:46}); ctx.restore(); }
   if(t>tW-0.1){ const k=smooth(tW-0.1,tW+0.15,t)*out; headline([[['WHEN THUNDER ROARS,',C.white]],[['GO INDOORS',C.yellow]]],k,78,HEAD_Y+60,95); } }
 
 // ---- odds: per year, then 9 in 10 survive (ten figures, nine stand up)
 function beatOdds(tb,t,b){ const out=1-smooth(b.duration-0.3,b.duration-0.05,tb); const tA=wordTime('odds','about'), tN=wordTime('odds','nine'), tSv=wordTime('odds','survive');
   headline([[['YOUR ODDS?',C.white]]],smooth(0.05,0.3,tb)*out,80);
-  if(t>tA){ const k=smooth(tA,tA+0.2,t)*out; ctx.save(); ctx.globalAlpha=ctx.globalAlpha*k; darkPanel(130,440,820,220,1);
-    text('1 in 1,222,000',W/2,520,{size:76,weight:900,color:C.yellow,stroke:false}); text('chance of being struck in a given year (US)',W/2,600,{size:30,weight:700,color:'rgba(255,255,255,0.8)',stroke:false}); ctx.restore(); }
-  if(t>tN-0.1){ const k=smooth(tN-0.1,tN+0.15,t)*out; ctx.save(); ctx.globalAlpha=ctx.globalAlpha*k; darkPanel(130,950,720,300,1);
+  if(t>tA){ const k=smooth(tA,tA+0.2,t)*out; ctx.save(); ctx.globalAlpha=ctx.globalAlpha*k; darkPanel(130,750,820,210,1);
+    text('1 in 1,222,000',W/2,825,{size:76,weight:900,color:C.yellow,stroke:false}); text('chance of being struck in a given year (US)',W/2,905,{size:30,weight:700,color:'rgba(255,255,255,0.8)',stroke:false}); ctx.restore(); }
+  if(t>tN-0.1){ const k=smooth(tN-0.1,tN+0.15,t)*out; ctx.save(); ctx.globalAlpha=ctx.globalAlpha*k; darkPanel(130,985,720,290,1);
     for(let i=0;i<10;i++){ const x=185+i*67, dead=i===9; const up=dead?0:smooth(tSv+i*0.04,tSv+0.2+i*0.04,t);
-      person(x,1110,0.95,dead?'rgba(150,150,160,0.8)':(up>0.5?C.green:'rgba(255,255,255,0.85)'),1); }
-    text('9 in 10 people struck SURVIVE',490,1205,{size:38,weight:900,color:t>tSv?C.green:C.white,stroke:false}); ctx.restore(); }
-  label('source: US National Weather Service',490,1290,smooth(tA,tA+0.3,t)*out*0.9,{size:26}); }
+      person(x,1140,0.95,dead?'rgba(150,150,160,0.8)':(up>0.5?C.green:'rgba(255,255,255,0.85)'),1); }
+    text('9 in 10 people struck SURVIVE',490,1235,{size:38,weight:900,color:t>tSv?C.green:C.white,stroke:false}); ctx.restore(); }
+  label('source: US National Weather Service',490,1310,smooth(tA,tA+0.3,t)*out*0.9,{size:26}); }
 
 // ---- roymath: naive odds for 7 strikes, then why it isn't luck
 function beatRoymath(tb,t,b){ const out=1-smooth(b.duration-0.3,b.duration-0.05,tb); const tO=wordTime('roymath','one'), tR=wordTime('roymath','roy');
   headline([[['7 STRIKES BY ',C.white],['PURE LUCK?',C.yellow]]],smooth(0.05,0.3,tb)*out,72);
   if(t>tO){ const k=smooth(tO,tO+0.2,t)*out*(1-smooth(tR-0.2,tR+0.1,t)); const z=Math.min(29,Math.floor((t-tO)*30));
-    ctx.save(); ctx.globalAlpha=ctx.globalAlpha*k; darkPanel(130,440,820,250,1);
-    font(900,60); text('1 in 1'+'0'.repeat(Math.min(z,12))+(z>12?'…':''),W/2,520,{size:60,weight:900,color:C.yellow,stroke:false});
-    text(z>=29?'= 1 in 10²⁹ (29 zeros!)':'',W/2,610,{size:44,weight:900,color:C.white,stroke:false});
-    text('(1 in 15,300 lifetime odds, seven times)',W/2,660,{size:26,weight:700,color:'rgba(255,255,255,0.7)',stroke:false}); ctx.restore(); }
-  if(t>tR-0.1){ const k=smooth(tR-0.1,tR+0.15,t)*out; ctx.save(); ctx.globalAlpha=ctx.globalAlpha*k; darkPanel(130,440,820,250,1);
-    text('NOT LUCK. EXPOSURE.',W/2,520,{size:58,weight:900,color:C.yellow,stroke:false}); text('35 years outdoors on the Blue Ridge',W/2,600,{size:36,weight:800,color:C.white,stroke:false}); ctx.restore(); }
+    ctx.save(); ctx.globalAlpha=ctx.globalAlpha*k; darkPanel(130,750,820,250,1);
+    font(900,60); text('1 in 1'+'0'.repeat(Math.min(z,12))+(z>12?'…':''),W/2,830,{size:60,weight:900,color:C.yellow,stroke:false});
+    text(z>=29?'= 1 in 10²⁹ (29 zeros!)':'',W/2,920,{size:44,weight:900,color:C.white,stroke:false});
+    text('(1 in 15,300 lifetime odds, seven times)',W/2,970,{size:26,weight:700,color:'rgba(255,255,255,0.7)',stroke:false}); ctx.restore(); }
+  if(t>tR-0.1){ const k=smooth(tR-0.1,tR+0.15,t)*out; ctx.save(); ctx.globalAlpha=ctx.globalAlpha*k; darkPanel(130,750,820,250,1);
+    text('NOT LUCK. EXPOSURE.',W/2,830,{size:58,weight:900,color:C.yellow,stroke:false}); text('35 years outdoors on the Blue Ridge',W/2,910,{size:36,weight:800,color:C.white,stroke:false}); ctx.restore(); }
   strikeCounter(t,H_STRIKES.map((x,i)=>i===0?b.start-5:b.start+(x-H_ROY0)),out); }
 
 // ---- cta: the comment question
@@ -143,6 +143,6 @@ window.BEATS = {
   draw: {hook:beatHook, roy:beatRoy, golf:beatGolf, how:beatHow, flash:beatFlash, ground:beatGround, fern:beatFern, heart:beatHeart, odds:beatOdds, roymath:beatRoymath, cta:beatCta},
   cutFlash: ['golf','how','ground','fern','heart','roymath','cta'],
   keywords: ['lightning','seven','lived','eyebrows','fire','twice','shoe','one-iron','god','survive','speed','millionths','skims','skin','shoes','directly','ground','leg','other','fern-shaped','lichtenberg','fade','heart','cpr','indoors','million','nine','luck','mountaintops','storm'],
-  caption: {y: 860, size: 66, keywordColor: '#FFB020'},
+  caption: {y: 680, size: 66, keywordColor: '#FFB020'},
   vignette: 0.3,
 };

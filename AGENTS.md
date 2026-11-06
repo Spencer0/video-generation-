@@ -405,7 +405,7 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
   second coordinate squashed the pattern to a sliver.
 - Cost at 540x960, 12 samples: H 8 s/frame, R (grass + ring shader) 12.6,
   others 6-10. 867 frames, ~2.5 h with the overlay render competing.
-- Captions at y=860 (characters fill y 1000-1700); the strike counter has to
+- Captions at y=680 (y=860 covered Roy's head and the hair-fire gag; characters fill y 850-1700); the strike counter has to
   sit at y<=1450 because its 1.35x pop crossed into the bottom-caption zone.
 
 ## Workflow for a new video
