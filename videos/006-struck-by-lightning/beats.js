@@ -85,7 +85,7 @@ function beatGround(tb,t,b){ const out=1-smooth(b.duration-0.3,b.duration-0.05,t
   if(t>tD && t<tC) tag('only ~5% of cases',W/2,SUB_Y-30,t,tD,{size:42});
   if(t>tC-0.1){ const k=smooth(tC-0.1,tC+0.15,t)*out; headline([[['GROUND CURRENT',ELEC]]],k,80); label('the most common way people get hit',W/2,HEAD2_Y,k,{size:36}); }
   if(t>tU){ const k=smooth(tU,tU+0.2,t)*out; arrow(330,1420,450,1250,k,C.yellow); label('UP ONE LEG',300,1470,k,{size:42,color:C.yellow}); }
-  if(t>tDn){ const k=smooth(tDn,tDn+0.2,t)*out; arrow(700,1180,770,1360,k,ELEC); label('DOWN THE OTHER',640,1430,k,{size:42,color:ELEC}); } }
+  if(t>tDn){ const k=smooth(tDn,tDn+0.2,t)*out; arrow(690,1170,605,1360,k,ELEC); label('DOWN THE OTHER',660,1430,k,{size:42,color:ELEC}); } }
 
 // ---- fern: name it, then 'fades in days'
 function beatFern(tb,t,b){ const out=1-smooth(b.duration-0.3,b.duration-0.05,tb); const tL=wordTime('fern','lichtenberg'), tF=wordTime('fern','fade');
@@ -137,7 +137,7 @@ function beatRoymath(tb,t,b){ const out=1-smooth(b.duration-0.3,b.duration-0.05,
 // ---- cta: the comment question
 function beatCta(tb,t,b){ const tF=wordTime('cta','follow');
   headline([[['WOULD YOU GOLF',C.white]],[['IN A ',C.white],['STORM?',C.yellow]]],smooth(0.0,0.25,tb),82);
-  if(t>tF){ const a=smooth(tF,tF+0.25,t); pill('comment ↓',W/2,SUB_Y+70,{size:40,weight:800,padX:30,alpha:a}); label('follow for more',W/2,SUB_Y+150,a*0.9,{size:32}); } }
+  if(t>tF){ const a=smooth(tF,tF+0.25,t); pill('comment ↓',W/2,SUB_Y+70,{size:40,weight:800,padX:30,alpha:a}); } }
 
 window.BEATS = {
   draw: {hook:beatHook, roy:beatRoy, golf:beatGolf, how:beatHow, flash:beatFlash, ground:beatGround, fern:beatFern, heart:beatHeart, odds:beatOdds, roymath:beatRoymath, cta:beatCta},
