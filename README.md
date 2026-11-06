@@ -45,3 +45,13 @@ python3 pipeline/checks.py 005-kaye-effect                        # -> out/check
 
 See `AGENTS.md` for the design decisions, measured render costs and the
 conventions that make the pieces line up.
+
+## Build video 006 (struck by lightning)
+
+```bash
+python3 pipeline/tts.py 006-struck-by-lightning && python3 pipeline/sfx.py 006-struck-by-lightning
+python3 pipeline/overlays/render_overlays.py 006-struck-by-lightning
+bash pipeline/blender/render_all.sh 006-struck-by-lightning 540 12   # ~2.5 h on 4 cores; resumable
+python3 pipeline/assemble.py 006-struck-by-lightning
+python3 pipeline/checks.py 006-struck-by-lightning
+```

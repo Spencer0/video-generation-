@@ -1,0 +1,13 @@
+Would you golf in a storm? ⚡ Roy Sullivan was hit 7 times. Lee Trevino got hit mid-tournament. Here's why most people survive.
+#lightning #science #physics #sciencetok #learnontiktok #weather #funfacts
+
+Pinned comment idea: "Know anyone who's been struck? Tell me what happened 👇"
+
+Sources (for replies):
+- Roy Sullivan: 7 recorded strikes 1942-1977, Guinness World Records; the strikes were documented by the Shenandoah park superintendent, who never witnessed one.
+- Lee Trevino: struck at the 1975 Western Open (Butler National), with Jerry Heard and Bobby Nichols; the "1-iron" line is his widely quoted joke.
+- Odds: US National Weather Service, 1 in 1,222,000 per year, 1 in 15,300 over 80 years (2009-2018 data); about 10% of people struck die.
+- Flashover: most of the current runs over the wet skin surface, and the vaporizing water can blow off clothes and shoes.
+- Ground current is the leading way people are hurt; direct strikes are about 3-5% of cases.
+- Lichtenberg figures fade within hours to days.
+- 7 strikes "by pure luck" = (1/15,300)^7 ≈ 1 in 2 x 10^29. That is naive: Roy's risk was far from average.

@@ -1,0 +1,172 @@
+{
+  "id": "006-struck-by-lightning",
+  "title": "Will you get struck by lightning? (people who were, and lived)",
+  "fps": 24,
+  "width": 1080,
+  "height": 1920,
+  "voice": {
+    "engine": "kokoro",
+    "name": "af_heart",
+    "speed": 1.2,
+    "lang": "en-us"
+  },
+  "scene": "pipeline/blender/scene_struck.py",
+  "shots": {
+    "H": 233,
+    "G": 180,
+    "F": 196,
+    "R": 144,
+    "L": 114
+  },
+  "bg_plan": {
+    "hook": [
+      "H",
+      0
+    ],
+    "roy": [
+      "H",
+      78
+    ],
+    "golf": [
+      "G",
+      0
+    ],
+    "how": [
+      "F",
+      0
+    ],
+    "flash": [
+      "F",
+      43
+    ],
+    "ground": [
+      "R",
+      0
+    ],
+    "fern": [
+      "L",
+      0
+    ],
+    "heart": [
+      "F",
+      100
+    ],
+    "odds": [
+      "R",
+      30
+    ],
+    "roymath": [
+      "H",
+      78
+    ],
+    "cta": [
+      "G",
+      96
+    ]
+  },
+  "blur_beats": [
+    "heart",
+    "odds"
+  ],
+  "beats": [
+    {
+      "id": "hook",
+      "pad_before": 0.0,
+      "pad_after": 0.25,
+      "min_duration": 1.5,
+      "lines": [
+        "This man got struck by lightning seven times. And lived."
+      ]
+    },
+    {
+      "id": "roy",
+      "pad_before": 0.15,
+      "pad_after": 0.3,
+      "min_duration": 1.5,
+      "lines": [
+        "Roy Sullivan, park ranger. It burned off his eyebrows, set his hair on fire twice, and blew a hole in his shoe."
+      ]
+    },
+    {
+      "id": "golf",
+      "pad_before": 0.2,
+      "pad_after": 0.35,
+      "min_duration": 1.5,
+      "lines": [
+        "Golfer Lee Trevino got hit in nineteen seventy-five. His advice? Hold up a one-iron. Not even God can hit a one-iron."
+      ]
+    },
+    {
+      "id": "how",
+      "pad_before": 0.15,
+      "pad_after": 0.25,
+      "min_duration": 1.5,
+      "lines": [
+        "So how do people survive?"
+      ]
+    },
+    {
+      "id": "flash",
+      "pad_before": 0.15,
+      "pad_after": 0.35,
+      "min_duration": 1.5,
+      "lines": [
+        "Speed. A strike lasts millionths of a second, so most current skims over your wet skin. It can blow your shoes off."
+      ]
+    },
+    {
+      "id": "ground",
+      "pad_before": 0.2,
+      "pad_after": 0.3,
+      "min_duration": 1.5,
+      "lines": [
+        "Most victims aren't even hit directly. Current spreads through the ground, up one leg, and down the other."
+      ]
+    },
+    {
+      "id": "fern",
+      "pad_before": 0.2,
+      "pad_after": 0.3,
+      "min_duration": 1.5,
+      "lines": [
+        "Some get fern-shaped scars called Lichtenberg figures. They fade in a few days."
+      ]
+    },
+    {
+      "id": "heart",
+      "pad_before": 0.2,
+      "pad_after": 0.3,
+      "min_duration": 1.5,
+      "lines": [
+        "What kills is a stopped heart, so CPR saves lives. When thunder roars, go indoors."
+      ]
+    },
+    {
+      "id": "odds",
+      "pad_before": 0.2,
+      "pad_after": 0.3,
+      "min_duration": 1.5,
+      "lines": [
+        "Your odds? About one in a million a year. And nine in ten people struck survive."
+      ]
+    },
+    {
+      "id": "roymath",
+      "pad_before": 0.2,
+      "pad_after": 0.3,
+      "min_duration": 1.5,
+      "lines": [
+        "Seven by pure luck? One in ten to the twenty-nine. Roy just worked on mountaintops."
+      ]
+    },
+    {
+      "id": "cta",
+      "pad_before": 0.15,
+      "pad_after": 0.8,
+      "min_duration": 3.0,
+      "lines": [
+        "Would you golf in a storm? Follow for more!"
+      ]
+    }
+  ]
+}

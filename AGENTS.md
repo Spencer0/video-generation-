@@ -16,6 +16,7 @@ pipeline/            reusable tooling (video-agnostic)
   blender/scene_bag.py     procedural Cycles scene for video 001 (water bag over flame)
   blender/scene_chain.py   procedural Cycles scene for video 002 (chain fountain)
   blender/scene_leidenfrost.py, scene_kaye.py   videos 004 and 005
+  blender/scene_struck.py  video 006: five shots, toy-figure characters, seven-strike montage
   checks.py          measured acceptance checks (duration, VO onset, luma, UI-zone safe area, loop seam, loudness)
   safe_area.json     the TikTok UI zones every renderer and check reads (see 'Where things may go on screen')
   fake_timeline.py   ESTIMATED timeline from script.json for overlay previews/audits without Kokoro (never assemble with it)
@@ -365,6 +366,47 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
   the stream slides along it and exits as a jet lasting a few tenths of a
   second; stable on a tilted surface. Honey (Newtonian) coils, water
   splashes. "Roughly ten times thinner" keeps the "roughly".
+
+## Video 006 notes (struck by lightning, and lived)
+
+- Content: two real survivors (Roy Sullivan, 7 recorded strikes 1942-77; Lee
+  Trevino, 1975 Western Open + his "1-iron" joke), flashover, ground current,
+  Lichtenberg figures, what kills (cardiac arrest -> CPR), NWS odds, naive
+  odds of 7 strikes. Sources and caveats are in `out/post.txt`. Sullivan's
+  strikes were documented by his superintendent, who never saw one, so the
+  wording is "recorded". "Hole in his shoe" is sourced; "lost a toenail" was not
+  confirmed by the search, so it was left out.
+- 54 s: longer than the 26-30 s from the 005 brief, because the request named
+  cases + physics + biology + probability. Kokoro at speed 1.2 still reads
+  ~2.9 words/s. Cut the heart or roymath beat first if it needs to be shorter.
+- Characters with no assets: "vinyl toy" figures. Each body part is an
+  ellipsoid parented to a joint empty (pelvis > spine > neck > head,
+  shoulders > elbows > hands, hips > knees > ankles). Poses are dicts of joint
+  Euler angles, blended with `blend_pose`/`add_pose` per frame (STAND, JOLT,
+  SLUMP, SIT, RAISE, SHRUG). The limb convention is rotation about X, where
+  negative means forward, because the figure faces -Y. Reads as light-hearted,
+  and costs nothing to render.
+- Flashover sheath = a copy of every body part scaled up 2 cm, with a
+  noise-masked emissive material. Per-object fades use `ob.color` alpha read by
+  Object Info "Alpha", so one material drives smoke puffs, flames, bolts and
+  sheaths at independent levels.
+- Bolts close to the camera: draw the last ~8 % of the path as its own finer
+  midpoint path, or the converged tail reads as a straight light-sabre. Bolt
+  radius 0.05-0.15 m at 4-6 m, emission 30; the strike point light at 1e4 W
+  or less (9e4 and world flash x6 whited out the frame).
+- Ground current: voronoi distance-to-edge, domain-warped by noise, masked by
+  a Gaussian ring whose radius is driven per frame. Plain voronoi read as
+  glowing paving plates. The leg current is a fat (0.1 m) bevelled curve
+  through the joint positions, so it wraps the leg like a sleeve; a thin
+  curve hides inside the leg meshes.
+- Lichtenberg fern: branches alternate sides at a steady angle (0.7-0.95 rad),
+  with little wander; random-walk branching looked like tangled worms. Map
+  (s, arc length) onto the arm with theta = arc / r(s); using radians as the
+  second coordinate squashed the pattern to a sliver.
+- Cost at 540x960, 12 samples: H 8 s/frame, R (grass + ring shader) 12.6,
+  others 6-10. 867 frames, ~2.5 h with the overlay render competing.
+- Captions at y=860 (characters fill y 1000-1700); the strike counter has to
+  sit at y<=1450 because its 1.35x pop crossed into the bottom-caption zone.
 
 ## Workflow for a new video
 
