@@ -1093,7 +1093,7 @@ def update_T(S, t):
     P = blend_pose(SEATED, add_pose(JOLT, {"l_hip": (-1.5, 0, 0), "r_hip": (-1.5, 0, 0), "l_knee": (1.45, 0, 0), "r_knee": (1.45, 0, 0)}), 0.7 * smoothstep(T_STRIKE1, T_STRIKE1 + 0.05, t) * (1 - smoothstep(T_STRIKE1 + 0.4, T_STRIKE1 + 0.8, t)))
     P = add_pose(P, {"neck": (0, 0, 0.5 * smoothstep(T_STRIKE1 + 1.0, T_STRIKE1 + 1.4, t) * (1 - smoothstep(T_THUMB + 1.2, T_THUMB + 1.6, t)))})   # turns to camera
     P = blend_pose(P, {**SEATED, "l_sho": (-2.2, -0.55, 0), "l_elb": (-1.4, 0, 0), "neck": (0.1, 0, 0.5)}, smoothstep(T_THUMB, T_THUMB + 0.35, t))
-    roy.pose(P, (-0.45, -0.38, 0.0), math.pi / 2, 1.08)   # +90 deg: the figure's -Y front turns to -x (the hood)
+    roy.pose(P, (-0.45, -0.38, 0.0), -math.pi / 2, 1.08)   # Rz(-90) turns the figure's -Y front to -x (the hood); measured: +90 put his nose toward the bed
     roy.set_sheath(min(1.0, i1 * 1.1)); S["sheath"].node_tree.nodes["flow"].outputs[0].default_value = t * 9.0
     for b in roy.brows: b.hide_render = t >= T_STRIKE1 + 0.05
     roy.J["hat"].location = (0, 0, 0.11 + 0.08 * math.sin(math.pi * min(1, max(0, t - T_STRIKE1) / 0.4)))
