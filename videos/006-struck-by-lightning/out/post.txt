@@ -1,13 +1,22 @@
-Would you golf in a storm? ⚡ Roy Sullivan was hit 7 times. Lee Trevino got hit mid-tournament. Here's why most people survive.
+Struck by lightning 7 times... and a bear tried to steal his fish ⚡🐻 Would you go fishing with Roy?
 #lightning #science #physics #sciencetok #learnontiktok #weather #funfacts
 
 Pinned comment idea: "Know anyone who's been struck? Tell me what happened 👇"
 
 Sources (for replies):
-- Roy Sullivan: 7 recorded strikes 1942-1977, Guinness World Records; the strikes were documented by the Shenandoah park superintendent, who never witnessed one.
-- Lee Trevino: struck at the 1975 Western Open (Butler National), with Jerry Heard and Bobby Nichols; the "1-iron" line is his widely quoted joke.
+- Roy Sullivan: 7 recorded strikes 1942-1977, Guinness World Records. All are his accounts, documented by the Shenandoah superintendent (who never witnessed one).
+  1942 lookout tower: burn down his leg, hole in his shoe. 1969: through his truck window, eyebrows burned off. Hair caught fire on several later strikes (1972, 1973, 1976 per Guinness).
+  He kept a can of water handy for his hair (Wikipedia, citing Friedman, "Out of the Blue", 2008). 1977: struck while fishing; he said he then fought off a bear trying to take his trout, with a branch (his story).
+  https://en.wikipedia.org/wiki/Roy_Sullivan
+  https://www.guinnessworldrecords.com/news/2023/1/incredible-story-of-man-who-survived-being-struck-by-lightning-seven-times-733932
+- Lee Trevino: struck at the 1975 Western Open, with Jerry Heard and Bobby Nichols; the "1-iron" line is his joke (do not actually do it).
+  https://barrypopik.com/blog/not_even_god_can_hit
+- Flashover: a return-stroke pulse lasts tens of microseconds; most current flows over the wet skin, which is why most people survive. Some does go through, which is what stops hearts.
+- Cars: a hard-topped metal vehicle with windows up is safe because the shell carries current around you (NWS).
+- Lichtenberg figures: fern-shaped skin marks, not burns or scars; they usually fade within hours to about a day.
+  https://dx.doi.org/10.1007/s12024-023-00612-7
+- What kills: cardiac/respiratory arrest; CPR saves lives, and victims carry no charge, so it is safe to touch them.
 - Odds: US National Weather Service, 1 in 1,222,000 per year, 1 in 15,300 over 80 years (2009-2018 data); about 10% of people struck die.
-- Flashover: most of the current runs over the wet skin surface, and the vaporizing water can blow off clothes and shoes.
-- Ground current is the leading way people are hurt; direct strikes are about 3-5% of cases.
-- Lichtenberg figures fade within hours to days.
-- 7 strikes "by pure luck" = (1/15,300)^7 ≈ 1 in 2 x 10^29. That is naive: Roy's risk was far from average.
+  https://www.weather.gov/safety/lightning-odds
+- 7 strikes "by pure luck": with lifetime rate L = 1/15,300, P(7 or more in one life) ~ L^7/7! ~ 1 in 10^33 (Poisson, average American). Naive on purpose: Roy's exposure was nowhere near average.
+- "When thunder roars, go indoors" is the NWS slogan.

@@ -12,11 +12,12 @@
   },
   "scene": "pipeline/blender/scene_struck.py",
   "shots": {
-    "H": 233,
-    "G": 180,
-    "F": 196,
-    "R": 144,
-    "L": 114
+    "H": 356,
+    "F": 176,
+    "T": 168,
+    "G": 150,
+    "L": 122,
+    "B": 200
   },
   "bg_plan": {
     "hook": [
@@ -27,20 +28,20 @@
       "H",
       78
     ],
+    "why": [
+      "F",
+      0
+    ],
+    "truck": [
+      "T",
+      0
+    ],
+    "hair": [
+      "H",
+      252
+    ],
     "golf": [
       "G",
-      0
-    ],
-    "how": [
-      "F",
-      0
-    ],
-    "flash": [
-      "F",
-      43
-    ],
-    "ground": [
-      "R",
       0
     ],
     "fern": [
@@ -49,19 +50,23 @@
     ],
     "heart": [
       "F",
-      100
+      90
     ],
     "odds": [
-      "R",
+      "H",
       30
     ],
     "roymath": [
       "H",
-      78
+      96
+    ],
+    "bear": [
+      "B",
+      0
     ],
     "cta": [
-      "G",
-      96
+      "B",
+      106
     ]
   },
   "blur_beats": [
@@ -84,43 +89,43 @@
       "pad_after": 0.3,
       "min_duration": 1.5,
       "lines": [
-        "Roy Sullivan, park ranger. It burned off his eyebrows, set his hair on fire twice, and blew a hole in his shoe."
+        "Roy Sullivan, park ranger. Strike one, in 1942, burned a strip down his leg and blew a hole in his shoe."
+      ]
+    },
+    {
+      "id": "why",
+      "pad_before": 0.2,
+      "pad_after": 0.3,
+      "min_duration": 1.5,
+      "lines": [
+        "How did he live? Speed. A bolt is over in millionths of a second, so most current skims over the skin and out through the feet."
+      ]
+    },
+    {
+      "id": "truck",
+      "pad_before": 0.2,
+      "pad_after": 0.3,
+      "min_duration": 1.5,
+      "lines": [
+        "Strike two came through his truck window and took his eyebrows. Windows up, a car's metal shell carries current around you."
+      ]
+    },
+    {
+      "id": "hair",
+      "pad_before": 0.15,
+      "pad_after": 0.3,
+      "min_duration": 1.5,
+      "lines": [
+        "After that, his hair caught fire so often, he kept a can of water handy."
       ]
     },
     {
       "id": "golf",
       "pad_before": 0.2,
-      "pad_after": 0.35,
-      "min_duration": 1.5,
-      "lines": [
-        "Golfer Lee Trevino got hit in nineteen seventy-five. His advice? Hold up a one-iron. Not even God can hit a one-iron."
-      ]
-    },
-    {
-      "id": "how",
-      "pad_before": 0.15,
-      "pad_after": 0.25,
-      "min_duration": 1.5,
-      "lines": [
-        "So how do people survive?"
-      ]
-    },
-    {
-      "id": "flash",
-      "pad_before": 0.15,
-      "pad_after": 0.35,
-      "min_duration": 1.5,
-      "lines": [
-        "Speed. A strike lasts millionths of a second, so most current skims over your wet skin. It can blow your shoes off."
-      ]
-    },
-    {
-      "id": "ground",
-      "pad_before": 0.2,
       "pad_after": 0.3,
       "min_duration": 1.5,
       "lines": [
-        "Most victims aren't even hit directly. Current spreads through the ground, up one leg, and down the other."
+        "Golfer Lee Trevino got hit too. His joke? Hold up a 1-iron. Not even God can hit a 1-iron."
       ]
     },
     {
@@ -129,7 +134,7 @@
       "pad_after": 0.3,
       "min_duration": 1.5,
       "lines": [
-        "Some get fern-shaped scars called Lichtenberg figures. They fade in a few days."
+        "Some people get fern-shaped marks called Lichtenberg figures. They fade within hours."
       ]
     },
     {
@@ -138,7 +143,7 @@
       "pad_after": 0.3,
       "min_duration": 1.5,
       "lines": [
-        "What kills is a stopped heart, so CPR saves lives. When thunder roars, go indoors."
+        "What kills is a stopped heart, so CPR saves lives."
       ]
     },
     {
@@ -147,7 +152,7 @@
       "pad_after": 0.3,
       "min_duration": 1.5,
       "lines": [
-        "Your odds? About one in a million a year. And nine in ten people struck survive."
+        "Your odds? About one in a million a year, and nine in ten survive."
       ]
     },
     {
@@ -156,7 +161,16 @@
       "pad_after": 0.3,
       "min_duration": 1.5,
       "lines": [
-        "Seven by pure luck? One in ten to the twenty-nine. Roy just worked on mountaintops."
+        "So why Roy? Pure luck would be one in ten to the thirty-three. He just spent decades outdoors in storm country."
+      ]
+    },
+    {
+      "id": "bear",
+      "pad_before": 0.2,
+      "pad_after": 0.3,
+      "min_duration": 1.5,
+      "lines": [
+        "Strike seven hit him fishing. Hair smoking, he says he then fought off a bear trying to steal his trout. With a stick."
       ]
     },
     {
@@ -165,7 +179,7 @@
       "pad_after": 0.8,
       "min_duration": 3.0,
       "lines": [
-        "Would you golf in a storm? Follow for more!"
+        "Would you go fishing with Roy? When thunder roars, go indoors."
       ]
     }
   ]
