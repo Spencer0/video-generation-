@@ -891,14 +891,15 @@ def update_F(S, t):
         base = Vector((YX + 0.1 * sx, YY, yz + 0.05)); e.location = base + Vector((0.5 * sx * k, -0.35 * k, 1.5 * k - 0.9 * k * k))   # slow-mo arc, stays in frame
         e.rotation_euler = (2.0 * k, 1.0 * sx * k, 1.2 * k)
     if not S["steam"].parts:
-        r = random.Random(3)
+        rs = random.Random(3)
         for i in range(10):   # steam from the wet skin and clothes, rising through the sheath
-            z = r.uniform(0.3, 1.8); S["steam"].add(F_STEAM + i * 0.25, (YX + r.uniform(-0.2, 0.2), YY + r.uniform(-0.1, 0.1), yz + z), 5, 0.25, 0.35, 0.10, 2.2, 50 + i, 0.2, 0.55)
+            z = rs.uniform(0.3, 1.8); S["steam"].add(F_STEAM + i * 0.25, (YX + rs.uniform(-0.2, 0.2), YY + rs.uniform(-0.1, 0.1), yz + z), 5, 0.25, 0.35, 0.10, 2.2, 50 + i, 0.2, 0.55)
         S["smoke"].add(F_SHOES, (YX, YY, yz + 0.08), 12, 0.6, 0.4, 0.12, 1.5, 61, 0.1, 0.8)
     S["steam"].update(t); S["smoke"].update(t)
     rain_update(S["rain"], t, 1.2 if t > F_STRIKE else 6.0 - 4.8 * smoothstep(F_STRIKE - 1.0, F_STRIKE, t))   # rain slows into slow motion
     # camera: wide on the leader coming down, then a slow orbit close around the figure
-    a = lerp(-0.25, -0.75, smoothstep(F_STRIKE, 7.3, t))   # orbit away from the oak (it read as a dark blob top-left); r = lerp(7.5, 3.9, smoothstep(0.4, F_STRIKE + 0.6, t))
+    # orbit away from the oak (it read as a dark blob top-left)
+    a = lerp(-0.25, -0.75, smoothstep(F_STRIKE, 7.3, t)); r = lerp(7.5, 3.9, smoothstep(0.4, F_STRIKE + 0.6, t))
     hz = lerp(1.3, 1.1, smoothstep(F_STRIKE, 8, t))
     S["cam"].location = Vector((YX + r * math.sin(a), YY - r * math.cos(a), yz + hz))
     S["tgt"].location = Vector((YX, YY, yz + lerp(3.6, 1.45, smoothstep(0.6, F_STRIKE + 0.4, t))))   # head stays low in frame, under the captions
