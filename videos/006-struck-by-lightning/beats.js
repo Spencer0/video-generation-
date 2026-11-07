@@ -5,10 +5,11 @@
 const HEAD_Y=320, HEAD2_Y=405, SUB_Y=480;
 const ELEC='#8FD3FF';
 // 3D event times (scene seconds) from pipeline/blender/scene_struck.py, mapped through script.json bg_plan:
-//   hook = H 0 (strike 1), truck = T 0 (strike 2 at 1.15), hair = H from 10.5 (strikes 3-6 at 10.75/11.45/12.10/12.70), bear = B 0 (strike 7 at 0.80)
-const T_STRIKE1=1.15, HAIR_STRIKES=[10.75,11.45,12.10,12.70], H_HAIR0=10.5, B_STRIKE=0.80, B_BONK=5.55;
+//   hook = B 0 (strike 7 on frame 0), roy = H 0 (strike 1), truck = T 0 (strike 2 at 1.15), hair = H from 10.5 (strikes 3-6 at 10.75/11.45/12.10/12.70)
+// v3: the bear is the cold open (hook = shot B from 0: strike 7 on frame 0, BONK at 6.20), then 'seven', then a rewind to 1942
+const T_STRIKE1=1.15, HAIR_STRIKES=[10.75,11.45,12.10,12.70], H_HAIR0=10.5, B_STRIKE=0.0, B_BONK=6.20;
 const YEARS=[1942,1969,1970,1972,1973,1976,1977];
-function strikeTimes(){ const B=BEATS; return [B.hook.start, B.truck.start+T_STRIKE1, ...HAIR_STRIKES.map(x=>B.hair.start+x-H_HAIR0), B.bear.start+B_STRIKE]; }
+function strikeEvents(){ const B=BEATS; return [[B.hook.start+B_STRIKE,7],[B.roy.start,1],[B.truck.start+T_STRIKE1,2],...HAIR_STRIKES.map((x,i)=>[B.hair.start+x-H_HAIR0,3+i])]; }
 function twoTone(parts,x,y,size,strokeW=12){ font(900,size); const ws=parts.map(p=>ctx.measureText(p[0]).width); const total=ws.reduce((a,b)=>a+b,0); let cx=x-total/2;
   parts.forEach((p,i)=>{ text(p[0],cx+ws[i]/2,y,{size,weight:900,color:p[1],strokeW}); cx+=ws[i]; }); }
 function headline(lines,alpha,size=74,y0=HEAD_Y,gap=85){
@@ -26,7 +27,7 @@ function bolt(x,y,s,alpha=1,color=C.yellow){ ctx.save(); ctx.globalAlpha=ctx.glo
   ctx.beginPath(); ctx.moveTo(8,-40); ctx.lineTo(-18,6); ctx.lineTo(0,6); ctx.lineTo(-8,40); ctx.lineTo(20,-8); ctx.lineTo(2,-8); ctx.lineTo(12,-40); ctx.closePath();
   ctx.lineWidth=6; ctx.strokeStyle='rgba(0,0,0,0.9)'; ctx.lineJoin='round'; ctx.stroke(); ctx.fillStyle=color; ctx.fill(); ctx.restore(); }
 // strike counter, bottom-left (inside x 110..860 below y=1040); counts the story's strikes on the absolute timeline
-function strikeCounter(t,alpha=1){ const ts=strikeTimes(); let n=0, last=-9; ts.forEach((x,i)=>{ if(t>=x-0.02){ n=i+1; last=x; } }); if(n===0||alpha<=0) return;
+function strikeCounter(t,alpha=1){ let n=0, last=-9; strikeEvents().forEach(([x,k])=>{ if(t>=x-0.02){ n=k; last=x; } }); if(n===0||alpha<=0) return;
   const k=t-last, s=lerp(1.35,1,easeOutBack(k/0.25)); const x=130, y=1450;
   ctx.save(); ctx.globalAlpha=ctx.globalAlpha*alpha; ctx.translate(x,y); ctx.scale(s,s);
   rr(0,-62,330,124,30); ctx.fillStyle='rgba(10,12,18,0.85)'; ctx.fill(); ctx.lineWidth=4; ctx.strokeStyle=k<0.3?C.yellow:'rgba(255,255,255,0.18)'; ctx.stroke();
@@ -37,15 +38,26 @@ function person(x,y,s,color,alpha=1){ ctx.save(); ctx.globalAlpha=ctx.globalAlph
   ctx.beginPath(); ctx.arc(0,-62,18,0,Math.PI*2); ctx.fill(); rr(-22,-40,44,56,16); ctx.fill(); rr(-20,10,17,52,8); ctx.fill(); rr(3,10,17,52,8); ctx.fill(); ctx.restore(); }
 const outOf=(tb,b)=>1-smooth(b.duration-0.3,b.duration-0.05,tb);
 
-// ---- hook: the claim on frame 0; on 'lived' an open loop for the ending (strike 7 + the bear)
-function beatHook(tb,t,b){ const tL=wordTime('hook','lived');
-  headline([[['STRUCK BY LIGHTNING',C.white]],[['7 TIMES',C.yellow],['.',C.white]]],1,80);
-  if(t>tL) tag('…and #7 involved a bear 🐻',W/2,SUB_Y+70,t,tL,{bg:C.yellow,fg:'#111',size:46,rot:-0.04});
+function bonk(t,tS,alpha){ if(t<tS) return; ctx.save(); const k=t-tS, s=lerp(1.45,1,easeOutBack(k/0.25)); ctx.translate(W/2,HEAD_Y+80);   // the pop stays below the top bar (y>250)
+  ctx.rotate(-0.08); ctx.scale(s,s); ctx.globalAlpha=ctx.globalAlpha*alpha; text('BONK.',0,0,{size:120,weight:900,color:C.yellow,strokeW:16}); ctx.restore(); }
+// ---- hook (cold open): struck while fishing on frame 0, then the bear, then BONK on the 3D hit
+function beatHook(tb,t,b){ const tB=wordTime('hook','bear'), tS=b.start+B_BONK, tSays=wordTime('hook','says');
+  headline([[['STRUCK BY LIGHTNING',C.white]],[['WHILE ',C.white],['FISHING',C.yellow]]],1-smooth(tB-0.25,tB,t),80);
+  if(t>tB-0.05) headline([[['THEN A ',C.white],['BEAR',C.orange],['?!',C.white]]],smooth(tB-0.05,tB+0.15,t)*(1-smooth(tS-0.2,tS,t)),92);
+  bonk(t,tS,1-smooth(b.duration-0.25,b.duration-0.02,tb));
+  if(t>tSays) label('(his story)',W/2,SUB_Y+70,smooth(tSays,tSays+0.2,t),{size:36,color:'rgba(255,255,255,0.9)'});
   strikeCounter(t); }
 
-// ---- roy: who he is, then strike one in pieces: year, the leg burn, the hole in the shoe (close-up)
+// ---- seven: the reveal -- that was strike seven, and he lived through all of them
+function beatSeven(tb,t,b){ const out=outOf(tb,b); const tS=wordTime('seven','seventh'), tA=wordTime('seven','survived');
+  if(t>tS-0.1) headline([[['STRIKE ',C.white],['#7',C.yellow]]],smooth(tS-0.1,tS+0.15,t)*out,96);
+  if(t>tA) tag('SURVIVED ALL 7 · 1942–1977',W/2,SUB_Y-10,t,tA,{bg:C.yellow,fg:'#111',size:44,rot:-0.03});
+  strikeCounter(t,out); }
+
+// ---- roy: rewind to strike one: who he is, then the year, the leg burn, the hole in the shoe (close-up)
 function beatRoy(tb,t,b){ const out=outOf(tb,b), a=smooth(0.05,0.3,tb)*out;
-  headline([[['ROY SULLIVAN',C.white]]],a,76); label('PARK RANGER · SHENANDOAH, VIRGINIA',W/2,HEAD2_Y-5,a,{size:36,color:ELEC});
+  if(tb<0.7){ ctx.save(); ctx.globalAlpha=ctx.globalAlpha*(1-smooth(0.45,0.7,tb)); tag('⏪ 35 YEARS EARLIER',W/2,HEAD_Y+40,t,b.start,{bg:C.yellow,fg:'#111',size:50}); ctx.restore(); }
+  else { headline([[['ROY SULLIVAN',C.white]]],smooth(0.7,0.9,tb)*out,76); label('PARK RANGER · SHENANDOAH, VIRGINIA',W/2,HEAD2_Y-5,smooth(0.7,0.9,tb)*out,{size:36,color:ELEC}); }
   tagRun('roy',t,[['strike','STRIKE 1 · 1942'],['burned','BURN DOWN HIS LEG'],['hole','HOLE IN HIS SHOE',{bg:C.orange}]],SUB_Y+70,out);
   strikeCounter(t,out); }
 
@@ -125,15 +137,6 @@ function beatRoymath(tb,t,b){ const out=outOf(tb,b); const tO=wordTime('roymath'
   if(t>tH-0.1){ const k=smooth(tH-0.1,tH+0.15,t)*out; ctx.save(); ctx.globalAlpha=ctx.globalAlpha*k; darkPanel(130,750,820,250,1);
     text('NOT LUCK. EXPOSURE.',W/2,835,{size:62,weight:900,color:C.yellow,stroke:false}); text('decades outdoors in storm country',W/2,920,{size:40,weight:800,color:C.white,stroke:false}); ctx.restore(); } }
 
-// ---- bear: strike seven, then the bear (his story)
-function beatBear(tb,t,b){ const out=outOf(tb,b); const tB=wordTime('bear','bear'), tS=b.start+B_BONK, tSays=wordTime('bear','says');   // BONK lands with the 3D hit
-  tagRun('bear',t,[[B_STRIKE,'STRIKE 7 · 1977'],['hair','HAIR SMOKING 💨']],SUB_Y-120,1-smooth(tB-0.2,tB,t));
-  if(t>tB-0.05) headline([[['A ',C.white],['BEAR',C.orange],['?!',C.white]]],smooth(tB-0.05,tB+0.15,t)*out*(1-smooth(tS-0.2,tS,t)),96);
-  if(t>tS){ ctx.save(); const k=t-tS, s=lerp(1.45,1,easeOutBack(k/0.25)); ctx.translate(W/2,HEAD_Y+80);   // the pop stays below the top bar (y>250) ctx.rotate(-0.08); ctx.scale(s,s); ctx.globalAlpha=ctx.globalAlpha*out;
-    text('BONK.',0,0,{size:120,weight:900,color:C.yellow,strokeW:16}); ctx.restore(); }
-  if(t>tSays) label('(his story)',W/2,SUB_Y+70,smooth(tSays,tSays+0.2,t)*out,{size:36,color:'rgba(255,255,255,0.9)'});
-  strikeCounter(t,out); }
-
 // ---- cta: the comment question, then the safety line
 function beatCta(tb,t,b){ const tW=wordTime('cta','when');
   headline([[['WOULD YOU GO',C.white]],[['FISHING WITH ',C.white],['ROY?',C.yellow]]],smooth(0.0,0.25,tb)*(1-smooth(tW-0.2,tW,t)),82);
@@ -141,8 +144,8 @@ function beatCta(tb,t,b){ const tW=wordTime('cta','when');
   pill('comment 💬 · follow for more',W/2,SUB_Y+90,{size:38,weight:800,padX:30,alpha:smooth(0.6,0.9,tb)}); }
 
 window.BEATS = {
-  draw: {hook:beatHook, roy:beatRoy, why:beatWhy, truck:beatTruck, hair:beatHair, golf:beatGolf, fern:beatFern, heart:beatHeart, odds:beatOdds, roymath:beatRoymath, bear:beatBear, cta:beatCta},
-  cutFlash: ['why','truck','hair','golf','fern','heart','roymath','bear'],
+  draw: {hook:beatHook, seven:beatSeven, roy:beatRoy, why:beatWhy, truck:beatTruck, hair:beatHair, golf:beatGolf, fern:beatFern, heart:beatHeart, odds:beatOdds, roymath:beatRoymath, cta:beatCta},
+  cutFlash: ['roy','why','truck','hair','golf','fern','heart','roymath','cta'],
   keywords: ['lightning','seven','lived','1942','leg','shoe','speed','millionths','skims','skin','feet','truck','window','eyebrows','windows','metal','fire','water','1-iron','god','fern-shaped','lichtenberg','fade','day','heart','cpr','million','nine','survive','luck','thirty-three','decades','storm','bear','trout','stick','fishing','indoors'],
   caption: {y: 680, size: 66, keywordColor: '#FFB020', cutAtBeat: true},
   vignette: 0.3,

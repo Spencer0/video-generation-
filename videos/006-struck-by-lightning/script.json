@@ -17,16 +17,26 @@
     "T": 168,
     "G": 150,
     "L": 127,
-    "B": 252
+    "B": 360
   },
   "bg_plan": {
     "hook": [
-      "H",
+      "B",
       0
     ],
     "roy": [
       "H",
-      78
+      0,
+      {
+        "cuts": [
+          [
+            "H",
+            206,
+            134,
+            40
+          ]
+        ]
+      }
     ],
     "why": [
       "F",
@@ -60,13 +70,13 @@
       "H",
       96
     ],
-    "bear": [
-      "B",
-      0
-    ],
     "cta": [
       "B",
-      157
+      262
+    ],
+    "seven": [
+      "B",
+      167
     ]
   },
   "blur_beats": [
@@ -80,7 +90,16 @@
       "pad_after": 0.25,
       "min_duration": 1.5,
       "lines": [
-        "This man got struck by lightning seven times. And lived."
+        "This man got hit by lightning while fishing. Hair smoking, he says he then fought off a bear trying to steal his trout. With a stick."
+      ]
+    },
+    {
+      "id": "seven",
+      "pad_before": 0.15,
+      "pad_after": 0.3,
+      "min_duration": 1.5,
+      "lines": [
+        "That was his seventh lightning strike. And he survived all of them."
       ]
     },
     {
@@ -162,15 +181,6 @@
       "min_duration": 1.5,
       "lines": [
         "So why Roy? Pure luck would be one in ten to the thirty-three. He just spent decades outdoors in storm country."
-      ]
-    },
-    {
-      "id": "bear",
-      "pad_before": 0.2,
-      "pad_after": 0.3,
-      "min_duration": 1.5,
-      "lines": [
-        "Strike seven hit him fishing. Hair smoking, he says he then fought off a bear trying to steal his trout. With a stick."
       ]
     },
     {

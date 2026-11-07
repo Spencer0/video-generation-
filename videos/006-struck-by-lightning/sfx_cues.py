@@ -8,7 +8,7 @@ H_STRIKES = [0.0, 10.75, 11.45, 12.10, 12.70]; H_HAIR0 = 10.5; H_POUR0 = 13.30
 T_STRIKE1, T_BROWS, T_WINUP0, T_STRIKE2 = 1.15, 2.40, 3.40, 4.55
 G_STRIKE = 1.45
 F_STRIKE, F_SHOES = 1.20, 6.40
-B_STRIKE, B_BEAR0, B_GRAB, B_BONK = 0.80, 2.2, 4.45, 5.55
+B_STRIKE, B_BEAR0, B_GRAB, B_BONK = 0.0, 1.9, 4.95, 6.20   # v3: the bear is the cold open (hook = shot B from 0)
 
 def crack(d=0.9, body=2.6):
     c = bandpass_fast(noise(d), 600, 9000); t = t_axis(d); c *= np.exp(-t / 0.09) * np.minimum(1, t / 0.004)
@@ -55,13 +55,14 @@ def cues(tl, B, W, sfx, music, D, N):
     # --- rain + wind under the storm beats (quiet room for the fern close-up; low under the panels)
     rain = bandpass_fast(noise(D), 1500, 9000); wind = lowpass_fast(noise(D), 220) * (1 + 0.6 * lowpass_fast(noise(D), 0.5))
     ta = t_axis(D); env = np.zeros_like(ta)
-    for bid, lvl in (("hook", 1), ("roy", 1), ("why", 0.5), ("truck", 1), ("hair", 1), ("golf", 1), ("heart", 0.35), ("odds", 0.35), ("roymath", 0.8), ("bear", 1), ("cta", 0.9)):
+    for bid, lvl in (("hook", 1), ("roy", 1), ("why", 0.5), ("truck", 1), ("hair", 1), ("golf", 1), ("heart", 0.35), ("odds", 0.35), ("roymath", 0.8), ("seven", 1), ("cta", 0.9)):
         b = B[bid]; env += lvl * np.clip((ta - b["start"] + 0.2) / 0.3, 0, 1) * np.clip((b["end"] - ta + 0.2) / 0.3, 0, 1)
     env = np.clip(env, 0, 1)
     place(sfx, rain / (np.abs(rain).max() + 1e-9) * env, 0, 0.14); place(sfx, wind / (np.abs(wind).max() + 1e-9) * env, 0, 0.18)
-    # --- strike one (hook): crack, the current runs down the leg, the shoe pops and sizzles; hopping thumps in roy
-    place(sfx, crack(), 0.0, 1.0); place(sfx, buzz(0.25, 140), 0.0, 0.25); place(sfx, poof(0.4), 0.08, 0.7); place(sfx, sizzle(0.9), 0.1, 0.35); place(sfx, boing(240), 0.12, 0.3)
-    r = B["roy"]; H0 = r["start"] - 78 / 24   # roy shows shot H from frame 78
+    # --- strike one (roy, the rewind): a reverse whoosh, then crack, current down the leg, the shoe pops and sizzles; hopping thumps
+    r = B["roy"]; H0 = r["start"]   # roy shows shot H from frame 0 (strike one on the cut)
+    place(sfx, whoosh(0.7, 200, 5000, rev=True), H0 - 0.6, 0.5)
+    place(sfx, crack(), H0, 1.0); place(sfx, buzz(0.25, 140), H0, 0.25); place(sfx, poof(0.4), H0 + 0.08, 0.7); place(sfx, sizzle(0.9), H0 + 0.1, 0.35); place(sfx, boing(240), H0 + 0.12, 0.3)
     for k in range(9): place(sfx, thud(140, 0.15), H0 + 4.9 + k * 0.45, 0.35)   # hops
     place(sfx, sizzle(1.2), W("roy", "hole"), 0.3); place(sfx, ding(1318, 0.6), W("roy", "strike"), 0.3)
     # --- why: slow-motion leader, slowed boom, hum of the flashover, the feet popping
@@ -98,16 +99,19 @@ def cues(tl, B, W, sfx, music, D, N):
     place(sfx, ding(1318, 0.6), W("odds", "about"), 0.35); tSv = W("odds", "survive")
     for i in range(9): place(sfx, pluck(523.25 * 2 ** (i / 12 * 2), 0.25), tSv + i * 0.04, 0.25)
     place(sfx, ding(1568, 0.8), W("roymath", "one"), 0.4); place(sfx, ding(1046, 0.9), W("roymath", "he"), 0.35)
-    # --- bear: strike seven, creek babble, a growl on 'bear', the bonk, a yelp and running paws
-    be = B["bear"]; creek = bandpass_fast(noise(be["end"] - be["start"] + 3.9), 400, 3000) * (1 + 0.4 * lowpass_fast(noise(be["end"] - be["start"] + 3.9), 3))
-    place(sfx, creek / (np.abs(creek).max() + 1e-9), be["start"], 0.12)
-    place(sfx, crack(), be["start"] + B_STRIKE - 0.01, 1.0); place(sfx, sizzle(1.0), be["start"] + B_STRIKE + 0.1, 0.35)
-    place(sfx, growl(1.0), W("bear", "bear"), 0.55); place(sfx, growl(0.6), be["start"] + B_GRAB, 0.4)
+    # --- cold open (hook = shot B): strike seven on frame 0, creek babble, a growl on 'bear', the bonk, running paws; creek again under seven + cta
+    be = B["hook"]
+    for seg in (B["hook"], B["seven"], B["cta"]):
+        d = seg["end"] - seg["start"] + 0.3; creek = bandpass_fast(noise(d), 400, 3000) * (1 + 0.4 * lowpass_fast(noise(d), 3))
+        place(sfx, creek / (np.abs(creek).max() + 1e-9), seg["start"], 0.12)
+    place(sfx, crack(), 0.0, 1.0); place(sfx, buzz(0.3, 140), 0.0, 0.25); place(sfx, sizzle(1.0), B_STRIKE + 0.1, 0.35)
+    place(sfx, growl(1.0), W("hook", "bear"), 0.55); place(sfx, growl(0.6), be["start"] + B_GRAB, 0.4)
+    place(sfx, ding(1046, 1.2), W("seven", "seventh"), 0.45); place(sfx, shimmer(0.8), W("seven", "survived") - 0.5, 0.3)
     place(sfx, bonk(), be["start"] + B_BONK, 1.0); place(sfx, boing(400, 0.4), be["start"] + B_BONK + 0.05, 0.4)
     for k in range(10): place(sfx, thud(90, 0.12), be["start"] + B_BONK + 0.3 + k * 0.17, 0.3)
     c = B["cta"]; place(sfx, rumble(1.8, 100), W("cta", "thunder"), 0.45)
     # --- cut whooshes
-    for bid in ("why", "truck", "hair", "golf", "fern", "heart", "roymath", "bear"): place(sfx, whoosh(0.32), B[bid]["start"] - 0.18, 0.35)
+    for bid in ("roy", "why", "truck", "hair", "golf", "fern", "heart", "roymath", "cta"): place(sfx, whoosh(0.32), B[bid]["start"] - 0.18, 0.35)
     # --- music: light-hearted plucky major progression at 112 bpm (I-V-vi-IV), soft kick + shaker
     bpm = 112; beat = 60 / bpm; chords = [(60, 64, 67), (55, 59, 62), (57, 60, 64), (53, 57, 60)]
     tt, k = 0.0, 0

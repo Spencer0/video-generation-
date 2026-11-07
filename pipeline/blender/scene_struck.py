@@ -45,7 +45,8 @@ F_LEADER0, F_STRIKE = 0.10, 1.20; F_SHOES = 6.40; F_STEAM = 2.6   # why beat: 'S
 R_STRIKE = 1.38; R_RING1 = 3.6; R_LEG0, R_LEG1 = 3.85, 5.05; R_RADIUS = 6.0
 L_GROW0, L_GROW1, L_FADE0, L_FADE1 = 0.55, 1.9, 3.85, 5.0   # fern beat: 'fern-shaped' 0.96, 'fade' 3.88
 T_STRIKE1 = 1.15; T_BROWS = 2.40; T_WINUP0, T_WINUP1 = 3.40, 3.95; T_STRIKE2 = 4.55; T_THUMB = 5.2      # truck beat: 'through his truck window' 0.97-1.84, 'eyebrows' 2.80, 'Windows up' 3.43
-B_STRIKE = 0.80; B_BEAR0 = 2.2; B_STAND0, B_STAND1 = 3.3, 4.0; B_GRAB = 4.45; B_BONK = 5.55; B_WIN = 6.5   # bear beat: 'hit' 0.81, 'bear' 3.80, 'steal' 4.50, 'stick' 5.76
+B_STRIKE = 0.0; B_BEAR0 = 1.9; B_STAND0, B_STAND1 = 3.55, 4.25; B_GRAB = 4.95; B_BONK = 6.20; B_WIN = 7.15; B_SIT0, B_SIT1 = 11.0, 11.8
+# v3: the bear is the cold open (hook beat = B 0): 'hit' 0.60, 'fought' 3.67, 'bear' 4.28, 'steal' 4.97, 'stick' 6.23; the seven beat shows the win; afterwards he sits back down to fish (CTA)
 
 def smoothstep(e0, e1, x):
     t = max(0.0, min(1.0, (x - e0) / (e1 - e0) if e1 != e0 else 0.0)); return t * t * (3 - 2 * t)
@@ -1208,18 +1209,21 @@ def bear_path(t):
 def update_B(S, t):
     roy, bear, fz = S["roy"], S["bear"], S["fz"]
     inten, _ = strike_env(t, [B_STRIKE]); grow = smoothstep(B_STRIKE - 0.08, B_STRIKE, t)
+    if t < 0.02: inten, grow = 1.0, 1.0   # the cold open: the bolt is in Roy on frame 0
     S["bolt"].set(grow, (0.12 if t < B_STRIKE else min(1, inten)) if B_STRIKE - 0.08 < t < B_STRIKE + 0.6 else 0.0, 1.0)
     S["flash"].outputs[0].default_value = 0.35 * inten; S["strike"].data.energy = 1e4 * inten
     S["creek"].node_tree.nodes["flow"].outputs[0].default_value = t * 0.8
     # Roy: sitting fishing -> jolt -> dazed, hair smoking -> stands, grabs the stick -> bonk -> holds the trout up
     sit = add_pose(SIT, {"r_sho": (-0.6, 0.15, 0), "r_elb": (-0.6, 0, 0)})
     P = strike_pose(sit, t, [B_STRIKE])
-    ks = smoothstep(B_STAND0, B_STAND1, t); P = blend_pose(P, STAND, ks)
+    back = smoothstep(B_SIT0, B_SIT1, t)   # end: sits back down and fishes on, hair still smoking
+    ks = smoothstep(B_STAND0, B_STAND1, t) * (1 - back); P = blend_pose(P, STAND, ks)
     swing = {**STAND, "r_sho": (-3.0, 0.2, 0), "r_elb": (-0.4, 0, 0), "neck": (0.15, 0, 0), "l_sho": (-0.5, -0.4, 0), "l_elb": (-0.8, 0, 0)}
     P = blend_pose(P, swing, smoothstep(B_STAND1 - 0.1, B_BONK - 0.25, t))
     P = blend_pose(P, {**swing, "r_sho": (-1.05, 0.05, 0), "r_elb": (0.0, 0, 0), "spine": (-0.18, 0, 0), "neck": (-0.2, 0, 0)}, smoothstep(B_BONK - 0.25, B_BONK, t) * (1 - smoothstep(B_BONK + 0.35, B_BONK + 0.7, t)))   # swing ends on the bear's head
-    P = blend_pose(P, {**STAND, "l_sho": (-2.6, -0.7, 0), "l_elb": (-0.2, 0, 0), "r_sho": (0.1, 0.3, 0), "neck": (0.25, 0, 0)}, smoothstep(B_WIN, B_WIN + 0.4, t))
-    rot = lerp(math.pi / 2, 1.0, smoothstep(B_STAND0, B_STAND1, t))   # faces the creek, then turns to face the bear's head
+    P = blend_pose(P, {**STAND, "l_sho": (-2.6, -0.7, 0), "l_elb": (-0.2, 0, 0), "r_sho": (0.1, 0.3, 0), "neck": (0.25, 0, 0)}, smoothstep(B_WIN, B_WIN + 0.4, t) * (1 - back))
+    P = blend_pose(P, sit, back)
+    rot = lerp(math.pi / 2, 1.0, smoothstep(B_STAND0, B_STAND1, t) * (1 - back))   # faces the creek, turns to face the bear's head, back to the creek
     roy.pose(P, (-0.45, 0.15, 0), rot, lerp(0.17, 0.95, ks))
     roy.ground_snap(S["seat_z"] if ks < 0.5 else fz(-0.45, 0.15)); bpy.context.view_layer.update()
     roy.set_sheath(min(1.0, inten * 1.1)); S["sheath"].node_tree.nodes["flow"].outputs[0].default_value = t * 9.0
@@ -1231,11 +1235,12 @@ def update_B(S, t):
         k = min(t - B_STRIKE, 0.9); hat.location = (0.3 * k, -0.2 * k, 0.11 + 1.6 * k - 2.6 * k * k); hat.rotation_euler = (2.0 * k, 0.5 * k, 3 * k)
         if t - B_STRIKE > 0.9: hat.location = (0, 0, -50)
     # rod: fishing until the strike, then it flies out of his hand into the grass
-    S["rod"].hide_render = t > B_STRIKE + 0.25
-    for ch in S["rod"].children: ch.hide_render = t > B_STRIKE + 0.25
+    no_rod = B_STRIKE + 0.25 < t < B_SIT1 + 0.2
+    S["rod"].hide_render = no_rod
+    for ch in S["rod"].children: ch.hide_render = no_rod
     S["rod"].rotation_euler = (-0.9, 0, 0)
     bpy.context.view_layer.update()
-    tip = S["rod"].matrix_world @ Vector((0, 0, -2.15)); S["line"].hide_render = t > B_STRIKE + 0.25
+    tip = S["rod"].matrix_world @ Vector((0, 0, -2.15)); S["line"].hide_render = no_rod
     for pnt, q in zip(S["line"].data.splines[0].points, (tip, Vector((tip.x + 0.1, tip.y, -0.38)))): pnt.co = (q.x, q.y, q.z, 1.0)
     # the bear
     pos, heading, phase, moving = bear_path(t)
@@ -1255,13 +1260,14 @@ def update_B(S, t):
     if t < B_GRAB: fish.location = (0.45, -0.35, fz(0.45, -0.35) + 0.05); fish.rotation_euler = (0, 0, 0.6)
     elif t < B_BONK: fish.matrix_world = Matrix.Translation(bear.mouth.matrix_world.translation) @ Euler((0, 1.4, heading)).to_matrix().to_4x4()
     elif t < B_WIN: k = min(1, (t - B_BONK) / 0.3); fish.location = bear.mouth.matrix_world.translation.lerp(Vector((0.75, -0.6, fz(0.75, -0.6) + 0.05)), k)   # dropped on the bonk
-    else: fish.matrix_world = Matrix.Translation(roy.J["l_hand"].matrix_world.translation + Vector((0, 0, 0.12))) @ Euler((0.0, 0.0, 1.57)).to_matrix().to_4x4() @ Euler((1.5, 0, 0)).to_matrix().to_4x4()
+    elif t < B_SIT0 + 0.3: fish.matrix_world = Matrix.Translation(roy.J["l_hand"].matrix_world.translation + Vector((0, 0, 0.12))) @ Euler((0.0, 0.0, 1.57)).to_matrix().to_4x4() @ Euler((1.5, 0, 0)).to_matrix().to_4x4()
+    else: fish.matrix_world = Matrix.Translation(Vector((0.45, -0.35, fz(0.45, -0.35) + 0.05))) @ Euler((0, 0, 0.6)).to_matrix().to_4x4()   # back on the rock beside him
     # stick: in the grass until he stands, then in his right hand
-    if t < B_STAND1 - 0.2: S["stick"].location = (-0.1, -0.75, fz(-0.1, -0.75) + 0.03); S["stick"].rotation_euler = (1.57, 0, 0.4)
+    if t < B_STAND1 - 0.2 or t > B_SIT0 + 0.4: S["stick"].location = (-0.1, -0.75, fz(-0.1, -0.75) + 0.03); S["stick"].rotation_euler = (1.57, 0, 0.4)
     else: S["stick"].matrix_world = roy.J["r_hand"].matrix_world @ Matrix.Translation((0, 0, -0.4))
     if not S["smoke"].parts:
         S["smoke"].add(B_STRIKE + 0.08, (-0.45, 0.15, S["seat_z"] + 1.1), 10, 0.35, 0.8, 0.13, 1.6, 71, 0.25, 0.55)
-        for k in range(22): S["smoke"].add(B_STRIKE + 0.3 + k * 0.4, lambda: roy.world("head") + Vector((0, 0, 0.18)), 5, 0.1, 0.8, 0.11, 1.5, 80 + k, 0.2, 0.75)   # hair keeps smoking, visibly
+        for k in range(36): S["smoke"].add(B_STRIKE + 0.3 + k * 0.4, lambda: roy.world("head") + Vector((0, 0, 0.18)), 5, 0.1, 0.8, 0.11, 1.5, 80 + k, 0.2, 0.75)   # hair keeps smoking, visibly
     S["smoke"].update(t); rain_update(S["rain"], t)
     sh = Vector((n1(t * 31, 1), n1(t * 29, 2), n1(t * 27, 3))) * 0.06 * inten
     k = smoothstep(0, 8.3, t); kb = smoothstep(B_BEAR0, B_GRAB, t)
