@@ -452,6 +452,30 @@ every video. They found, among others:
   Puffs accept a callable origin so smoke follows a moving head; Bolt takes
   mid/via points so a bolt can come in through a window.
 
+- Round 2 (a fresh reviewer on the v2 final) caught: the CTA wrapped the bear
+  shot back to before the bear left (extend the shot instead of wrapping);
+  the BONK swing passed over the bear's head (aim the swing at the target's
+  measured position, stop the bear a step away, put the overlay on the 3D hit
+  time, not the word); the hat went through the truck roof; the counter ticked
+  on the bolt while the "STRIKE 2" pill came on the word (both now at the bolt;
+  tagRun takes a number = seconds into the beat); the 1-iron was a hairline
+  under the quote panel (thicker chrome club, frame it below the panel and the
+  caption line); arms through heads; "a bolt is over in millionths" -> "each
+  pulse"; "fade within hours" -> "usually within a day".
+- Two own bugs worth remembering: a camera edit swallowed `r = lerp(...)` into
+  a trailing comment, the per-frame handler raised, and Blender rendered 176
+  black frames without failing (grep the render log for "Error in bpy" after
+  every shot); and a facing direction judged from a preview was backwards
+  (Rz(theta) maps the figure's -Y front to (sin theta, -cos theta); measure the
+  nose position instead of eyeballing).
+- Overlay engine: `BEATS.caption.cutAtBeat` (opt-in) stops a beat's last
+  caption lingering up to 0.6 s past the cut.
+- Measured on the v2 final: 64.83 s, 1556 frames, VO onset 0.05 s, mean luma Y
+  100.9 (first 3 s) / 105.2 (whole), darkest 59.8, -14.1 LUFS, TP -1.5 dBTP,
+  safe area PASS, longest beat 7.29 s. 3D: 1229 frames at 540x960, 12 samples,
+  ~8-10 s/frame; two container restarts and one 2 h cap were all resumed by
+  frame-skip.
+
 ## Workflow for a new video
 
 1. Copy `videos/001-water-bag/script.json`, write beats (3 words/sec pacing,

@@ -51,7 +51,9 @@ conventions that make the pieces line up.
 ```bash
 python3 pipeline/tts.py 006-struck-by-lightning && python3 pipeline/sfx.py 006-struck-by-lightning
 python3 pipeline/overlays/render_overlays.py 006-struck-by-lightning
-bash pipeline/blender/render_all.sh 006-struck-by-lightning 540 12   # ~2.5 h on 4 cores; resumable
+bash pipeline/blender/render_all.sh 006-struck-by-lightning 540 12   # 6 shots, 1229 frames, ~3 h on 4 cores; resumable
+python3 pipeline/overlays/render_overlays.py 006-struck-by-lightning --no-captions --out videos/006-struck-by-lightning/build/overlay_nocap
+python3 pipeline/assemble.py 006-struck-by-lightning --overlay-dir overlay_nocap --out videos/006-struck-by-lightning/out/final_nocaptions.mp4
 python3 pipeline/assemble.py 006-struck-by-lightning
 python3 pipeline/checks.py 006-struck-by-lightning
 ```
