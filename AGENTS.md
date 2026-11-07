@@ -476,6 +476,23 @@ every video. They found, among others:
   ~8-10 s/frame; two container restarts and one 2 h cap were all resumed by
   frame-skip.
 
+- v3 (the creator's call after watching v2: "the bear part is by far the
+  best"): the bear became the cold open. hook = shot B from frame 0 (strike 7
+  in Roy on frame 0, bear, BONK on the 3D hit), then "That was his seventh
+  lightning strike. And he survived all of them." over the win, then a
+  "35 YEARS EARLIER" rewind into strike one, and the rest as before; the
+  ending reuses B after Roy sits back down to fish. Lessons: put the best
+  scene first and let the explainer be the flashback; the strike counter
+  became a list of (time, n) events so it can show #7 first and then count
+  1..6; B was retimed so its events sit on the hook's words (strike on frame
+  0, bonk on "stick") rather than shifting footage with an offset, which would
+  have lost the frame-0 bolt. A `cuts` entry on the roy beat drops in the shoe
+  close-up on "hole". Measured: 65.65 s, 1575 frames, VO onset 0.05 s, luma
+  105.9 first 3 s / 105.7 whole, -14.3 LUFS, safe area PASS.
+- Same bug class twice: an edit that appends a `// comment` mid-line in
+  beats.js (or `#` in the scene) silently swallows the statements after it
+  (the BONK lost its rotate/scale/fade). Put comments on their own line.
+
 ## Workflow for a new video
 
 1. Copy `videos/001-water-bag/script.json`, write beats (3 words/sec pacing,

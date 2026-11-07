@@ -1,5 +1,6 @@
-duration: 64.83 s (timeline 64.83 s)
-  beat hook      3.25 s OK
+duration: 65.65 s (timeline 65.62 s)
+  beat hook      6.96 s OK
+  beat seven     3.62 s OK
   beat roy       7.25 s TOO LONG
   beat why       7.29 s TOO LONG
   beat truck     6.83 s OK
@@ -9,12 +10,11 @@ duration: 64.83 s (timeline 64.83 s)
   beat heart     3.38 s OK
   beat odds      4.46 s OK
   beat roymath   6.33 s OK
-  beat bear      6.54 s OK
   beat cta       3.92 s OK
 longest beat: 7.29 s
 first spoken word onset (VO stem, 50 ms RMS > -20 dBFS): 0.05 s
-mean luma Y: first 3 s = 100.9, whole = 105.2, darkest frame = 59.8 (frame 1143)
-frames in final: 1556 (timeline 1556)
-loop seam: mean abs pixel difference frame 0 vs last frame = 47.5 / 255 (lower is more seamless)
-safe area (519 overlay frames sampled against 5 UI zones): PASS, nothing readable under the TikTok UI
-loudness: Input Integrated:    -14.1 LUFS; Input True Peak:      -1.5 dBTP
+mean luma Y: first 3 s = 105.9, whole = 105.7, darkest frame = 59.8 (frame 1319)
+frames in final: 1575 (timeline 1575)
+loop seam: mean abs pixel difference frame 0 vs last frame = 59.4 / 255 (lower is more seamless)
+safe area (525 overlay frames sampled against 5 UI zones): PASS, nothing readable under the TikTok UI
+loudness: Input Integrated:    -14.3 LUFS; Input True Peak:      -1.7 dBTP
