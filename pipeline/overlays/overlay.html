@@ -56,7 +56,9 @@ function buildChunks(){
   const flush=()=>{if(cur.length){CHUNKS.push({words:cur,start:cur[0].start,end:cur[cur.length-1].end});cur=[]}};
   WORDS.forEach((w,i)=>{ cur.push(w); const punct=/[.!?,;:]$|\.\.\.$/.test(w.word); const next=WORDS[i+1];
     if(punct||cur.length>=3||!next||next.beat!==w.beat) flush(); });
-  CHUNKS.forEach((c,i)=>{const nx=CHUNKS[i+1]; c.hide = nx ? Math.min(c.end+0.6, nx.start) : c.end+0.9;});
+  CHUNKS.forEach((c,i)=>{const nx=CHUNKS[i+1]; c.hide = nx ? Math.min(c.end+0.6, nx.start) : c.end+0.9;
+    // opt-in (BEATS.caption.cutAtBeat): a beat's last caption does not linger across the cut into the next beat
+    const CS=(window.BEATS&&window.BEATS.caption)||{}; if(CS.cutAtBeat){ const bt=TL.beats.find(b=>b.id===c.words[0].beat); if(bt) c.hide=Math.min(c.hide, bt.end-0.02); } });
 }
 function drawCaptions(t){
   if(window.NO_CAPTIONS) return;

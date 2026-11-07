@@ -142,6 +142,6 @@ window.BEATS = {
   draw: {hook:beatHook, roy:beatRoy, why:beatWhy, truck:beatTruck, hair:beatHair, golf:beatGolf, fern:beatFern, heart:beatHeart, odds:beatOdds, roymath:beatRoymath, bear:beatBear, cta:beatCta},
   cutFlash: ['why','truck','hair','golf','fern','heart','roymath','bear'],
   keywords: ['lightning','seven','lived','1942','leg','shoe','speed','millionths','skims','skin','feet','truck','window','eyebrows','windows','metal','fire','water','1-iron','god','fern-shaped','lichtenberg','fade','hours','heart','cpr','million','nine','survive','luck','thirty-three','decades','storm','bear','trout','stick','fishing','indoors'],
-  caption: {y: 680, size: 66, keywordColor: '#FFB020'},
+  caption: {y: 680, size: 66, keywordColor: '#FFB020', cutAtBeat: true},
   vignette: 0.3,
 };
