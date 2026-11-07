@@ -6,7 +6,7 @@ const HEAD_Y=320, HEAD2_Y=405, SUB_Y=480;
 const ELEC='#8FD3FF';
 // 3D event times (scene seconds) from pipeline/blender/scene_struck.py, mapped through script.json bg_plan:
 //   hook = H 0 (strike 1), truck = T 0 (strike 2 at 1.15), hair = H from 10.5 (strikes 3-6 at 10.75/11.45/12.10/12.70), bear = B 0 (strike 7 at 0.80)
-const T_STRIKE1=1.15, HAIR_STRIKES=[10.75,11.45,12.10,12.70], H_HAIR0=10.5, B_STRIKE=0.80;
+const T_STRIKE1=1.15, HAIR_STRIKES=[10.75,11.45,12.10,12.70], H_HAIR0=10.5, B_STRIKE=0.80, B_BONK=5.55;
 const YEARS=[1942,1969,1970,1972,1973,1976,1977];
 function strikeTimes(){ const B=BEATS; return [B.hook.start, B.truck.start+T_STRIKE1, ...HAIR_STRIKES.map(x=>B.hair.start+x-H_HAIR0), B.bear.start+B_STRIKE]; }
 function twoTone(parts,x,y,size,strokeW=12){ font(900,size); const ws=parts.map(p=>ctx.measureText(p[0]).width); const total=ws.reduce((a,b)=>a+b,0); let cx=x-total/2;
@@ -18,7 +18,9 @@ function label(txt,x,y,alpha,{size=38,align='center',color=C.white}={}){ ctx.sav
 function tag(txt,x,y,t,t0,{bg='rgba(10,12,18,0.85)',fg=C.white,size=44,align='center',rot=0}={}){ if(t<t0) return; const k=t-t0, s=lerp(1.5,1,easeOutBack(k/0.25));
   ctx.save(); ctx.translate(x,y); ctx.rotate(rot); ctx.scale(s,s); ctx.globalAlpha=ctx.globalAlpha*smooth(0,0.08,k); pill(txt,0,0,{size,weight:900,padX:26,bg,fg,align}); ctx.restore(); }
 // a run of tags on spoken words, each giving way to the next (no stacking)
-function tagRun(beat,t,items,y,out=1){ items.forEach(([w,txt,opts],i)=>{ const t0=wordTime(beat,w); if(t<t0) return; const nx=i<items.length-1?wordTime(beat,items[i+1][0]):1e9;
+// an item's trigger is a spoken word, or a number = seconds into the beat (to sit on a 3D event, e.g. the bolt, in step with the counter)
+function tagRun(beat,t,items,y,out=1){ const at=w=>typeof w==='number'?BEATS[beat].start+w:wordTime(beat,w);
+  items.forEach(([w,txt,opts],i)=>{ const t0=at(w); if(t<t0) return; const nx=i<items.length-1?at(items[i+1][0]):1e9;
   ctx.save(); ctx.globalAlpha=ctx.globalAlpha*(1-smooth(nx-0.12,nx-0.02,t))*out; tag(txt,W/2,y,t,t0,opts||{}); ctx.restore(); }); }
 function bolt(x,y,s,alpha=1,color=C.yellow){ ctx.save(); ctx.globalAlpha=ctx.globalAlpha*alpha; ctx.translate(x,y); ctx.scale(s,s);
   ctx.beginPath(); ctx.moveTo(8,-40); ctx.lineTo(-18,6); ctx.lineTo(0,6); ctx.lineTo(-8,40); ctx.lineTo(20,-8); ctx.lineTo(2,-8); ctx.lineTo(12,-40); ctx.closePath();
@@ -50,7 +52,7 @@ function beatRoy(tb,t,b){ const out=outOf(tb,b), a=smooth(0.05,0.3,tb)*out;
 // ---- why: the physics, on Roy himself (slow motion)
 function beatWhy(tb,t,b){ const out=outOf(tb,b);
   const tSp=wordTime('why','speed'), tM=wordTime('why','millionths'), tSk=wordTime('why','skims'), tF=wordTime('why','out');
-  pill('EXTREME SLOW MOTION',130,1480,{size:36,weight:800,padX:24,align:'left',alpha:0.9*out});
+  pill('SLOW-MO RE-ENACTMENT',130,1480,{size:36,weight:800,padX:24,align:'left',alpha:0.9*out});
   if(t<tSp) headline([[['HOW DID HE ',C.white],['LIVE?',C.yellow]]],smooth(0,0.2,tb)*(1-smooth(tSp-0.15,tSp,t)),84);
   if(t>tSp && t<tSk-0.1){ const a=smooth(tSp,tSp+0.15,t)*(1-smooth(tSk-0.4,tSk-0.1,t)); headline([[['SPEED.',C.yellow]]],a,96);
     if(t>tM){ const k=smooth(tM,tM+0.2,t); ctx.save(); ctx.globalAlpha=ctx.globalAlpha*k*a; darkPanel(230,430,620,150,1);
@@ -61,7 +63,7 @@ function beatWhy(tb,t,b){ const out=outOf(tb,b);
 
 // ---- truck: strike two through the open window, then why a closed car is safe
 function beatTruck(tb,t,b){ const out=outOf(tb,b); const tW=wordTime('truck','windows');
-  tagRun('truck',t,[['strike','STRIKE 2 · 1969'],['eyebrows','EYEBROWS: GONE',{bg:C.orange}]],SUB_Y-120,1-smooth(tW-0.2,tW,t));
+  tagRun('truck',t,[[T_STRIKE1,'STRIKE 2 · 1969'],['took','EYEBROWS: GONE',{bg:C.orange}]],SUB_Y-120,1-smooth(tW-0.2,tW,t));
   if(t>=tW-0.05){ const k=smooth(tW-0.05,tW+0.2,t)*out; headline([[['WINDOWS UP',C.yellow],[' = SAFE',C.white]]],k,82);
     label('a hard-top car’s metal shell',W/2,HEAD2_Y+15,k,{size:40}); label('carries current AROUND you',W/2,HEAD2_Y+70,k,{size:40,color:ELEC}); }
   strikeCounter(t,out); }
@@ -82,11 +84,11 @@ function beatGolf(tb,t,b){ const out=outOf(tb,b); const tJ=wordTime('golf','joke
     if(t>tN){ ctx.globalAlpha=ctx.globalAlpha*smooth(tN,tN+0.2,t); text('NOT EVEN GOD',W/2,415,{size:60,weight:900,color:C.yellow,stroke:false}); text('CAN HIT A 1-IRON.”',W/2,485,{size:56,weight:900,color:C.yellow,stroke:false}); }
     ctx.restore(); label('— Lee Trevino (joking!)',850,590,k,{size:36,align:'right',color:'rgba(255,255,255,0.9)'}); } }
 
-// ---- fern: the marks, named; they fade within hours (the 3D fern fades on 'fade')
+// ---- fern: the marks, named; they usually fade within a day (the 3D fern fades on 'fade')
 function beatFern(tb,t,b){ const out=outOf(tb,b); const tL=wordTime('fern','lichtenberg'), tF=wordTime('fern','fade');
   headline([[['FERN-SHAPED MARKS',C.white]]],smooth(0.1,0.35,tb)*out*(1-smooth(tL-0.2,tL,t)),70);
   if(t>tL-0.1) headline([[['LICHTENBERG',C.yellow]],[['FIGURES',C.white]]],smooth(tL-0.1,tL+0.15,t)*out,86);
-  if(t>tF) tag('⏱ GONE WITHIN HOURS',W/2,SUB_Y+90,t,tF,{size:44}); }
+  if(t>tF) tag('⏱ USUALLY FADES WITHIN A DAY',W/2,SUB_Y+90,t,tF,{size:42}); }
 
 // ---- heart: ECG flatlines on 'stopped', comes back after 'CPR'
 function beatHeart(tb,t,b){ const out=outOf(tb,b); const tS=wordTime('heart','stopped'), tC=wordTime('heart','cpr');
@@ -124,8 +126,8 @@ function beatRoymath(tb,t,b){ const out=outOf(tb,b); const tO=wordTime('roymath'
     text('NOT LUCK. EXPOSURE.',W/2,835,{size:62,weight:900,color:C.yellow,stroke:false}); text('decades outdoors in storm country',W/2,920,{size:40,weight:800,color:C.white,stroke:false}); ctx.restore(); } }
 
 // ---- bear: strike seven, then the bear (his story)
-function beatBear(tb,t,b){ const out=outOf(tb,b); const tB=wordTime('bear','bear'), tS=wordTime('bear','stick'), tSays=wordTime('bear','says');
-  tagRun('bear',t,[['strike','STRIKE 7 · 1977'],['hair','HAIR SMOKING 💨']],SUB_Y-120,1-smooth(tB-0.2,tB,t));
+function beatBear(tb,t,b){ const out=outOf(tb,b); const tB=wordTime('bear','bear'), tS=b.start+B_BONK, tSays=wordTime('bear','says');   // BONK lands with the 3D hit
+  tagRun('bear',t,[[B_STRIKE,'STRIKE 7 · 1977'],['hair','HAIR SMOKING 💨']],SUB_Y-120,1-smooth(tB-0.2,tB,t));
   if(t>tB-0.05) headline([[['A ',C.white],['BEAR',C.orange],['?!',C.white]]],smooth(tB-0.05,tB+0.15,t)*out*(1-smooth(tS-0.2,tS,t)),96);
   if(t>tS){ ctx.save(); const k=t-tS, s=lerp(1.8,1,easeOutBack(k/0.25)); ctx.translate(W/2,HEAD_Y+20); ctx.rotate(-0.08); ctx.scale(s,s); ctx.globalAlpha=ctx.globalAlpha*out;
     text('BONK.',0,0,{size:120,weight:900,color:C.yellow,strokeW:16}); ctx.restore(); }
@@ -141,7 +143,7 @@ function beatCta(tb,t,b){ const tW=wordTime('cta','when');
 window.BEATS = {
   draw: {hook:beatHook, roy:beatRoy, why:beatWhy, truck:beatTruck, hair:beatHair, golf:beatGolf, fern:beatFern, heart:beatHeart, odds:beatOdds, roymath:beatRoymath, bear:beatBear, cta:beatCta},
   cutFlash: ['why','truck','hair','golf','fern','heart','roymath','bear'],
-  keywords: ['lightning','seven','lived','1942','leg','shoe','speed','millionths','skims','skin','feet','truck','window','eyebrows','windows','metal','fire','water','1-iron','god','fern-shaped','lichtenberg','fade','hours','heart','cpr','million','nine','survive','luck','thirty-three','decades','storm','bear','trout','stick','fishing','indoors'],
+  keywords: ['lightning','seven','lived','1942','leg','shoe','speed','millionths','skims','skin','feet','truck','window','eyebrows','windows','metal','fire','water','1-iron','god','fern-shaped','lichtenberg','fade','day','heart','cpr','million','nine','survive','luck','thirty-three','decades','storm','bear','trout','stick','fishing','indoors'],
   caption: {y: 680, size: 66, keywordColor: '#FFB020', cutAtBeat: true},
   vignette: 0.3,
 };

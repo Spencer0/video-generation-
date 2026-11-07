@@ -16,8 +16,8 @@
     "F": 176,
     "T": 168,
     "G": 150,
-    "L": 122,
-    "B": 200
+    "L": 127,
+    "B": 252
   },
   "bg_plan": {
     "hook": [
@@ -66,7 +66,7 @@
     ],
     "cta": [
       "B",
-      106
+      157
     ]
   },
   "blur_beats": [
@@ -98,7 +98,7 @@
       "pad_after": 0.3,
       "min_duration": 1.5,
       "lines": [
-        "How did he live? Speed. A bolt is over in millionths of a second, so most current skims over the skin and out through the feet."
+        "How did he live? Speed. Each pulse is over in millionths of a second, so most current skims over the skin and out through the feet."
       ]
     },
     {
@@ -134,7 +134,7 @@
       "pad_after": 0.3,
       "min_duration": 1.5,
       "lines": [
-        "Some people get fern-shaped marks called Lichtenberg figures. They fade within hours."
+        "Some people get fern-shaped marks called Lichtenberg figures. They usually fade within a day."
       ]
     },
     {
@@ -152,7 +152,7 @@
       "pad_after": 0.3,
       "min_duration": 1.5,
       "lines": [
-        "Your odds? About one in a million a year, and nine in ten survive."
+        "Your odds? In the US, about one in a million a year, and nine in ten survive."
       ]
     },
     {

@@ -5,7 +5,7 @@ from audiolib import *
 
 # event times from pipeline/blender/scene_struck.py (v2: the video follows Roy Sullivan), mapped through script.json bg_plan
 H_STRIKES = [0.0, 10.75, 11.45, 12.10, 12.70]; H_HAIR0 = 10.5; H_POUR0 = 13.30
-T_STRIKE1, T_BROWS, T_WINUP0, T_STRIKE2 = 1.15, 2.78, 3.40, 4.55
+T_STRIKE1, T_BROWS, T_WINUP0, T_STRIKE2 = 1.15, 2.40, 3.40, 4.55
 G_STRIKE = 1.45
 F_STRIKE, F_SHOES = 1.20, 6.40
 B_STRIKE, B_BEAR0, B_GRAB, B_BONK = 0.80, 2.2, 4.45, 5.55
