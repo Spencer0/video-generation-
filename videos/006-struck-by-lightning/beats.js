@@ -129,7 +129,7 @@ function beatRoymath(tb,t,b){ const out=outOf(tb,b); const tO=wordTime('roymath'
 function beatBear(tb,t,b){ const out=outOf(tb,b); const tB=wordTime('bear','bear'), tS=b.start+B_BONK, tSays=wordTime('bear','says');   // BONK lands with the 3D hit
   tagRun('bear',t,[[B_STRIKE,'STRIKE 7 · 1977'],['hair','HAIR SMOKING 💨']],SUB_Y-120,1-smooth(tB-0.2,tB,t));
   if(t>tB-0.05) headline([[['A ',C.white],['BEAR',C.orange],['?!',C.white]]],smooth(tB-0.05,tB+0.15,t)*out*(1-smooth(tS-0.2,tS,t)),96);
-  if(t>tS){ ctx.save(); const k=t-tS, s=lerp(1.8,1,easeOutBack(k/0.25)); ctx.translate(W/2,HEAD_Y+20); ctx.rotate(-0.08); ctx.scale(s,s); ctx.globalAlpha=ctx.globalAlpha*out;
+  if(t>tS){ ctx.save(); const k=t-tS, s=lerp(1.45,1,easeOutBack(k/0.25)); ctx.translate(W/2,HEAD_Y+80);   // the pop stays below the top bar (y>250) ctx.rotate(-0.08); ctx.scale(s,s); ctx.globalAlpha=ctx.globalAlpha*out;
     text('BONK.',0,0,{size:120,weight:900,color:C.yellow,strokeW:16}); ctx.restore(); }
   if(t>tSays) label('(his story)',W/2,SUB_Y+70,smooth(tSays,tSays+0.2,t)*out,{size:36,color:'rgba(255,255,255,0.9)'});
   strikeCounter(t,out); }
