@@ -413,6 +413,45 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
 - Captions at y=680 (y=860 covered Roy's head and the hair-fire gag; characters fill y 850-1700); the strike counter has to
   sit at y<=1450 because its 1.35x pop crossed into the bottom-caption zone.
 
+### 006 v2: QA pass with adversarial reviewers (what they caught)
+
+Three independent reviewer agents got screenshots of the final, raw renders
+and the script, each with one lens (3D/visual defects, story/retention,
+fact-check + on-screen text), and told to assume defects. Worth repeating on
+every video. They found, among others:
+- Sitting golfer's shins ~30 cm underground: SIT had the shin pointing down
+  and back while pelvis_z was set by hand. Fix: knees-up SIT and
+  `Figure.ground_snap(z)`, which lowers/raises the root so the lowest point of
+  any body ellipsoid (exact support function of the transformed sphere)
+  touches the ground. Call it after every pose().
+- Legs crossing into one column: rotation about Y on the hips had the
+  shoulder sign convention reversed (left hip is at +x). Hips now use l: -,
+  r: + like the shoulders.
+- Bolt that "hit the shoe" actually ended at the head; rain block not where
+  the camera was; smoke as hard grey balls (alpha now (1-facing)^2.5 and a
+  little self-emission); the sheath looked like glitter (now vertical streaks
+  with a grazing-angle rim); bolts stayed lavender while fading (colour now
+  from ob.color R = struck flag, not brightness); fading pond steam read as
+  black bats against trees (shorter life).
+- Facts: Lichtenberg figures are marks, not scars, and fade within hours
+  (v1 said scars, days); "1 in 10^29" for 7 strikes was (1/15,300)^7, which is
+  seven separate lifetimes; the honest naive number is P(>=7 in one life)
+  ~ L^7/7! ~ 1e-33; "not through you" contradicted "what kills is a stopped
+  heart"; injury tags did not match the counter's year; Trevino's line is a
+  joke, label it so; small text (26-32 px) is unreadable on a phone (34 px min).
+- Story: v1 listed Roy's injuries in one breath. v2 makes him the spine and
+  explains the physics through his strikes: strike 1 (1942, burn down the leg,
+  hole in the shoe -> flashover exits through the feet), strike 2 (1969, truck
+  window, eyebrows -> a closed metal car carries current around you), hair
+  fires + the water can, then why him (exposure, not luck), and strike 7
+  (fishing, the bear, "his story"). The hook teases the bear (open loop).
+  The ground-current shot R is no longer used. 64 s.
+- New scene pieces: pickup truck from boxes with a roll-up window pane and a
+  glowing copy of the body panels for the roof strike; toy bear (ellipsoids,
+  diagonal-pair walk cycle, heading from its path, faces Roy while standing);
+  Puffs accept a callable origin so smoke follows a moving head; Bolt takes
+  mid/via points so a bolt can come in through a window.
+
 ## Workflow for a new video
 
 1. Copy `videos/001-water-bag/script.json`, write beats (3 words/sec pacing,
