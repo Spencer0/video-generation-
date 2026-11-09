@@ -382,14 +382,19 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
   rotation winds the arms tighter over time, which is what a real free vortex does. Floats are advected by the
   same omega (integrated from t=0 each frame so frames stay standalone) and tilted to the funnel surface.
 - VTuber host (`scene_vtuber.py`, "avatar" in script.json): a separate RGBA pass over the whole timeline,
-  composited by `assemble.py` above the (blurred) footage and below the overlay. Built from a UV sphere head
-  (narrowed jaw), face decals bent onto the head's curvature (eyes = stacked ellipses + lash strips, placed by
-  ray-casting the head), bezier "blade" hair strands, sailor collar loft, cat-ear headset. Lip sync = 50 ms RMS
+  composited by `assemble.py` above the (blurred) footage and below the overlay. Redesigned on request to a
+  more conventionally attractive *adult* host (the first pass, round face + sailor school uniform, read as a
+  minor, so "hotter" meant aging her up, never sexualising that design): narrower skull, longer V jaw,
+  almond eyes with winged liner, long side-swept hair, fitted turtleneck under an open lab coat (an open
+  shell with a V opening, built from angle ranges: deleting faces left stair-stepped edges). PG-13: fitted,
+  not revealing. Built from a UV sphere head, face decals bent onto the head's curvature (eyes = stacked ellipses + lash strips, placed by
+  ray-casting the head), bezier "blade" hair strands, streamer headset. Lip sync = 50 ms RMS
   of vo.wav mapped from -40..-20 dB with fast attack / slow release; blinks seeded + on every beat change;
   expressions keyed to beat starts and spoken words (`expr_keys()`). ~0.6 s/frame at 640x920.
 - Gotcha: `obj.matrix_world` of objects you just placed is stale until `view_layer.update()`; parenting with
   `matrix_parent_inverse = parent.matrix_world.inverted()` before the update put the head 2 units low.
-- Gotcha: `hide_render` on an Empty does not hide its children; use `hide()` in scene_peigneur.py.
+- Gotcha: `hide_render` on an Empty does not hide its children; use `hide()` (scene_peigneur.py) / `vis()`
+  (scene_vtuber.py). The first host pass had the sweat drop and blink groups always visible because of it.
 - Gotcha: a "far ground" quad above z=0 covered the whole lake; it is an annulus outside the terrain now.
 - `tts.py` lines may be `{"text": ..., "say": ...}`: captions show "Peigneur", Kokoro reads "Pain-yer"
   (espeak gives "pay-NOOR" otherwise). Check with `Kokoro.tokenizer.phonemize(text, 'en-us')`.

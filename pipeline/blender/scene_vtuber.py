@@ -10,8 +10,9 @@ Everything is a pure function of the frame number:
   pose    = idle sway + breathing + small talking nods, per-expression lean/tilt
   face    = expression per beat, keyed to beat starts and spoken words (EXPR_KEYS below; video-specific table)
 Look: toon.py (cel bands, inverted-hull outlines, emission only), orthographic camera, transparent film.
-Character: pink hair (bangs, side locks, back blades, ahoge), aqua eyes, sailor collar + red bow,
-cat-ear headset with a mic boom. Faces the camera turned ~10 deg towards frame right (the 3D scene).
+Character (adult): long silver-lavender hair with side-swept bangs, sharp V jaw, almond violet eyes with winged
+liner, rose lips; fitted slate-indigo turtleneck under an open white lab coat (pink piping, badge), gold pendant,
+streamer headset with a mic boom. Kept PG-13: fitted, not revealing. Faces the camera turned ~10 deg towards frame right (the 3D scene).
 """
 import bpy, bmesh, math, random, sys, os, json, time, wave
 import numpy as np
@@ -39,12 +40,12 @@ RES_X = ARGS["res"]; RES_Y = int(round(RES_X * AV["height"] / AV["width"] / 2) *
 OUT = ARGS["out"] or os.path.join(BD, AV["dir"])
 
 # ------------------------------------------------------------------ palette
-SKIN, SKIN_SH = '#FFE7DA', (0.97, 0.80, 0.80)
-HAIR, HAIR_DK, HAIR_SH = '#FF93C4', '#E2679F', (0.80, 0.62, 0.86)
-IRIS_DK, IRIS, IRIS_LT, PUPIL = '#1D4E96', '#2C93D6', '#7FEAF5', '#0D1F45'
-LASH, BROW = '#3A1E33', '#C9578C'
-SHIRT, COLLAR, BOW = '#F8F8FC', '#283272', '#EE3B57'
-HEADSET, GLOW, EAR_IN = '#2E2C3C', '#7CF3FF', '#FFB8D4'
+SKIN, SKIN_SH = '#FFE9DE', (0.96, 0.80, 0.80)
+HAIR, HAIR_DK, HAIR_SH = '#CDBEFF', '#9381E6', (0.72, 0.66, 0.93)      # long silver-lavender hair
+IRIS_DK, IRIS, IRIS_LT, PUPIL = '#4E2380', '#B05ADB', '#FFC4F2', '#210A30'
+LASH, BROW = '#26142E', '#7360BF'
+TOP, COAT, TRIM, GOLD = '#4A4E78', '#F7F7FB', '#FF5FA2', '#FFC93C'   # slate-indigo turtleneck, open white lab coat, pink piping, pendant
+HEADSET, GLOW = '#2E2C3C', '#7CF3FF'
 
 # ------------------------------------------------------------------ helpers
 def attach(o, parent):
@@ -69,29 +70,30 @@ def decal_strip(name, pts2, width, mat, parent, layer=0, taper=(1, 1), curve=FAC
 # ------------------------------------------------------------------ build
 def build():
     clear_scene(); S = {}
-    M = {k: v for k, v in dict(
+    M = dict(
         skin=toon_mat('skin', SKIN, shade=SKIN_SH, hi=1.03, steps=(0.40, 0.92)),
-        hair=toon_mat('hair', HAIR, shade=HAIR_SH, hi=1.10, rim=0.45, rim_col='#FFE3F2', steps=(0.48, 0.84)),
-        hair_dk=toon_mat('hair_dk', HAIR_DK, shade=HAIR_SH, hi=None),
+        hair=toon_mat('hair', HAIR, shade=HAIR_SH, hi=1.12, rim=0.5, rim_col='#FFE6FA', steps=(0.48, 0.84)),
+        hair_dk=toon_mat('hair_dk', HAIR_DK, shade=HAIR_SH, hi=1.08, rim=0.3, rim_col='#FFD6F5'),
         white=flat_mat('white', '#FFFFFF'), sclera=flat_mat('sclera', '#FFFFFF'),
         iris_dk=flat_mat('iris_dk', IRIS_DK), iris=flat_mat('iris', IRIS), iris_lt=flat_mat('iris_lt', IRIS_LT), pupil=flat_mat('pupil', PUPIL),
-        lash=flat_mat('lash', LASH), brow=flat_mat('brow', BROW), mouth=flat_mat('mouth', '#9C2E45'), tongue=flat_mat('tongue', '#F07D93'),
-        lip=flat_mat('lip', '#7A2C3C'), blush=flat_mat('blush', '#FF7FA0', alpha=0.42), blushline=flat_mat('blushline', '#F0607F', alpha=0.75),
-        nose=flat_mat('nose', '#F2B3A6'), sweat=flat_mat('sweat', '#9FE6FF', alpha=0.9),
-        shirt=toon_mat('shirt', SHIRT, shade=(0.80, 0.82, 0.95), hi=None, steps=(0.45, 0.9)), collar=toon_mat('collar', COLLAR, shade=0.7, hi=1.15, rim=0.3, rim_col='#8FA0FF'),
-        bow=toon_mat('bow', BOW, shade=0.72, hi=1.1), headset=toon_mat('headset', HEADSET, shade=0.75, hi=1.35, rim=0.5, rim_col='#7CF3FF'),
-        glow=flat_mat('glow', GLOW, strength=1.0), ear_in=flat_mat('ear_in', EAR_IN),
-    ).items()}
+        lash=flat_mat('lash', LASH), brow=flat_mat('brow', BROW), mouth=flat_mat('mouth', '#8E2440'), tongue=flat_mat('tongue', '#E8708C'),
+        lip=flat_mat('lip', '#D9506E'), liphl=flat_mat('liphl', '#FF9DB4'), blush=flat_mat('blush', '#FF7FA0', alpha=0.24),
+        nose=flat_mat('nose', '#EDB3A4'), sweat=flat_mat('sweat', '#9FE6FF', alpha=0.9), shadow=flat_mat('eyeshadow', '#B0609A', alpha=0.28),
+        top=toon_mat('top', TOP, shade=(0.62, 0.6, 0.78), hi=1.3, rim=0.45, rim_col='#C9C2FF', steps=(0.5, 0.82)),
+        coat=toon_mat('coat', COAT, shade=(0.78, 0.80, 0.94), hi=None, steps=(0.45, 0.9)),
+        gold=toon_mat('gold', GOLD, shade=0.7, hi=1.3, rim=0.6), headset=toon_mat('headset', HEADSET, shade=0.75, hi=1.35, rim=0.5, rim_col='#7CF3FF'),
+        glow=flat_mat('glow', GLOW, strength=1.0),
+    )
     body = empty('body', (0, 0, -1.3)); S['body'] = body
     headp = empty('head_pivot', (0, 0, -0.62)); attach(headp, body); S['head'] = headp
 
     # --- head: sphere, narrow jaw, longer lower face
-    bm = bmesh.new(); bmesh.ops.create_uvsphere(bm, u_segments=18, v_segments=12, radius=1.0)
-    for v in bm.verts:
-        x, y, z = v.co
+    bm = bmesh.new(); bmesh.ops.create_uvsphere(bm, u_segments=20, v_segments=14, radius=1.0)
+    for v in bm.verts:   # adult proportions: narrower skull, longer lower face, sharp V jaw, chin slightly forward
+        x, y, z = v.co; x *= 0.9; z *= 1.04
         if z < 0:
-            k = -z; x *= 1 - 0.34 * k ** 1.5; y *= 1 - 0.16 * k; z *= 1.10
-            if k > 0.6: y -= 0.05 * (k - 0.6)
+            k = -z; x *= 1 - 0.40 * k ** 1.45; y *= 1 - 0.18 * k; z *= 1.07
+            if k > 0.7: y -= 0.07 * (k - 0.7)
         y *= 0.94; v.co = Vector((x, y, z))
     me = bpy.data.meshes.new('head'); bm.to_mesh(me); bm.free()
     head = bpy.data.objects.new('head', me); bpy.context.collection.objects.link(head); me.materials.append(M['skin'])
@@ -109,53 +111,57 @@ def build():
     # --- eyes
     S['eyes'] = []
     for side in (-1, 1):
-        ex, ez = 0.39 * side, -0.17
-        E = face_frame(f'eye{side}', ex, ez, 0.8); E.scale = (1.2, 1.0, 1.2)   # big anime eyes
+        ex, ez = 0.35 * side, -0.16
+        E = face_frame(f'eye{side}', ex, ez, 0.8); E.scale = (1.32, 1.0, 1.2)
         open_g = empty(f'eye_open{side}'); open_g.parent = E
-        # sclera: rounded, flatter on top, outer corner slightly lifted
-        sc = [(0.17 * math.cos(a) * (1 + 0.08 * side * math.cos(a)), (0.19 if math.sin(a) > 0 else 0.16) * math.sin(a)) for a in np.linspace(0, 2 * math.pi, 22, endpoint=False)]
-        decal(f'sclera{side}', sc, M['sclera'], open_g, 0)
+        # almond sclera: flatter, outer corner lifted (side * x > 0 is the outer half)
+        sc = []
+        for a in np.linspace(0, 2 * math.pi, 24, endpoint=False):
+            x = 0.17 * math.cos(a); z = (0.15 if math.sin(a) > 0 else 0.115) * math.sin(a) + 0.045 * max(side * x / 0.17, 0) ** 2
+            sc.append((x, z))
+        decal(f'shadow{side}', [(x * 1.12, z * 1.25 + 0.05) for x, z in sc], M['shadow'], open_g, 0)
+        decal(f'sclera{side}', sc, M['sclera'], open_g, 1)
         iris_g = empty(f'iris{side}'); iris_g.parent = open_g
-        decal(f'irisdk{side}', ellipse(0.122, 0.158, 18, 0, -0.005), M['iris_dk'], iris_g, 1)
-        decal(f'iris{side}', ellipse(0.105, 0.12, 18, 0, -0.035), M['iris'], iris_g, 2)
-        decal(f'irislt{side}', ellipse(0.085, 0.06, 16, 0, -0.085), M['iris_lt'], iris_g, 3)
-        pup = decal(f'pupil{side}', ellipse(0.048, 0.072, 14, 0, 0.0), M['pupil'], iris_g, 4)
-        decal(f'hl1{side}', ellipse(0.042, 0.05, 12, -0.045, 0.065), M['white'], iris_g, 5)
-        decal(f'hl2{side}', ellipse(0.02, 0.02, 10, 0.05, -0.07), M['white'], iris_g, 5)
-        # lashes: thick upper line with an outer flick, thin lower line
-        up = [(0.185 * math.cos(a), 0.195 * math.sin(a) + 0.005) for a in np.linspace(math.pi * 0.98, math.pi * 0.02, 14)]
+        decal(f'irisdk{side}', ellipse(0.11, 0.138, 18, 0, -0.005), M['iris_dk'], iris_g, 2)
+        decal(f'iris{side}', ellipse(0.094, 0.1, 18, 0, -0.03), M['iris'], iris_g, 3)
+        decal(f'irislt{side}', ellipse(0.075, 0.05, 16, 0, -0.075), M['iris_lt'], iris_g, 4)
+        pup = decal(f'pupil{side}', ellipse(0.04, 0.062, 14, 0, 0.0), M['pupil'], iris_g, 5)
+        decal(f'hl1{side}', ellipse(0.036, 0.042, 12, -0.04, 0.055), M['white'], iris_g, 6)
+        decal(f'hl2{side}', ellipse(0.016, 0.016, 10, 0.045, -0.06), M['white'], iris_g, 6)
+        # upper lash line: heavy, follows the almond top, long winged liner past the outer corner
+        up = [(0.18 * math.cos(a), 0.155 * math.sin(a) + 0.01 + 0.045 * max(side * 0.18 * math.cos(a) / 0.17, 0) ** 2) for a in np.linspace(math.pi * 0.97, math.pi * 0.03, 14)]
         if side < 0: up = up[::-1]
-        # up runs inner -> outer; add the flick past the outer corner
-        o = up[-1]; up.append((o[0] + 0.06 * side, o[1] + 0.035))
-        decal_strip(f'lash{side}', up, 0.05, M['lash'], open_g, 6, taper=(0.5, 0.9))
-        lo = [(0.12 * math.cos(a), -0.17 * math.sin(a) - 0.0) for a in np.linspace(math.pi * 0.25, math.pi * 0.75, 6)]
-        decal_strip(f'lashlo{side}', [(x * side + 0.05 * side, z) for x, z in lo], 0.018, M['lash'], open_g, 6)
+        o = up[-1]; up += [(o[0] + 0.06 * side, o[1] + 0.03), (o[0] + 0.12 * side, o[1] + 0.07)]
+        decal_strip(f'lash{side}', up, 0.062, M['lash'], open_g, 7, taper=(0.45, 0.25))
+        # lower lash: outer third only
+        lo = [(side * (0.06 + 0.11 * u), -0.115 * math.sin(math.pi * (0.5 - 0.35 * u)) + 0.045 * u ** 2) for u in np.linspace(0, 1, 5)]
+        decal_strip(f'lashlo{side}', lo, 0.02, M['lash'], open_g, 7, taper=(0.4, 1.0))
         # closed eye (blink): a downward arc; happy eye: an upward arc
-        cl = [(0.17 * math.cos(a), -0.06 * math.sin(a) - 0.02) for a in np.linspace(math.pi, 0, 10)]
+        cl = [(0.17 * math.cos(a), -0.05 * math.sin(a) - 0.01 + 0.03 * max(side * math.cos(a), 0)) for a in np.linspace(math.pi, 0, 10)]
         closed = decal_strip(f'closed{side}', cl, 0.045, M['lash'], E, 6)
-        hp = [(0.15 * math.cos(a), 0.09 * math.sin(a) - 0.06) for a in np.linspace(math.pi, 0, 10)]
+        hp = [(0.15 * math.cos(a), 0.075 * math.sin(a) - 0.05) for a in np.linspace(math.pi, 0, 10)]
         happy = decal_strip(f'happy{side}', hp, 0.05, M['lash'], E, 6)
         # brow (on the face, above the eye; hidden partly by bangs, which is fine and very anime)
-        B = face_frame(f'brow{side}', 0.36 * side, 0.15, 0.8)
-        br = [(x, 0.018 * math.sin(math.pi * (x + 0.12) / 0.24)) for x in np.linspace(-0.12, 0.12, 6)]
-        decal_strip(f'browm{side}', br, 0.032, M['brow'], B, 7, taper=(1.0, 0.5) if side > 0 else (0.5, 1.0))
+        B = face_frame(f'brow{side}', 0.33 * side, 0.12, 0.8)
+        br = [(x, 0.03 * math.sin(math.pi * (x + 0.13) / 0.26) + 0.02 * side * x / 0.13) for x in np.linspace(-0.13, 0.13, 7)]
+        if side < 0: br = br[::-1]   # inner -> outer
+        decal_strip(f'browm{side}', br, 0.026, M['brow'], B, 8, taper=(1.0, 0.3))
         S['eyes'].append(dict(side=side, E=E, open=open_g, iris=iris_g, pupil=pup, closed=closed, happy=happy, brow=B, brow0=B.location.copy()))
 
     # --- nose, mouth, blush, sweat drop
-    N = face_frame('nose', 0.0, -0.36, 1.0); decal('nosem', [(-0.025, 0.0), (0.02, 0.012), (0.0, -0.03)], M['nose'], N, 1)
-    Mo = face_frame('mouth', 0.0, -0.56, 1.0); S['mouth_frame'] = Mo
+    N = face_frame('nose', 0.0, -0.4, 1.0); decal_strip('nosem', [(0.0, 0.03), (0.012, -0.02), (-0.01, -0.035)], 0.014, M['nose'], N, 1)
+    Mo = face_frame('mouth', 0.0, -0.62, 1.0); S['mouth_frame'] = Mo
     mo_open = empty('mouth_open'); mo_open.parent = Mo; S['mouth_open'] = mo_open
-    D = [(-0.11, 0.0)] + [(0.11 * math.cos(a), 0.11 * math.sin(a)) for a in np.linspace(math.pi, 2 * math.pi, 12)][1:-1] + [(0.11, 0.0), (0.0, 0.012)]
+    D = [(-0.095, 0.0)] + [(0.095 * math.cos(a), 0.1 * math.sin(a)) for a in np.linspace(math.pi, 2 * math.pi, 12)][1:-1] + [(0.095, 0.0), (0.0, 0.01)]
     decal('mouthm', D, M['mouth'], mo_open, 2, curve=0.9)
-    decal('tongue', [(0.06 * math.cos(a), 0.035 * math.sin(a) - 0.075) for a in np.linspace(0, 2 * math.pi, 12, endpoint=False)], M['tongue'], mo_open, 3, curve=0.9)
-    sm = [(x, 0.035 * (x / 0.07) ** 2 - 0.03) for x in np.linspace(-0.07, 0.07, 7)]
-    S['mouth_closed'] = decal_strip('smile', sm, 0.022, M['lip'], Mo, 2, curve=0.9)
+    decal('tongue', [(0.05 * math.cos(a), 0.03 * math.sin(a) - 0.07) for a in np.linspace(0, 2 * math.pi, 12, endpoint=False)], M['tongue'], mo_open, 3, curve=0.9)
+    cm = empty('mouth_closed'); cm.parent = Mo; S['mouth_closed'] = cm
+    decal_strip('smile', [(x, 0.03 * (x / 0.075) ** 2 - 0.02) for x in np.linspace(-0.075, 0.075, 7)], 0.02, M['lip'], cm, 2, curve=0.9)
+    decal('lowerlip', ellipse(0.04, 0.016, 10, 0, -0.035), M['lip'], cm, 2, curve=0.9)
+    decal('liphl', ellipse(0.015, 0.006, 8, 0.008, -0.031), M['liphl'], cm, 3, curve=0.9)
     for side in (-1, 1):
-        Bl = face_frame(f'blush{side}', 0.47 * side, -0.38, 0.9)
-        decal(f'blushm{side}', ellipse(0.13, 0.055, 14), M['blush'], Bl, 0)
-        for k in range(3):
-            x0 = -0.05 + 0.045 * k
-            decal_strip(f'bl{side}{k}', [(x0 + 0.02, 0.025), (x0 - 0.01, -0.025)], 0.012, M['blushline'], Bl, 1)
+        Bl = face_frame(f'blush{side}', 0.4 * side, -0.38, 0.9)
+        decal(f'blushm{side}', ellipse(0.11, 0.04, 14), M['blush'], Bl, 0)
         S.setdefault('blush', []).append(Bl)
     Sw = empty('sweat', (0.8, -1.05, 0.42), headp); Sw.scale = (1.5, 1, 1.5)   # in front of the bangs at the temple, anime-style
     decal('sweatm', [(0.0, 0.08)] + [(0.04 * math.cos(a), 0.045 * math.sin(a) - 0.02) for a in np.linspace(math.pi * 0.15, -math.pi * 1.15, 12)], M['sweat'], Sw, 9)
@@ -174,73 +180,72 @@ def build():
         az, el = math.radians(az), math.radians(el)
         return hc + Vector((math.sin(az) * math.cos(el) * r * 1.04, -math.cos(az) * math.cos(el) * r, math.sin(el) * r))
     strands = []
-    # bangs: alternating long/short spikes across the forehead, tips just above the eyes
-    nb = 9
+    # side-swept bangs (part on her right), longer and sleeker; tips sweep towards frame right
+    nb = 11
     for i in range(nb):
-        u = i / (nb - 1); az = -62 + 124 * u; L = 0.0 if i % 2 else 0.1
-        root = sph(az * 0.8, 52); tip = sph(az * 1.02 + (6 if az > 0 else -6) * (u - 0.5), 4 + 10 * (i % 2) - (8 if abs(az) > 50 else 0), R + 0.07)
-        tip.z -= L; ctrl = (root + tip) / 2; ctrl += (ctrl - hc).normalized() * 0.32
-        strands.append(blade(f'bang{i}', root, ctrl, tip, 0.36, 0.12, M['hair'], segs=4, side=Vector((math.cos(math.radians(az)), math.sin(math.radians(az)), 0))))
-    # side locks down to the chest, in front of the shoulders
+        u = i / (nb - 1); az = -72 + 130 * u
+        root = sph(-40 + 60 * u, 58); tip = sph(az + 14, 2 - 18 * max(u - 0.75, 0) * 3 + 8 * (i % 2), R + 0.06)
+        ctrl = (root + tip) / 2; ctrl += (ctrl - hc).normalized() * 0.3
+        strands.append(blade(f'bang{i}', root, ctrl, tip, 0.44, 0.12, M['hair'], segs=5, side=Vector((math.cos(math.radians(az)), math.sin(math.radians(az)), 0)), tip=0.05))
+    # long face-framing locks down past the chest, in front of the shoulders
     for side in (-1, 1):
-        root = sph(76 * side, 25); tip = Vector((0.98 * side, -0.42, -1.95)); ctrl = Vector((1.22 * side, -0.38, -0.5))
-        strands.append(blade(f'side{side}', root, ctrl, tip, 0.34, 0.14, M['hair'], segs=6, side=Vector((0, 1, 0))))
-        root = sph(98 * side, 15); tip = Vector((1.22 * side, -0.05, -2.2)); ctrl = Vector((1.4 * side, -0.1, -0.6))
-        strands.append(blade(f'side2{side}', root, ctrl, tip, 0.4, 0.16, M['hair_dk'], segs=6, side=Vector((0, 1, 0))))
-    # back hair: wide blades behind the body
-    for i, az in enumerate(np.linspace(110, 250, 7)):
+        root = sph(74 * side, 30); tip = Vector((0.95 * side, -0.48, -2.9)); ctrl = Vector((1.12 * side, -0.42, -0.6))
+        strands.append(blade(f'side{side}', root, ctrl, tip, 0.36, 0.14, M['hair'], segs=7, side=Vector((0, 1, 0)), tip=0.1))
+        root = sph(96 * side, 18); tip = Vector((1.18 * side, -0.12, -3.2)); ctrl = Vector((1.32 * side, -0.15, -0.8))
+        strands.append(blade(f'side2{side}', root, ctrl, tip, 0.44, 0.16, M['hair_dk'], segs=7, side=Vector((0, 1, 0)), tip=0.15))
+    # long back hair
+    for i, az in enumerate(np.linspace(108, 252, 7)):
         root = sph(az, 18); dirn = Vector((math.sin(math.radians(az)), -math.cos(math.radians(az)), 0))
-        tip = hc + dirn * 1.25 + Vector((0, 0.25, -2.7 - 0.25 * (i % 2))); ctrl = hc + dirn * 1.55 + Vector((0, 0.2, -0.8))
-        strands.append(blade(f'back{i}', root, ctrl, tip, 0.75, 0.2, M['hair_dk'], segs=6, side=Vector((math.cos(math.radians(az)), math.sin(math.radians(az)), 0))))
-    # ahoge
-    strands.append(blade('ahoge', sph(-8, 80), hc + Vector((0.15, -0.55, 1.75)), hc + Vector((0.42, -0.62, 1.38)), 0.13, 0.05, M['hair'], segs=5, side=Vector((0, 1, 0)), tip=0.1))
+        tip = hc + dirn * 1.2 + Vector((0, 0.3, -3.8 - 0.3 * (i % 2))); ctrl = hc + dirn * 1.5 + Vector((0, 0.2, -1.0))
+        strands.append(blade(f'back{i}', root, ctrl, tip, 0.8, 0.2, M['hair_dk'], segs=7, side=Vector((math.cos(math.radians(az)), math.sin(math.radians(az)), 0)), tip=0.2))
+    clip = ico('hairclip', 0.09, M['gold'], loc=tuple(sph(-58, 32, R + 0.06)), sub=1, scale=(1.4, 0.6, 1.0)); attach(clip, headp); outline(clip, 0.012)
     for s in strands:
         for p in s.data.polygons: p.use_smooth = False
         attach(s, headp); outline(s, 0.016)
 
-    # --- headset with cat ears
-    band = blade('band', Vector((-1.12, 0.05, -0.02)), Vector((0, 0.05, 2.32)), Vector((1.12, 0.05, -0.02)), 0.16, 0.1, M['headset'], segs=10, side=Vector((0, 1, 0)), tip=1.0)
+    # --- streamer headset
+    band = blade('band', Vector((-1.06, 0.05, -0.02)), Vector((0, 0.05, 2.36)), Vector((1.06, 0.05, -0.02)), 0.16, 0.1, M['headset'], segs=10, side=Vector((0, 1, 0)), tip=1.0)
     attach(band, headp); outline(band, 0.016)
     for side in (-1, 1):
-        cup = cyl(f'cup{side}', 0.32, 0.28, 0.0, 0.2, M['headset'], n=10, loc=(1.04 * side, 0.02, -0.08), rot=(0, math.pi / 2 * side, 0))
+        cup = cyl(f'cup{side}', 0.3, 0.26, 0.0, 0.2, M['headset'], n=10, loc=(0.97 * side, 0.02, -0.08), rot=(0, math.pi / 2 * side, 0))
         attach(cup, headp); outline(cup, 0.016)
-        g = cyl(f'cupglow{side}', 0.2, 0.2, 0.0, 0.02, M['glow'], n=10, loc=(1.245 * side, 0.02, -0.08), rot=(0, math.pi / 2 * side, 0)); attach(g, headp)
-        # cat ear on the band: a low pyramid, pink inner face
-        bx, bz = 0.62 * side, 0.92
-        v = [Vector((bx - 0.24, -0.1, bz)), Vector((bx + 0.24, -0.1, bz)), Vector((bx + 0.0, 0.18, bz - 0.02)), Vector((bx + 0.12 * side, -0.02, bz + 0.5))]
-        ear = mesh_from(f'ear{side}', v, [(0, 1, 3), (1, 2, 3), (2, 0, 3), (0, 2, 1)], M['headset'])
-        bmx = bmesh.new(); bmx.from_mesh(ear.data); bmesh.ops.recalc_face_normals(bmx, faces=bmx.faces[:]); bmx.to_mesh(ear.data); bmx.free()
-        attach(ear, headp); outline(ear, 0.016)
-        c = (v[0] + v[1] + v[3]) / 3; vi = [c + (p - c) * 0.6 + Vector((0, -0.02, 0)) for p in (v[0], v[1], v[3])]
-        inn = mesh_from(f'earin{side}', vi, [(0, 1, 2)], M['ear_in']); attach(inn, headp)
-    mic = blade('mic', Vector((-1.1, -0.15, -0.25)), Vector((-1.0, -0.75, -0.75)), Vector((-0.42, -0.95, -0.72)), 0.05, 0.05, M['headset'], segs=6, side=Vector((0, 0, 1)), tip=1.0)
+        g = cyl(f'cupglow{side}', 0.19, 0.19, 0.0, 0.02, M['glow'], n=10, loc=(1.175 * side, 0.02, -0.08), rot=(0, math.pi / 2 * side, 0)); attach(g, headp)
+    mic = blade('mic', Vector((-1.0, -0.15, -0.25)), Vector((-0.9, -0.75, -0.8)), Vector((-0.4, -0.9, -0.82)), 0.05, 0.05, M['headset'], segs=6, side=Vector((0, 0, 1)), tip=1.0)
     attach(mic, headp); outline(mic, 0.012)
-    tipb = ico('mic_tip', 0.07, M['glow'], loc=(-0.4, -0.96, -0.72)); attach(tipb, headp)
+    tipb = ico('mic_tip', 0.065, M['glow'], loc=(-0.38, -0.91, -0.82)); attach(tipb, headp)
 
-    # --- neck, torso, sailor collar, bow, arms
-    neck = cyl('neck', 0.2, 0.23, 0.0, 0.75, M['skin'], n=10, loc=(0, 0.06, -1.4)); attach(neck, body); outline(neck, 0.016)
-    rings = [ring(0, 0.05, z, rx * 0.86, ry, 14, 2.6) for z, rx, ry in [(-1.2, 0.32, 0.26), (-1.38, 0.82, 0.42), (-1.58, 1.08, 0.52), (-1.95, 1.04, 0.55), (-2.7, 0.92, 0.55), (-3.5, 0.9, 0.55), (-4.4, 0.92, 0.56)]]
-    torso = loft('torso', rings, M['shirt']); attach(torso, body); outline(torso, 0.022)
-    crings = [ring(0, 0.05, z, rx * 0.86 if z < -1.2 else rx, ry, 14, 2.6) for z, rx, ry in [(-1.17, 0.37, 0.31), (-1.36, 0.88, 0.48), (-1.57, 1.13, 0.57), (-1.78, 1.11, 0.6)]]
-    col = loft('collar', crings, M['collar']); attach(col, body); outline(col, 0.018)
-    # white V-front over the collar and a stripe
-    vf = mesh_from('vfront', [(-0.36, -0.55, -1.22), (0.36, -0.55, -1.22), (0.0, -0.64, -1.86)], [(0, 2, 1)], M['shirt'])
-    vfb = mesh_from('vneck', [(-0.2, -0.56, -1.2), (0.2, -0.56, -1.2), (0.0, -0.6, -1.45)], [(0, 2, 1)], M['skin'])
-    for o in (vf, vfb): attach(o, body)
-    st = loft('stripe', [ring(0, 0.05, z, rx * 0.86, ry, 14, 2.6) for z, rx, ry in [(-1.72, 1.125, 0.6), (-1.66, 1.13, 0.6)]], flat_mat('stripe', '#FFFFFF'), cap_top=False, cap_bottom=False); attach(st, body)
-    bow_c = Vector((0, -0.7, -1.86))
-    for side in (-1, 1):
-        lp = mesh_from(f'bowl{side}', [bow_c, bow_c + Vector((0.42 * side, -0.02, 0.17)), bow_c + Vector((0.4 * side, -0.02, -0.16))], [(0, 1, 2)], M['bow'])
-        tl_ = mesh_from(f'bowt{side}', [bow_c + Vector((0.03 * side, 0, -0.04)), bow_c + Vector((0.22 * side, -0.02, -0.5)), bow_c + Vector((0.08 * side, -0.02, -0.52))], [(0, 1, 2)], M['bow'])
-        for o in (lp, tl_):
-            sol = o.modifiers.new('s', 'SOLIDIFY'); sol.thickness = 0.04
-            attach(o, body)
-    knot = ico('knot', 0.09, M['bow'], loc=tuple(bow_c + Vector((0, -0.03, 0))), scale=(1.1, 0.7, 1.0)); attach(knot, body); outline(knot, 0.012)
-    for side in (-1, 1):
-        arm = loft(f'arm{side}', [ring(0, 0, z, r, r, 10) for z, r in [(0, 0.34), (-0.6, 0.33), (-1.6, 0.3), (-2.4, 0.3)]], M['shirt'])
-        arm.location = (0.86 * side, 0.12, -1.55); arm.rotation_euler = (0, -0.16 * side, 0); attach(arm, body); outline(arm, 0.02)
+    # --- neck, figure, outfit: fitted slate-indigo turtleneck, open white lab coat with pink piping, gold pendant
+    neck = cyl('neck', 0.17, 0.19, 0.0, 1.0, M['skin'], n=10, loc=(0, 0.06, -1.55)); attach(neck, body); outline(neck, 0.016)
+    fig = [(-1.30, 0.26, 0.22), (-1.48, 0.78, 0.40), (-1.75, 0.90, 0.47), (-2.15, 0.84, 0.50), (-2.55, 0.70, 0.44), (-3.0, 0.60, 0.39), (-3.6, 0.76, 0.45), (-4.4, 0.84, 0.48)]
+    torso = loft('torso', [ring(0, 0.05, z, rx, ry, 16, 2.4) for z, rx, ry in fig], M['top']); attach(torso, body); outline(torso, 0.02)
+    tn = cyl('turtleneck', 0.24, 0.22, 0.0, 0.32, M['top'], n=12, loc=(0, 0.06, -1.38)); attach(tn, body); outline(tn, 0.016)
+    for side in (-1, 1):   # chest, under the fitted top (modest, PG-13)
+        bu = ico(f'bust{side}', 0.35, M['top'], loc=(0.31 * side, -0.27, -2.12), sub=2, scale=(1.0, 0.86, 0.9), smooth=True); attach(bu, body); outline(bu, 0.012, col='#2A2C48')
+    pend = blade('chain', Vector((-0.2, -0.47, -1.42)), Vector((0, -0.62, -1.95)), Vector((0.2, -0.47, -1.42)), 0.018, 0.018, M['gold'], segs=8, tip=1.0); attach(pend, body)
+    gem = ico('pendant', 0.07, M['gold'], loc=(0, -0.6, -1.74), sub=1, scale=(0.8, 0.5, 1.2)); attach(gem, body); outline(gem, 0.01)
+    # lab coat: a looser shell over the figure with the front cut open
+    # (an open shell: each ring spans phi in [h, 2pi - h] measured from the front, h opening into a V down to the chest)
+    def sq(c): return math.copysign(abs(c) ** (2 / 2.4), c)
+    levels = [(-1.42, 0.53, 0.39, 0.30), (-1.5, 0.89, 0.49, 0.42), (-1.76, 1.01, 0.56, 0.62), (-2.15, 0.99, 0.61, 0.74),
+              (-2.55, 0.89, 0.59, 0.76), (-3.0, 0.85, 0.57, 0.76), (-3.6, 0.93, 0.59, 0.74), (-4.4, 0.99, 0.61, 0.72)]
+    nseg = 18; cv = []
+    for z, rx, ry, h in levels:
+        for i in range(nseg + 1):
+            ph = h + (2 * math.pi - 2 * h) * i / nseg
+            cv.append((rx * sq(math.sin(ph)), 0.05 - ry * sq(math.cos(ph)), z))
+    cf = [(j * (nseg + 1) + i, j * (nseg + 1) + i + 1, (j + 1) * (nseg + 1) + i + 1, (j + 1) * (nseg + 1) + i) for j in range(len(levels) - 1) for i in range(nseg)]
+    coat = mesh_from('coat', cv, cf, M['coat'])
+    sol = coat.modifiers.new('s', 'SOLIDIFY'); sol.thickness = 0.04; sol.offset = 1.0
+    bmc = bmesh.new(); bmc.from_mesh(coat.data); bmesh.ops.recalc_face_normals(bmc, faces=bmc.faces[:]); bmc.to_mesh(coat.data); bmc.free()
+    attach(coat, body); outline(coat, 0.02)
+    for side in (-1, 1):   # lapels with pink piping
+        lp = mesh_from(f'lapel{side}', [(0.27 * side, -0.5, -1.42), (0.62 * side, -0.56, -1.55), (0.47 * side, -0.68, -2.05), (0.4 * side, -0.66, -2.3)], [(0, 1, 2, 3) if side > 0 else (3, 2, 1, 0)], M['coat'])
+        sol = lp.modifiers.new('s', 'SOLIDIFY'); sol.thickness = 0.03; attach(lp, body); outline(lp, 0.022, col=TRIM)
+        arm = loft(f'sleeve{side}', [ring(0, 0, z, r, r, 10) for z, r in [(0, 0.32), (-0.6, 0.31), (-1.6, 0.29), (-2.6, 0.3)]], M['coat'])
+        arm.location = (0.86 * side, 0.12, -1.6); arm.rotation_euler = (0, -0.13 * side, 0); attach(arm, body); outline(arm, 0.02)
+    badge = box('badge', (0.26, 0.03, 0.17), flat_mat('badge', TRIM), loc=(0.68, -0.62, -2.0), rot=(0, 0, -0.35)); attach(badge, body)
 
-    # --- camera (orthographic, framed so the top of the ahoge and the elbows fit)
+    # --- camera (orthographic, framed so the top of the hair and the chest fit)
     cd = bpy.data.cameras.new('cam'); cam = bpy.data.objects.new('cam', cd); bpy.context.collection.objects.link(cam)
     cd.type = 'ORTHO'; cd.ortho_scale = 5.2; cd.sensor_fit = 'VERTICAL'; cam.location = (0.05, -20, -0.85); cam.rotation_euler = (math.pi / 2, 0, 0)
     cd.clip_start = 1; cd.clip_end = 60; bpy.context.scene.camera = cam
@@ -312,6 +317,10 @@ def blink_at(t):
     return b
 
 # ------------------------------------------------------------------ per-frame update
+def vis(o, show):
+    """hide_render on an Empty does not hide its children: apply to the whole group."""
+    for x in [o] + list(o.children_recursive): x.hide_render = not show
+
 def update(S, f, ENV):
     t = f / FPS; E = expr_at(t); amp = float(ENV[min(f, len(ENV) - 1)])
     talking = amp > 0.05
@@ -325,9 +334,9 @@ def update(S, f, ENV):
     for e in S['eyes']:
         op = max(1 - bl, 0.0) * (1 - hp)
         e['open'].scale = (E['eye'], 1, E['eye'] * max(op, 0.08))
-        e['open'].hide_render = op < 0.22
-        e['closed'].hide_render = not (op < 0.22 and hp < 0.5)
-        e['happy'].hide_render = hp < 0.5
+        vis(e['open'], op >= 0.22)
+        vis(e['closed'], op < 0.22 and hp < 0.5)
+        vis(e['happy'], hp >= 0.5)
         e['iris'].location = (E['gx'], 0, E['gz'])
         e['pupil'].scale = (E['pupil'], 1, E['pupil'])
         side = e['side']
@@ -337,10 +346,10 @@ def update(S, f, ENV):
     open_ = min(E['mouth'] * (0.6 if talking else 1.0) + amp * 0.95, 1.1)
     wob = 0.85 + 0.15 * math.sin(2 * math.pi * t * 5.3)   # cheap vowel-width variation
     S['mouth_open'].scale = (E['wide'] * (0.75 + 0.35 * amp) * wob, 1, max(open_, 0.05))
-    S['mouth_open'].hide_render = open_ < 0.12
-    S['mouth_closed'].hide_render = open_ >= 0.12
-    for b in S['blush']: b.scale = (1, 1, max(E['blush'], 0.01)); b.hide_render = E['blush'] < 0.05
-    S['sweat'].hide_render = E['sweat'] < 0.5
+    vis(S['mouth_open'], open_ >= 0.12)
+    vis(S['mouth_closed'], open_ < 0.12)
+    for b in S['blush']: b.scale = (1, 1, max(E['blush'], 0.01)); vis(b, E['blush'] >= 0.05)
+    vis(S['sweat'], E['sweat'] >= 0.5)
     S['sweat'].scale = (1.5, 1, 1.5 * (1 + 0.05 * math.sin(t * 9)))
 
 def main():
