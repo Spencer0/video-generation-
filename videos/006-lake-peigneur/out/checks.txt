@@ -1,0 +1,18 @@
+duration: 51.85 s (timeline 51.83 s)
+  beat hook      4.10 s OK
+  beat setup     4.80 s OK
+  beat mine      7.40 s TOO LONG
+  beat whirlpool  5.60 s OK
+  beat waterfall  6.90 s OK
+  beat why       2.43 s OK
+  beat spin      7.50 s TOO LONG
+  beat salt      7.13 s TOO LONG
+  beat payoff    3.23 s OK
+  beat cta       2.73 s OK
+longest beat: 7.50 s
+first spoken word onset (VO stem, 50 ms RMS > -20 dBFS): 0.05 s
+mean luma Y: first 3 s = 151.7, whole = 148.9, darkest frame = 120.7 (frame 1375)
+frames in final: 1555 (timeline 1555)
+loop seam: mean abs pixel difference frame 0 vs last frame = 34.6 / 255 (lower is more seamless)
+safe area (519 overlay frames sampled against 5 UI zones): PASS, nothing readable under the TikTok UI
+loudness: Input Integrated:    -14.0 LUFS; Input True Peak:      -1.4 dBTP
