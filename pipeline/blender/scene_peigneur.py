@@ -17,7 +17,8 @@ Shots (frames in script.json "shots"):
   M  cutaway diorama (not to scale): lake slab, strata, salt dome, mine rooms with miners; the camera follows
      the drill down; the bit breaks the roof on the spoken word "punched" (read from build/timeline.json),
      then the lake pours in, the hole widens, the surface dimples into a whirlpool and the room floods
-  F  drained lakebed: the reversed canal pours over the old shoreline as a waterfall; barges stranded on mud
+  F  the reversed canal pours over a cliff into the drained lakebed (own set: strata cliff, streak-shaded
+     free-fall curtain, toon foam, spray, plunge pool, stranded barges); not to scale
   V  top-down orthographic on the vortex for the physics beat: two buoys at r=9 and r=4.5 (inner one ~2x the
      speed: v = GAMMA r/(r^2+a^2)), debris rings. Vortex centre lands at pixel (540, 700) of the 1080x1920
      frame, 48 px per unit (beats.js draws the rings from these numbers).
@@ -351,18 +352,6 @@ def update_lake(S, t):
                 b.matrix_world = Matrix.Translation((30 - (k - 5) * 0.4, -14 + (k - 5) * 2.5, 0.1)) @ Matrix.Rotation(1.57, 4, 'Z')
         S['tug'].matrix_world = Matrix.Translation((10.5, -1.0, 0.1)) @ Matrix.Rotation(2.8, 4, 'Z')
         return
-    if SHOT == "F":
-        W.update(t, 4.0, level=-BED - 0.5, spin=True); W.obj.scale = (0.22, 0.22, 1.0); W.obj.location = (0, 0, 0)
-        hide(S['rig'], True)
-        # stranded barges on the mud, tilted
-        spots = [(20, -7, -BED + 0.3, 0.5, 0.12), (24, 7.5, -BED + 0.3, 2.0, -0.1), (29, -12, -BED + 2.2, 1.1, 0.25), (17, 8, -BED + 0.2, 2.6, 0.06), (27, 15, -BED + 2.0, 0.2, -0.2)]
-        for k, b in enumerate(S['barges']):
-            if k < len(spots):
-                x, y, z, a, tilt = spots[k]; b.matrix_world = Matrix.Translation((x, y, z)) @ Matrix.Rotation(a, 4, 'Z') @ Matrix.Rotation(tilt, 4, 'X')
-            else: hide(b, True)
-        hide(S['tug'], True)
-        update_waterfall(S, t)
-        return
     W.update(t, D, spin=True)
     if SHOT == "V":
         hide(S['rig'], True); hide(S['tug'], True)
@@ -404,55 +393,151 @@ def build_v_extras(S):
         o = box('debris', (rng.uniform(0.8, 1.4), 0.35, 0.25), M['debris']); outline(o, 0.06)
         S['debris'].append((o, r, th0))
 
-# ------------------------------------------------------------------ F: waterfall from the reversed canal
-def build_waterfall(S):
-    M = S['M']; nu, nv = 10, 14
-    x0 = shore_r(0) - 1.2
-    verts = []
-    for j in range(nv + 1):
-        v = j / nv
-        for i in range(nu + 1):
-            u = i / nu; y = (-2.6 + 5.2 * u) * (1 + 0.25 * v)
-            x = x0 - 3.2 * v; z = 0.1 - (BED + 0.2) * v ** 1.8
-            verts.append((x, y, z))
-    faces = [(j * (nu + 1) + i, j * (nu + 1) + i + 1, (j + 1) * (nu + 1) + i + 1, (j + 1) * (nu + 1) + i) for j in range(nv) for i in range(nu)]
-    o = mesh_from('waterfall', verts, faces, M['wf']); S['wf'] = o; S['wf_nuv'] = (nu, nv)
-    S['wf_col'] = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'CORNER')
-    # canal water strip (flows towards the lake now)
-    cv = []; nc = 30
-    for j in range(nc + 1):
-        x = x0 + 70 * j / nc
-        cv += [(x, -2.7, -0.15), (x, 2.7, -0.15)]
-    cf = [(2 * j, 2 * j + 1, 2 * j + 3, 2 * j + 2) for j in range(nc)]
-    c = mesh_from('canal', cv, cf, M['wf']); S['canal'] = c; S['canal_col'] = c.data.color_attributes.new('Col', 'FLOAT_COLOR', 'CORNER'); S['canal_n'] = nc
-    # splash at the foot: foam lumps + mist
-    S['splash'] = [ico('splash', 1.0, M['foam'], loc=(x0 - 3.2, -2.5 + 5 * k / 6, -BED), sub=1) for k in range(7)]
-    for s in S['splash']: outline(s, 0.08)
-    S['mist'] = [ico('mist', 2.6, M['mist'], loc=(x0 - 4.5, -3 + 3 * k, -BED + 1.5), sub=1, scale=(1.3, 1, 0.8)) for k in range(3)]
-    pool = Water(M, R=7.0, n_ang=24, n_rad=6, r0=0.5, name='pool'); pool.obj.location = (x0 - 5.0, 0, -BED + 0.15); pool.abyss.hide_render = True; S['pool'] = pool
+# ------------------------------------------------------------------ F: the reversed canal pours into the drained lake
+# Its own set piece (the first version reused the lake terrain: the falls were small, half hidden by the shore slope,
+# per-face checker stripes, grey "mist" blobs that read as rocks). Here: a curved low-poly cliff with strata, the canal
+# cut through its rim, a free-fall water curtain with a scrolling streak shader, white toon foam churning at the foot,
+# spray, a plunge pool, and barges stranded on the mud for scale. Not to scale (real drop ~164 ft / 50 m).
+FALL_H = 17.0; CLIFF_R = 30.0; FALL_A = math.radians(72)   # cliff height, cliff radius, angle of the falls on the arc
 
-def update_waterfall(S, t):
-    nu, nv = S['wf_nuv']; rng = np.random.default_rng(5)
-    lite = np.array(srgb('#BFEFFF')[:3]); base = np.array(srgb('#4FB3F0')[:3]); foam = np.array(srgb('#FFFFFF')[:3])
-    cols = []; col_off = rng.random(nu) * 6.28
-    for j in range(nv):
-        for i in range(nu):
-            v = j / nv; s = math.sin(18 * (v ** 0.7) - 9.0 * t + col_off[i]) + 0.4 * math.sin(7 * i + 3 * t)
-            c = foam if s > 0.9 else (lite if s > 0.1 else base)
-            if v > 0.82: c = foam
-            cols += [*c, 1.0] * 4
-    S['wf_col'].data.foreach_set('color', cols)
-    nc = S['canal_n']; cols = []
-    for j in range(nc):
-        s = math.sin(0.9 * j + 6.0 * t)
-        c = lite if s > 0.6 else base
-        cols += [*c, 1.0] * 4
-    S['canal_col'].data.foreach_set('color', cols)
-    for k, s in enumerate(S['splash']):
-        ph = t * 3.0 + k * 1.7; sc = 1.0 + 0.45 * math.sin(ph); s.scale = (sc * 1.3, sc, sc * (1.1 + 0.4 * math.sin(ph * 1.3))); s.rotation_euler = (ph, ph * 0.7, 0)
-    for k, m in enumerate(S['mist']):
-        m.scale = (1.3 + 0.2 * math.sin(t * 1.4 + k), 1.0, 0.8 + 0.2 * math.sin(t * 1.9 + k)); m.location.z = -BED + 1.5 + 0.5 * math.sin(t + k)
-    S['pool'].update(t, 0.8, level=0.0, spin=True)
+def streak_mat(name, base, lite, foam, scale=(26.0, 2.2, 1.0), speed=1.0):
+    """Water curtain: emission from a ColorRamp over noise stretched along the fall (UV v), scrolled by a per-frame
+    'time' value -> long vertical streaks moving down. Returns (material, time node)."""
+    m = bpy.data.materials.new(name); m.use_nodes = True; nt = m.node_tree
+    for n in list(nt.nodes): nt.nodes.remove(n)
+    out = nt.nodes.new('ShaderNodeOutputMaterial'); uv = nt.nodes.new('ShaderNodeUVMap'); uv.uv_map = 'UVMap'
+    tval = nt.nodes.new('ShaderNodeValue'); tval.outputs[0].default_value = 0.0
+    comb = nt.nodes.new('ShaderNodeCombineXYZ'); nt.links.new(tval.outputs[0], comb.inputs['Y'])
+    sub = nt.nodes.new('ShaderNodeVectorMath'); sub.operation = 'SUBTRACT'; nt.links.new(uv.outputs['UV'], sub.inputs[0]); nt.links.new(comb.outputs[0], sub.inputs[1])
+    mul = nt.nodes.new('ShaderNodeVectorMath'); mul.operation = 'MULTIPLY'; mul.inputs[1].default_value = scale
+    nt.links.new(sub.outputs[0], mul.inputs[0])
+    nz = nt.nodes.new('ShaderNodeTexNoise'); nz.inputs['Scale'].default_value = 1.0; nz.inputs['Detail'].default_value = 1.0
+    nt.links.new(mul.outputs[0], nz.inputs['Vector'])
+    ramp = nt.nodes.new('ShaderNodeValToRGB'); ramp.color_ramp.interpolation = 'CONSTANT'; el = ramp.color_ramp.elements
+    el[0].position = 0.0; el[0].color = srgb(base); el[1].position = 0.5; el[1].color = srgb(lite); e = el.new(0.62); e.color = srgb(foam)
+    nt.links.new(nz.outputs['Fac'], ramp.inputs['Fac'])
+    # foam where the water leaves the lip and at the bottom (UV v near 1)
+    sep = nt.nodes.new('ShaderNodeSeparateXYZ'); nt.links.new(uv.outputs['UV'], sep.inputs[0])
+    edge = nt.nodes.new('ShaderNodeMath'); edge.operation = 'GREATER_THAN'; edge.inputs[1].default_value = 0.955; nt.links.new(sep.outputs['Y'], edge.inputs[0])
+    mix = nt.nodes.new('ShaderNodeMix'); mix.data_type = 'RGBA'; mix.inputs['B'].default_value = srgb(foam)
+    nt.links.new(edge.outputs[0], mix.inputs['Factor']); nt.links.new(ramp.outputs['Color'], mix.inputs['A'])
+    em = nt.nodes.new('ShaderNodeEmission'); nt.links.new(mix.outputs['Result'], em.inputs['Color']); nt.links.new(em.outputs[0], out.inputs['Surface'])
+    return m, tval
+
+def curtain(name, mat, width, push, nu=18, nv=26, back=0.0):
+    """Free-fall sheet from the lip: horizontal speed constant, z = H - g tau^2 / 2 (shape only; time is in the shader).
+    UV: u across, v = 0 at the lip .. 1 at the foot."""
+    er = Vector((math.cos(FALL_A), math.sin(FALL_A), 0)); inward = -er; tang = Vector((-math.sin(FALL_A), math.cos(FALL_A), 0))
+    lip = er * (CLIFF_R - 0.6 - back) + Vector((0, 0, FALL_H - 0.6))
+    verts, uvs = [], []
+    for j in range(nv + 1):
+        v = j / nv; tau = v                       # normalised fall time; z drops as tau^2
+        for i in range(nu + 1):
+            u = i / nu; w = width * (1 + 0.35 * v) * (u - 0.5)
+            bulge = 0.25 * math.sin(math.pi * u) * v
+            p = lip + inward * (push * tau + bulge) + tang * w + Vector((0, 0, -(FALL_H - 0.3) * tau * tau))
+            verts.append(p); uvs.append((u, v))
+    faces = [(j * (nu + 1) + i, j * (nu + 1) + i + 1, (j + 1) * (nu + 1) + i + 1, (j + 1) * (nu + 1) + i) for j in range(nv) for i in range(nu)]
+    o = mesh_from(name, verts, faces, mat, smooth=True); uvl = o.data.uv_layers.new(name='UVMap')
+    for poly in o.data.polygons:
+        for li, vi in zip(poly.loop_indices, poly.vertices): uvl.data[li].uv = uvs[vi]
+    return o, lip + inward * push + Vector((0, 0, -(FALL_H - 0.3)))
+
+def build_falls():
+    M = mats(); S = {"M": M}; rng = random.Random(12)
+    sky_world('#2F6FE0', '#CDEBFF')
+    # mud basin (the drained lakebed): low-poly grid, mud mosaic with wet patches and puddles
+    n = 60; size = 140.0; st = size / n; verts = []; faces = []
+    for j in range(n + 1):
+        for i in range(n + 1):
+            x = -size / 2 + i * st; y = -size / 2 + j * st + 10
+            z = 0.35 * mnoise.noise(Vector((x * 0.07, y * 0.07, 1.0))) + 0.6 * smoothstep(CLIFF_R - 8, CLIFF_R, math.hypot(x, y))
+            verts.append((x, y, z))
+    faces = [(j * (n + 1) + i, j * (n + 1) + i + 1, (j + 1) * (n + 1) + i + 1, (j + 1) * (n + 1) + i) for j in range(n) for i in range(n)]
+    mud = mesh_from('mud', verts, faces, M['grass']); ca = mud.data.color_attributes.new('Col', 'FLOAT_COLOR', 'CORNER'); cols = []
+    muds = [srgb('#8C6A4C'), srgb('#7D5E43'), srgb('#9A7656'), srgb('#6E5139')]; wet = srgb('#5A4634'); pud = srgb('#5FA9DA')
+    for p in mud.data.polygons:
+        c = p.center; k = mnoise.noise(Vector((c.x * 0.05, c.y * 0.05, 7.0)))
+        col = pud if k > 0.42 else (wet if k > 0.25 else muds[rng.randint(0, 3)])
+        for _ in p.loop_indices: cols.extend(col)
+    ca.data.foreach_set('color', cols)
+    # cliff: an arc of rock with strata bands, displaced low-poly faces; a notch where the canal comes through
+    na, nh = 56, 9; a0, a1 = math.radians(5), math.radians(175); verts = []
+    strata = [srgb('#9C7455'), srgb('#8A6248'), srgb('#B08860'), srgb('#7A543D'), srgb('#A47B58')]
+    def notch(a): return 1.8 * math.exp(-((a - FALL_A) / math.radians(8.5)) ** 2)
+    for j in range(nh + 1):
+        for i in range(na + 1):
+            a = a0 + (a1 - a0) * i / na; h = FALL_H * j / nh
+            if j == nh: h -= notch(a)
+            r = CLIFF_R + 1.1 * mnoise.noise(Vector((a * 6, h * 0.25, 3.0))) - 0.9 * (1 - h / FALL_H)
+            verts.append((r * math.cos(a), r * math.sin(a), h))
+    faces = [(j * (na + 1) + i + 1, j * (na + 1) + i, (j + 1) * (na + 1) + i, (j + 1) * (na + 1) + i + 1) for j in range(nh) for i in range(na)]
+    cliff = mesh_from('cliff', verts, faces, M['grass']); ca = cliff.data.color_attributes.new('Col', 'FLOAT_COLOR', 'CORNER'); cols = []
+    for p in cliff.data.polygons:
+        band = int(p.center.z / FALL_H * 7.0) % len(strata); col = tuple(c * rng.uniform(0.92, 1.06) for c in strata[band][:3]) + (1.0,)
+        for _ in p.loop_indices: cols.extend(col)
+    ca.data.foreach_set('color', cols); outline(cliff, 0.12)
+    # plateau on top (grass) with the canal channel running out to the rim
+    pv = []; npa = 40
+    for i in range(npa + 1):
+        a = a0 + (a1 - a0) * i / npa; pv += [((CLIFF_R + 0.6) * math.cos(a), (CLIFF_R + 0.6) * math.sin(a), FALL_H - 0.15), (140 * math.cos(a), 140 * math.sin(a), FALL_H - 0.15)]
+    plat = mesh_from('plateau', pv, [(2 * i, 2 * i + 2, 2 * i + 3, 2 * i + 1) for i in range(npa)], toon_mat('plateau', '#79C35A', shade=0.8, hi=None))
+    er = Vector((math.cos(FALL_A), math.sin(FALL_A), 0)); tang = Vector((-er.y, er.x, 0))
+    S['canal_mat'], S['canal_t'] = streak_mat('canalw', '#3E9FE6', '#7FD0FF', '#E8F8FF', scale=(5.0, 1.2, 1.0))
+    cw = 4.8; L0, L1 = CLIFF_R - 0.6, CLIFF_R + 80; nc = 12; cv = []; cuv = []
+    for j in range(nc + 1):
+        r = L0 + (L1 - L0) * j / nc
+        for s_ in (-1, 1): cv.append(er * r + tang * cw * s_ + Vector((0, 0, FALL_H - 0.6))); cuv.append(((s_ + 1) / 2, -(r - L0) / 20.0))
+    canal = mesh_from('canal', cv, [(2 * j, 2 * j + 1, 2 * j + 3, 2 * j + 2) for j in range(nc)], S['canal_mat'])
+    uvl = canal.data.uv_layers.new(name='UVMap')
+    for poly in canal.data.polygons:
+        for li, vi in zip(poly.loop_indices, poly.vertices): uvl.data[li].uv = cuv[vi]
+    for s_ in (-1, 1):   # grassy banks along the canal
+        bank = box('bank', (L1 - L0, 1.6, 1.2), toon_mat('bankg', '#6AB650', shade=0.75, hi=None), loc=tuple(er * ((L0 + L1) / 2) + tang * (cw + 0.8) * s_ + Vector((0, 0, FALL_H - 0.2))), rot=(0, 0, FALL_A))
+        outline(bank, 0.08)
+    for k in range(34):
+        a = rng.uniform(a0 + 0.05, a1 - 0.05)
+        if abs(a - FALL_A) < math.radians(12): continue
+        r = rng.uniform(CLIFF_R + 2.5, CLIFF_R + 26); tree(M, r * math.cos(a), r * math.sin(a), FALL_H - 0.2, rng.uniform(1.0, 1.6), rng)
+    # the falls: one free-fall sheet
+    S['wf_mat'], S['wf_t'] = streak_mat('fallfront', '#4FB3F0', '#9EE0FF', '#FFFFFF', scale=(26.0, 2.2, 1.0))
+    _, foot = curtain('fall', S['wf_mat'], 10.0, 4.4)
+    S['foot'] = foot
+    # plunge pool + foam puffs + spray + soft mist
+    pool = Water(M, R=9.0, n_ang=36, n_rad=8, r0=0.6, name='pool'); pool.obj.location = (foot.x, foot.y, 0.45); pool.abyss.hide_render = True; S['pool'] = pool
+    S['puffs'] = []
+    for k in range(14):
+        a = math.pi * (k / 13.0) + FALL_A + math.pi / 2; r = rng.uniform(2.0, 5.5)
+        base = foot + Vector((math.cos(a) * r, math.sin(a) * r * 0.7, 0.5)); size = rng.uniform(0.7, 1.3)
+        o = ico('puff', size, M['cloud'], loc=tuple(base), sub=1); outline(o, 0.03, col='#7FA6C8')
+        S['puffs'].append((o, base, size, rng.uniform(0, 6.28)))
+    S['spray'] = []
+    for k in range(26):
+        o = ico('spray', 0.22, M['foam'], sub=1); S['spray'].append((o, rng.uniform(0, 6.28), rng.uniform(4, 9), rng.uniform(0.5, 1.2), rng.random()))
+    # stranded barges and a few boulders on the mud, for scale
+    for k, (x, y, a, tilt) in enumerate([(14, 8, 0.6, 0.12), (-4, 14, 2.2, -0.08), (19, -2, 1.3, 0.18)]):
+        b = barge(M, f'stranded{k}', k, rng); b.matrix_world = Matrix.Translation((x, y, 0.55)) @ Matrix.Rotation(a, 4, 'Z') @ Matrix.Rotation(tilt, 4, 'X')
+    for k in range(9):
+        x = rng.uniform(-14, 26); y = rng.uniform(-4, 22)
+        o = ico('rock', rng.uniform(0.6, 1.6), toon_mat('rock', '#8D8577', shade=0.68, hi=1.1), loc=(x, y, 0.3), sub=1, scale=(1.3, 1.0, 0.7)); outline(o, 0.07)
+    clouds(M, rng)
+    S['cam'] = cam_new(30)
+    S['cam'].data.shift_y = -0.3; S['cam'].data.shift_x = -0.07   # lift the falls into the upper right: captions + host live lower left
+    return S
+
+def update_falls(S, t):
+    for node, speed in ((S['wf_t'], 1.15), (S['canal_t'], -0.35)): node.outputs[0].default_value = speed * t
+    S['pool'].update(t, 0.6, level=0.0, spin=True)
+    foot = S['foot']
+    for o, base, size, ph in S['puffs']:
+        k = math.sin(t * 2.6 + ph); o.scale = (size * (1 + 0.18 * k), size * (1 + 0.18 * k), size * (1 + 0.25 * math.sin(t * 3.1 + ph)))
+        o.location = base + Vector((0, 0, 0.3 * k)); o.rotation_euler = (t * 0.7 + ph, ph, t * 0.4)
+    for o, a, sp, per, ph in S['spray']:
+        tau = ((t / per + ph) % 1.0) * per; vx, vz = math.cos(a) * sp * 0.5, sp
+        z = 0.6 + vz * tau - 9.8 * tau * tau
+        o.location = foot + Vector((vx * tau, math.sin(a) * sp * 0.25 * tau, z)); o.hide_render = z < 0.2
+    k = smoothstep(0, 7, t)   # slow push-in, low on the mud looking up at the falls (kept upper-right, clear of the host)
+    look(S['cam'], (foot.x + lerp(-8.0, -7.0, k), foot.y + lerp(-17.0, -15.0, k), 1.2), (foot.x - 2.0, foot.y, FALL_H * 0.72))
 
 # ------------------------------------------------------------------ M: cutaway diorama
 STRATA = [('#C9A57A', 0.0, -3.0), ('#B08A62', -3.0, -8.0), ('#9C7553', -8.0, -14.0), ('#86634A', -14.0, -21.0), ('#735540', -21.0, -90.0)]
@@ -524,6 +609,7 @@ def build_mine():
     S['spray'] = [ico('spray', 0.3, M['foam'], sub=1) for _ in range(16)]
     S['hole'] = cyl('holeedge', 1.0, 1.0, -0.05, 0.05, flat_mat('holedark', '#123A80'), n=10, loc=(0, yF - 0.32, MZ + 3.25))
     S['cam'] = cam_new(30)
+    S['cam'].data.shift_y = -0.3; S['cam'].data.shift_x = -0.07   # lift the falls into the upper right: captions + host live lower left
     return S
 
 def update_mine(S, t):
@@ -572,9 +658,6 @@ def update_cam(S, t):
         look(cam, (40 * math.cos(a), 40 * math.sin(a), 30 - 0.3 * t), (5.5, -4.5, -6.5))   # vortex centre at y~720: above the caption line (975) and the host
     elif SHOT == "V":
         pass
-    elif SHOT == "F":
-        k = smoothstep(0, 7, t)
-        look(cam, (lerp(17, 19, k), lerp(-1.2, -0.8, k), -BED + 1.2), (shore_r(0) - 2, 0.0, -BED + 8.5))
 
 def setup_v_cam(S):
     cd = bpy.data.cameras.new('camv'); cam = bpy.data.objects.new('camv', cd); bpy.context.collection.objects.link(cam)
@@ -586,11 +669,12 @@ def main():
     clear_scene()
     if SHOT == "M":
         S = build_mine(); upd = update_mine
+    elif SHOT == "F":
+        S = build_falls(); upd = update_falls
     else:
         S = build_lake()
         if SHOT == "V": build_v_extras(S); setup_v_cam(S)
-        else: S['cam'] = cam_new({"C": 30, "W": 30, "F": 30}[SHOT])
-        if SHOT == "F": build_waterfall(S)
+        else: S['cam'] = cam_new(30)
         def upd(S, t): update_lake(S, t); update_cam(S, t)
     res = ARGS["res"]; setup_toon_render(res, res * 16 // 9, ARGS["samples"], FPS, transparent=False)
     os.makedirs(ARGS["out"], exist_ok=True); sc = bpy.context.scene

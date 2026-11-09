@@ -404,6 +404,13 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
 - Gotcha: `obj.matrix_world` of objects you just placed is stale until `view_layer.update()`; parenting with
   `matrix_parent_inverse = parent.matrix_world.inverted()` before the update put the head 2 units low.
 - Gotcha: `hide_render` on an Empty does not hide its children; use `hide()` in scene_peigneur.py.
+- Waterfall (shot F) v1 reused the lake terrain and looked jank: falls small and half hidden by the shore
+  slope, per-face checker stripes, translucent grey "mist" blobs that read as rocks. v2 is its own set: curved
+  strata cliff with the canal notched through the rim, ONE free-fall curtain (a second back sheet made a dark
+  band) with a streak shader (noise stretched along UV v, scrolled by a per-frame Value node: water reads
+  as water), small opaque white toon foam puffs with thin pale outlines (big black-outlined puffs = snow
+  boulders), foam band only for the last ~5% of v, and camera lens shift (`shift_y = -0.3`) to lift the falls
+  into the upper right instead of tilting the camera.
 - Gotcha: a "far ground" quad above z=0 covered the whole lake; it is an annulus outside the terrain now.
 - `tts.py` lines may be `{"text": ..., "say": ...}`: captions show "Peigneur", Kokoro reads "Pain-yer"
   (espeak gives "pay-NOOR" otherwise). Check with `Kokoro.tokenizer.phonemize(text, 'en-us')`.
