@@ -1,7 +1,7 @@
 {
   "id": "006-lake-peigneur",
   "title": "The day a drill bit pulled the plug on a lake (Lake Peigneur, 1980)",
-  "style": "low-poly anime: flat cel-shaded Cycles (emission toon shader, inverted-hull outlines), VTuber-style host composited bottom-left",
+  "style": "low-poly anime: flat cel-shaded Cycles (emission toon shader, inverted-hull outlines); VTuber host = VRoid avatar (VRM) toon-rendered, composited bottom-left",
   "fps": 30,
   "width": 1080,
   "height": 1920,
@@ -25,7 +25,9 @@
     "x": 0,
     "y": 1000,
     "width": 640,
-    "height": 920
+    "height": 920,
+    "vrm": "AvatarSample_G.vrm",
+    "vrm_credit": "VRoid sample model \"Victoria Rubin\" (AvatarSample_G) by VRoid Project; licence in the file: anyone, commercial OK, modification OK, no credit required"
   },
   "bg_plan": {
     "hook": [

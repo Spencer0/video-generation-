@@ -16,7 +16,8 @@ pipeline/            reusable tooling (video-agnostic)
   blender/scene_bag.py     procedural Cycles scene for video 001 (water bag over flame)
   blender/scene_chain.py   procedural Cycles scene for video 002 (chain fountain)
   blender/scene_leidenfrost.py, scene_kaye.py   videos 004 and 005
-  blender/scene_peigneur.py, scene_vtuber.py   video 006 (low-poly anime scene + VTuber host layer)
+  blender/scene_peigneur.py   video 006 low-poly anime scene
+  blender/scene_vtuber.py     VTuber host layer: any VRoid .vrm, toon-rendered, lip-synced to the VO (006+)
   blender/toon.py    shared toon look: cel emission materials, inverted-hull outlines, mesh helpers
   checks.py          measured acceptance checks (duration, VO onset, luma, UI-zone safe area, loop seam, loudness)
   safe_area.json     the TikTok UI zones every renderer and check reads (see 'Where things may go on screen')
@@ -382,19 +383,27 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
   rotation winds the arms tighter over time, which is what a real free vortex does. Floats are advected by the
   same omega (integrated from t=0 each frame so frames stay standalone) and tilted to the funnel surface.
 - VTuber host (`scene_vtuber.py`, "avatar" in script.json): a separate RGBA pass over the whole timeline,
-  composited by `assemble.py` above the (blurred) footage and below the overlay. Redesigned on request to a
-  more conventionally attractive *adult* host (the first pass, round face + sailor school uniform, read as a
-  minor, so "hotter" meant aging her up, never sexualising that design): narrower skull, longer V jaw,
-  almond eyes with winged liner, long side-swept hair, fitted turtleneck under an open lab coat (an open
-  shell with a V opening, built from angle ranges: deleting faces left stair-stepped edges). PG-13: fitted,
-  not revealing. Built from a UV sphere head, face decals bent onto the head's curvature (eyes = stacked ellipses + lash strips, placed by
-  ray-casting the head), bezier "blade" hair strands, streamer headset. Lip sync = 50 ms RMS
-  of vo.wav mapped from -40..-20 dB with fast attack / slow release; blinks seeded + on every beat change;
-  expressions keyed to beat starts and spoken words (`expr_keys()`). ~0.6 s/frame at 640x920.
+  composited by `assemble.py` above the (blurred) footage and below the overlay.
+  **Use a VRoid avatar (.vrm), not primitives.** Two procedural passes (UV-sphere head, face decals bent onto
+  it, bezier hair blades; then an "older, sharper" redesign) both looked amateur next to any real VTuber.
+  VRoid sample models (CC0-style terms embedded in the file: anyone, commercial, modification, no credit)
+  render far better through the same toon pipeline: README has the download, `avatar.vrm` picks the file.
+  1 and 5 of the samples (Shibu, Shino) wear school uniforms: do not use them for an "attractive host" ask.
+  - A .vrm is glTF binary: copy to .glb and use Blender's own importer (no add-on needed).
+  - The importer names morph targets `target_0..N`; restore VRoid's names (`..Fcl_MTH_A`, `Fcl_EYE_Close`,
+    `Fcl_ALL_Joy`, ...) from the glTF JSON `targetNames` extras, else every expression silently does nothing.
+  - Imported objects are in QUATERNION rotation mode: `rotation_euler` is ignored until you switch it.
+  - VRMs face +y in Blender: camera on +y looking -y, key light on +y, "+z turns her towards frame right".
+  - Arms: rotate `J_Bip_{L,R}_UpperArm` ~70 deg about the world y axis (sign per side) out of the T-pose.
+    Bones are posed by a world-space quaternion conjugated by the bone's rest matrix (`set_rot`).
+  - Materials: texture x a soft N.L band as Emission, alpha kept (CLIP thresholded). Outlines: solidify
+    (flip normals, material offset) at 0.9 mm; at 2 mm the double-sided ponytail/lace cards turn into black bars.
+  - Lip sync = VO RMS -> MTH_A/O/E (vowel mix wobbles); visemes are scaled down under ALL_Joy/ALL_Surprised,
+    which open the mouth themselves. Blink = EYE_Close, suppressed under Joy (closed-eye smile).
+  - ~1.3 s/frame at 640x920, 8 samples (persistent data off: skinned + shape-keyed meshes change per frame).
 - Gotcha: `obj.matrix_world` of objects you just placed is stale until `view_layer.update()`; parenting with
   `matrix_parent_inverse = parent.matrix_world.inverted()` before the update put the head 2 units low.
-- Gotcha: `hide_render` on an Empty does not hide its children; use `hide()` (scene_peigneur.py) / `vis()`
-  (scene_vtuber.py). The first host pass had the sweat drop and blink groups always visible because of it.
+- Gotcha: `hide_render` on an Empty does not hide its children; use `hide()` in scene_peigneur.py.
 - Gotcha: a "far ground" quad above z=0 covered the whole lake; it is an annulus outside the terrain now.
 - `tts.py` lines may be `{"text": ..., "say": ...}`: captions show "Peigneur", Kokoro reads "Pain-yer"
   (espeak gives "pay-NOOR" otherwise). Check with `Kokoro.tokenizer.phonemize(text, 'en-us')`.

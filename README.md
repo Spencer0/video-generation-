@@ -15,6 +15,11 @@ pip install kokoro-onnx soundfile playwright
 mkdir -p /home/user/tools/kokoro && cd /home/user/tools/kokoro && \
   curl -L -O https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx && \
   curl -L -O https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin
+# VTuber host avatars (video 006+): VRoid Project sample models, free to use/modify/commercial, no credit
+# required (licence embedded in each .vrm). AvatarSample_G = "Victoria Rubin", the 006 host.
+mkdir -p /home/user/tools/vrm && cd /home/user/tools/vrm && \
+  curl -L -A "Mozilla/5.0" -O https://opengameart.org/sites/default/files/avatarsample_g.zip && \
+  unzip -j avatarsample_g.zip '*.vrm' && rm avatarsample_g.zip
 ```
 
 ## Build video 001
