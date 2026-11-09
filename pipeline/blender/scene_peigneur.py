@@ -569,7 +569,7 @@ def update_cam(S, t):
         k = smoothstep(0, 5.0, t); look(cam, (lerp(40, 30, k), lerp(-62, -44, k), lerp(36, 25, k)), (1, 4, -3))
     elif SHOT == "W":
         a = -0.95 + 0.02 * t
-        look(cam, (40 * math.cos(a), 40 * math.sin(a), 30 - 0.3 * t), (0.5, 3.5, -4.0))
+        look(cam, (40 * math.cos(a), 40 * math.sin(a), 30 - 0.3 * t), (5.5, -4.5, -6.5))   # vortex centre at y~720: above the caption line (975) and the host
     elif SHOT == "V":
         pass
     elif SHOT == "F":

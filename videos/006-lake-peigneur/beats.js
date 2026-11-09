@@ -10,9 +10,9 @@ function animeText(str,x,y,{size=78,fill=C.white,align='center',alpha=1,rot=0,sh
   ctx.lineWidth=w; ctx.strokeStyle=shadow; ctx.strokeText(str,o,o); ctx.fillStyle=shadow; ctx.fillText(str,o,o);
   ctx.strokeStyle=stroke; ctx.strokeText(str,0,0); ctx.fillStyle=fill; ctx.fillText(str,0,0); ctx.restore(); }
 function fitSz(parts,size,maxW=846){ font(900,size); const w=parts.reduce((a,p)=>a+ctx.measureText(p[0]).width,0)+size*0.3; return w>maxW?Math.floor(size*maxW/w):size; }
-function animeLine(parts,y,size,alpha=1,pop=1){ size=fitSz(parts,size); font(900,size); const ws=parts.map(p=>ctx.measureText(p[0]).width); const tot=ws.reduce((a,b)=>a+b,0);
+function animeLine(parts,y,size,alpha=1,pop=1){ size=fitSz(parts,size,846/Math.max(pop,1)); /* fit including the pop-in overshoot */ font(900,size); const ws=parts.map(p=>ctx.measureText(p[0]).width); const tot=ws.reduce((a,b)=>a+b,0);
   ctx.save(); ctx.translate(W/2,y); ctx.scale(pop,pop); let x=-tot/2; parts.forEach((p,i)=>{ animeText(p[0],x+ws[i]/2,0,{size,fill:p[1],alpha}); x+=ws[i]; }); ctx.restore(); }
-function popIn(t,t0,d=0.22){ return t<t0?0:lerp(1.35,1,easeOutBack((t-t0)/d)); }
+function popIn(t,t0,d=0.22){ return t<t0?0:lerp(1.2,1,easeOutBack((t-t0)/d)); }
 function tag(label,x,y,{alpha=1,bg=PINK,fg=C.white,size=36,align='left'}={}){ ctx.save(); ctx.globalAlpha=ctx.globalAlpha*alpha; ctx.shadowColor='rgba(40,50,114,0.55)'; ctx.shadowOffsetY=6; ctx.shadowBlur=0;
   pill(label,x,y,{bg,fg,size,weight:900,padX:26,align,border:'rgba(255,255,255,0.95)'}); ctx.restore(); }
 // emotes next to the host's head (her face is ~x 120..520, y 1080..1440 in the final frame)
@@ -63,7 +63,7 @@ function beatWhy(tb,t,b){ const a=fade(tb,b,0,0.2,0.2); const tW=wordTime('why',
 // top-down vortex (shot V): centre (540,700), 48 px/unit; buoys at r=9 and 4.5, theta = th0 + GAMMA/r^2 * t (scene_peigneur.py)
 const VC={x:540,y:700,ppu:48,G:38.0}; const BUOYS=[{r:9.0,th0:0.6,label:'v',col:C.yellow},{r:4.5,th0:2.0,label:'2v',col:'#FF5A36'}];
 function buoyPos(bu,ts){ const th=bu.th0+VC.G/(bu.r*bu.r)*ts; return {x:VC.x+VC.ppu*bu.r*Math.cos(th), y:VC.y-VC.ppu*bu.r*Math.sin(th), th}; }
-function dashedCircle(r,col,a){ ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; ctx.setLineDash([18,14]); ctx.lineWidth=6; ctx.strokeStyle=col; ctx.shadowColor=NAVY; ctx.shadowBlur=0; ctx.shadowOffsetY=3;
+function dashedCircle(r,col,a){ ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; ctx.setLineDash([18,14]); ctx.lineWidth=6; ctx.strokeStyle=col;
   ctx.beginPath(); ctx.arc(VC.x,VC.y,r,0,Math.PI*2); ctx.stroke(); ctx.restore(); }
 function speedArrow(p,len,col,a){ const tx=-Math.sin(p.th), ty=-Math.cos(p.th); // screen tangent (CCW in world = CCW on screen with y flipped)
   const x1=p.x+tx*len, y1=p.y+ty*len; ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; ctx.lineCap='round'; ctx.strokeStyle=NAVY; ctx.lineWidth=16; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(x1,y1); ctx.stroke();
@@ -76,8 +76,8 @@ function eqPanel(x,y,w,h,a,hl){ ctx.save(); ctx.globalAlpha=ctx.globalAlpha*a; c
 function beatSpin(tb,t,b){ const a=fade(tb,b); const tLs=wordTime('spin','little'), tPu=wordTime('spin','pulled'), tSp=wordTime('spin','speed'), tRa=wordTime('spin','radius'), tH=wordTime('spin','half'), tD=wordTime('spin','double');
   const ts=tb;   // shot V starts at this beat (bg_plan spin: V 0)
   // rings + buoy arrows on the footage
-  if(t>tLs){ const k=smooth(0,0.3,t-tLs)*a; BUOYS.forEach((bu,i)=>{ if(i===1 && t<tPu) return; const kk=i?smooth(0,0.3,t-tPu)*a:k; dashedCircle(VC.ppu*bu.r,bu.col,kk*0.9); const p=buoyPos(bu,ts);
-      const show=i===0?(t>tLs):(t>tH); if(show){ speedArrow(p,i===0?80:160,bu.col,kk); animeText(bu.label,p.x+(i?-10:10),p.y-62,{size:56,fill:bu.col,alpha:kk}); } }); }
+  if(t>tLs){ const k=smooth(0,0.3,t-tLs)*a; BUOYS.forEach((bu,i)=>{ if(i===1 && t<tPu) return; const kk=i?smooth(0,0.3,t-tPu)*a:k; dashedCircle(VC.ppu*bu.r,bu.col,kk*0.42); const p0=buoyPos(bu,ts); const p={...p0,x:clamp(p0.x,180,900),y:clamp(p0.y,330,1500)};   /* faint guide ring (footage may cross the side crops); arrow + label kept in the readable area */
+      const show=i===0?(t>tLs):(t>tH); if(show){ speedArrow(p,i===0?80:160,bu.col,kk); animeText(bu.label,p.x+(i?-10:10),p.y+(p.y<380?70:-62),{size:56,fill:bu.col,alpha:kk}); } }); }
   // equation panel up top on 'speed'
   if(t>tSp-0.15) eqPanel(150,262,780,120,smooth(0,0.25,t-tSp+0.15)*a,{speed:t>tSp-0.05&&t<tH, radius:t>tRa-0.05&&t<tH});
   if(t>tH) tag('½ the distance',150,440,{alpha:smooth(0,0.2,t-tH)*a,bg:'#FF5A36'});
