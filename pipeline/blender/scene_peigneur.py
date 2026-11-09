@@ -558,9 +558,9 @@ def update_mine(S, t):
         root.location.x = x0 - 22 * run * (0.8 + 0.1 * (k % 3)); root.location.z = MZ + 0.35 + (0.12 * abs(math.sin(t * 10 + k)) if run > 0 else 0.0)
         root.hide_render = root.location.x < -11.5
     # camera: starts on the rig + lake, tilts down following the bit, holds on the mine level, eases back a bit
-    cam = S['cam']; zc = lerp(-2.0, MZ + 4.0, smoothstep(0.4, tb - 0.4, t)); back = 24 + 8 * smoothstep(tb + 1.5, tb + 7.0, t)
-    zc += 4.0 * smoothstep(tb + 1.5, tb + 6.0, t)
-    look(cam, (8.0, -11 - back, zc + 5.0), (1.5, 0.0, zc - 1.0))
+    cam = S['cam']; zc = lerp(2.0, MZ + 1.5, smoothstep(0.4, tb - 0.4, t)); back = 24 + 8 * smoothstep(tb + 1.5, tb + 7.0, t)
+    zc += 1.5 * smoothstep(tb + 1.5, tb + 6.0, t)
+    look(cam, (8.0, -11 - back, zc + 3.0), (1.5, 0.0, zc - 7.5))   # aim low: the mine level sits at y~650-750 of the frame, clear of the host + captions
 
 # ------------------------------------------------------------------ cameras for the lake shots
 def update_cam(S, t):
