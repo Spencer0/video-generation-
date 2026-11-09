@@ -54,6 +54,11 @@ def main():
         if j > 0 and abs(idx[j - 1] - i) < abs(idx[j] - i): j -= 1
         return files[j]
     lines, top_lines, split_windows = [], [], []
+    if not shot_ids:   # fully 2D video ("shots": {}): every beat paints its own opaque frame, the footage is one black PNG
+        from PIL import Image
+        os.makedirs(frames_dir, exist_ok=True); black = os.path.join(frames_dir, "_black.png")
+        Image.new("RGB", (tl["width"] // 4, tl["height"] // 4)).save(black)
+        shots["_"] = ([0], [black]); bg_plan = {b["id"]: ("_", 0) for b in tl["beats"]}
     stack_windows, stack_over, n_stack = [], [], 0   # stack: N panels vstacked for a window ("stack": [[shot, off], ...], "stack_frames": n)
     for b in tl["beats"]:
         plan = bg_plan[b["id"]]; s, off = plan[0], plan[1]

@@ -45,3 +45,15 @@ python3 pipeline/checks.py 005-kaye-effect                        # -> out/check
 
 See `AGENTS.md` for the design decisions, measured render costs and the
 conventions that make the pieces line up.
+
+## Build video 006 (Mount St. Helens) — fully 2D, no Blender
+
+```bash
+python3 pipeline/tts.py 006-st-helens && python3 pipeline/sfx.py 006-st-helens
+python3 pipeline/overlays/render_overlays.py 006-st-helens        # opaque anime-style frames, ~5 min
+python3 pipeline/assemble.py 006-st-helens                        # "shots": {} -> black footage under the frames
+python3 pipeline/checks.py 006-st-helens
+# safe-area check for an opaque video: render only the readable layer, then check it
+python3 pipeline/overlays/render_overlays.py 006-st-helens --eval "window.READABLE_ONLY=true" --out /tmp/ro
+python3 pipeline/checks.py 006-st-helens --only-safe-area --overlay-dir /tmp/ro
+```

@@ -1,0 +1,94 @@
+{
+ "id": "006-st-helens",
+ "title": "Mount St. Helens, 1980: the man who had seconds to warn the world",
+ "fps": 30,
+ "width": 1080,
+ "height": 1920,
+ "voice": {
+  "engine": "kokoro",
+  "name": "af_heart",
+  "speed": 1.12,
+  "lang": "en-us"
+ },
+ "scene": null,
+ "shots": {},
+ "bg_plan": {},
+ "blur_beats": [],
+ "beats": [
+  {
+   "id": "hook",
+   "pad_before": 0.0,
+   "pad_after": 0.35,
+   "min_duration": 2.6,
+   "lines": [
+    "This man has seconds to warn the world."
+   ]
+  },
+  {
+   "id": "who",
+   "pad_before": 0.15,
+   "pad_after": 0.3,
+   "lines": [
+    "Nineteen eighty. Volcanologist David Johnston is watching Mount Saint Helens from six miles away."
+   ]
+  },
+  {
+   "id": "bulge",
+   "pad_before": 0.15,
+   "pad_after": 0.25,
+   "lines": [
+    "Magma has swollen its north face outward, five feet a day."
+   ]
+  },
+  {
+   "id": "slide",
+   "pad_before": 0.15,
+   "pad_after": 0.25,
+   "lines": [
+    "At eight thirty-two, an earthquake shakes it loose: the biggest landslide ever recorded."
+   ]
+  },
+  {
+   "id": "blast",
+   "pad_before": 0.15,
+   "pad_after": 0.3,
+   "lines": [
+    "That uncorks it like a shaken soda. It explodes sideways, at three hundred miles an hour."
+   ]
+  },
+  {
+   "id": "radio",
+   "pad_before": 0.15,
+   "pad_after": 0.9,
+   "lines": [
+    "David grabs his radio.",
+    "Vancouver! Vancouver! This is it!"
+   ]
+  },
+  {
+   "id": "harry",
+   "pad_before": 0.2,
+   "pad_after": 0.3,
+   "lines": [
+    "Harry Truman, eighty-three, had refused to leave his lodge."
+   ]
+  },
+  {
+   "id": "toll",
+   "pad_before": 0.15,
+   "pad_after": 0.3,
+   "lines": [
+    "Fifty-seven people died. But scientists like David had fought to close the mountain. That likely saved thousands."
+   ]
+  },
+  {
+   "id": "ask",
+   "pad_before": 0.2,
+   "pad_after": 0.8,
+   "min_duration": 2.2,
+   "lines": [
+    "Would you have left?"
+   ]
+  }
+ ]
+}

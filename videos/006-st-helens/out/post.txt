@@ -1,0 +1,17 @@
+CAPTION
+He had seconds. "Vancouver! Vancouver! This is it!" Would you have left when they told you to?
+
+HASHTAGS
+#mountsthelens #volcano #truestory #1980 #geology #sciencetok #learnontiktok #anime
+
+PINNED COMMENT
+David Johnston was 30. The ridge he was standing on is now called Johnston Ridge. Would you have left, or stayed like Harry?
+
+NOTES FOR THE HUMAN
+- Cover: out/cover.png (the eye cut-in, 1.6 s in). The first frame is a 3-frame impact flash, do not use it as the cover.
+- This is illustrated, not footage: David Johnston is only ever drawn from behind, plus an eyes-only cut-in. Harry Truman is a cartoon.
+- Sources for every number are in AGENTS.md ("Video 006 notes"). The soft ones, if a commenter pushes back:
+  "six miles" (USGS says about 6 mi / 10 km; some outlets say 5), "five feet a day" (reported 5-8 ft/day),
+  "300 miles an hour" (the blast front, at least; it went faster further out),
+  "likely saved thousands" (an estimate, and the closure was a group effort, hence "scientists like David").
+- Harry's quote on screen ("If the mountain goes, I'm going with it") is the widely reported version of what he told reporters.

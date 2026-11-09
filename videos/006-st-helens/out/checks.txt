@@ -1,0 +1,17 @@
+duration: 40.75 s (timeline 40.73 s)
+  beat hook      2.60 s OK
+  beat who       6.53 s OK
+  beat bulge     3.63 s OK
+  beat slide     5.17 s OK
+  beat blast     5.70 s OK
+  beat radio     4.50 s OK
+  beat harry     3.60 s OK
+  beat toll      6.80 s OK
+  beat ask       2.20 s OK
+longest beat: 6.80 s
+first spoken word onset (VO stem, 50 ms RMS > -20 dBFS): 0.20 s
+mean luma Y: first 3 s = 124.1, whole = 126.2, darkest frame = 23.6 (frame 834)
+frames in final: 1222 (timeline 1222)
+loop seam: mean abs pixel difference frame 0 vs last frame = 129.1 / 255 (lower is more seamless)
+safe area, readable layer only (render_overlays --eval window.READABLE_ONLY=true, all 1222 frames against 5 UI zones): PASS, nothing readable under the TikTok UI
+loudness: Input Integrated:    -14.2 LUFS; Input True Peak:      -1.4 dBTP

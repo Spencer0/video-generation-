@@ -62,13 +62,15 @@ function drawCaptions(t){
   if(window.NO_CAPTIONS) return;
   const CS=(window.BEATS&&window.BEATS.caption)||{}; const POP=CS.pop||1.12, KEYCOL=CS.keywordColor||C.orange;
   const c=CHUNKS.find(c=>t>=c.start-0.04 && t<c.hide); if(!c)return;
+  if(CS.skip&&CS.skip(t,c))return;   // per-video: a beat that letters its own dialogue (006 shout bubble) hides the caption chunk
   const size=CS.size||78, gap=22; font(900,size);
   const info=c.words.map(w=>{ const active = t>=w.start-0.02 && t<w.end+0.02; const spoken = t>=w.start-0.02;
     const key = KEYWORDS.has(w.word.toLowerCase().replace(/[^a-z']/g,'')) || /\d/.test(w.word);
     const ws = active ? lerp(1.0,POP,easeOutBack((t-w.start)/0.12)) : 1;
     return {w, ws, width:ctx.measureText(w.word.toUpperCase()).width*ws, col: active ? C.yellow : (spoken && key ? KEYCOL : C.white)}; });
   const total=info.reduce((a,b)=>a+b.width,0)+gap*(info.length-1);
-  const y=CS.y||CAPTION_Y; const maxW=(y>1040 ? 640 : 846)-14;   // centred line inside the readable area of pipeline/safe_area.json: 110..970 above y=1040 (846 wide), 220..860 below it (640 wide); minus the 14 px stroke
+  // CS.yByBeat: {beatId: y} for videos whose art needs the caption band moved per beat
+  const y=(CS.yByBeat&&CS.yByBeat[c.words[0].beat])||CS.y||CAPTION_Y; const maxW=(y>1040 ? 640 : 846)-14;   // centred line inside the readable area of pipeline/safe_area.json: 110..970 above y=1040 (846 wide), 220..860 below it (640 wide); minus the 14 px stroke
   const scaleAll = total>maxW ? maxW/total : 1;
   let x=W/2-total*scaleAll/2;
   const pop = CS.pop ? 1 : lerp(0.85,1,easeOutBack((t-c.start)/0.16));

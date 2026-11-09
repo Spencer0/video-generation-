@@ -15,7 +15,7 @@ pipeline/            reusable tooling (video-agnostic)
   timeline.py        shared helpers (word-timing estimate, paths)
   blender/scene_bag.py     procedural Cycles scene for video 001 (water bag over flame)
   blender/scene_chain.py   procedural Cycles scene for video 002 (chain fountain)
-  blender/scene_leidenfrost.py, scene_kaye.py   videos 004 and 005
+  blender/scene_leidenfrost.py, scene_kaye.py   videos 004 and 005 (006 is fully 2D: no scene script)
   checks.py          measured acceptance checks (duration, VO onset, luma, UI-zone safe area, loop seam, loudness)
   safe_area.json     the TikTok UI zones every renderer and check reads (see 'Where things may go on screen')
   fake_timeline.py   ESTIMATED timeline from script.json for overlay previews/audits without Kokoro (never assemble with it)
@@ -365,6 +365,46 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
   the stream slides along it and exits as a jet lasting a few tenths of a
   second; stable on a tilted surface. Honey (Newtonian) coils, water
   splashes. "Roughly ten times thinner" keeps the "roughly".
+
+## Video 006 notes (Mount St. Helens 1980, anime style, fully 2D)
+
+- No Blender: `"shots": {}` in script.json makes `assemble.py` put one black PNG under the overlay
+  frames, and every beat in beats.js paints an opaque frame. 1222 frames render in ~5 min, so a
+  whole video iterates in minutes; the art budget goes into beats.js (~300 dense lines).
+- The cel look, cheapest first: flat fills + one hard shadow shape (clip to the silhouette, fill an
+  offset ellipse or polygon); clouds / smoke / fire as circle clusters drawn in four passes (ink
+  silhouette at r+7, dark, mid and highlight circles offset toward the light, each small enough to
+  stay inside its blob so no clipping is needed) - `blobs()`; radial `speedLines()` reseeded every
+  other frame; a 3-frame inverted "impact frame" (`difference` with white) on the two explosions;
+  slanted `title()` lettering with a hard offset shadow; an eye cut-in band sliding across the frame.
+- Real people: David Johnston is drawn only from behind plus an eyes-only cut-in, Harry Truman as
+  a cartoon with closed smiling eyes. Back views also dodge the hardest drawing problem (faces).
+  First pass of the hair had the polygon points in the wrong winding order (a "beak") and a
+  horizontal shadow band that read as a visor: go round the head in one direction, shade with a
+  crescent.
+- First 3 s (the brief): blast already in progress on frame 0 with the TRUE STORY tag; impact
+  frame, white flash, shock rings, a zoom kick + speed lines on "seconds", the radio arm rising,
+  then the eye cut-in on "world" at 1.5 s. Something changes every ~0.5 s.
+- Opaque frames defeat the safe-area check (it skips full-frame overlays). Scenery goes through
+  `S(fn)` in beats.js; `render_overlays.py --eval "window.READABLE_ONLY=true"` renders only titles,
+  pills, bubbles and captions, and `checks.py --only-safe-area --overlay-dir` runs on that. It
+  caught ten things, mostly pop-in overshoot (a 1.7x easeOutBack start pushes a 760 px title to
+  1290 px for two frames; pops start at 1.3x now, bubbles at 1.07x).
+- Engine additions (overlay.html): `BEATS.caption.yByBeat` moves the caption band per beat (380
+  over the cross-section, 980 elsewhere), `BEATS.caption.skip(t)` hides captions while a beat
+  letters its own dialogue (the shout bubble).
+- A zoomed scene needs its labels zoomed too: either draw them inside the same transform or map
+  the anchor through the camera (`XP()`); arrows drawn outside the camera drifted off the slope.
+- Loop: ends on a white-out into the frame-0 impact flash. Not pixel-seamless (seam 130/255).
+- Facts used (keep the hedges): 18 May 1980, 8:32 am, M 5.1 quake; bulge on the north flank
+  growing ~5 ft/day (reported 5-8); largest landslide in recorded history; lateral blast at least
+  300 mph; Johnston, 30, USGS, at Coldwater II about 6 mi (10 km) north (some sources say 5), last
+  transmission "Vancouver! Vancouver! This is it!"; the post is now Johnston Ridge; Harry R.
+  Truman, 83, Spirit Lake lodge, "If the mountain goes, I'm going with it" (as widely reported);
+  57 dead; "likely saved thousands" is an estimate for the access restrictions scientists pushed
+  for, a group effort, hence "scientists like David". Summit 9,677 ft before, 8,363 after.
+- Measured on the final: 40.7 s (longer than the 26-30 s the 005 brief asked for; the story has
+  nine beats, longest 6.8 s), VO onset 0.20 s, luma Y ~121 first 3 s / 126 overall, -14 LUFS.
 
 ## Workflow for a new video
 
