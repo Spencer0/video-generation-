@@ -18,7 +18,8 @@ def main():
     t = 0.0; beats_out = []
     for bi, beat in enumerate(script["beats"]):
         b_start = t; t += beat.get("pad_before", 0.2); lines_out = []
-        for text in beat["lines"]:
+        for line in beat["lines"]:
+            text = line if isinstance(line, str) else line["text"]
             dur = max(0.4, len(text.split()) / a.wps)
             lines_out.append({"text": text, "start": round(t, 3), "end": round(t + dur, 3), "wav": None, "words": estimate_word_times(text, t, t + dur)})
             t += dur + LINE_GAP

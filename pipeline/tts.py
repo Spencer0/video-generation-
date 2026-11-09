@@ -26,8 +26,10 @@ def main(video_id):
     sr = 24000; master = []; t = 0.0; beats_out = []
     for bi, beat in enumerate(script["beats"]):
         b_start = t; t += beat.get("pad_before", 0.2); lines_out = []
-        for li, text in enumerate(beat["lines"]):
-            wav, sr = k.create(text, voice=v["name"], speed=v.get("speed", 1.0), lang=v.get("lang", "en-us"))
+        for li, line in enumerate(beat["lines"]):
+            # a line is a string, or {"text": caption text, "say": spelling for the TTS} (names Kokoro mispronounces)
+            text, say = (line, line) if isinstance(line, str) else (line["text"], line.get("say", line["text"]))
+            wav, sr = k.create(say, voice=v["name"], speed=v.get("speed", 1.0), lang=v.get("lang", "en-us"))
             # trim leading/trailing silence (< -45 dBFS)
             env = np.abs(wav) > 10 ** (-45 / 20)
             idx = np.where(env)[0]

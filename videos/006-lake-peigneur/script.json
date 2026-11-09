@@ -1,0 +1,171 @@
+{
+  "id": "006-lake-peigneur",
+  "title": "The day a drill bit pulled the plug on a lake (Lake Peigneur, 1980)",
+  "style": "low-poly anime: flat cel-shaded Cycles (emission toon shader, inverted-hull outlines), VTuber-style host composited bottom-left",
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "voice": {
+    "engine": "kokoro",
+    "name": "af_heart",
+    "speed": 1.12,
+    "lang": "en-us"
+  },
+  "scene": "pipeline/blender/scene_peigneur.py",
+  "shots": {
+    "W": 300,
+    "C": 150,
+    "M": 480,
+    "F": 210,
+    "V": 240
+  },
+  "avatar": {
+    "scene": "pipeline/blender/scene_vtuber.py",
+    "dir": "frames/G",
+    "x": 0,
+    "y": 1000,
+    "width": 640,
+    "height": 920
+  },
+  "bg_plan": {
+    "hook": [
+      "W",
+      0
+    ],
+    "setup": [
+      "C",
+      0
+    ],
+    "mine": [
+      "M",
+      0
+    ],
+    "whirlpool": [
+      "W",
+      45
+    ],
+    "waterfall": [
+      "F",
+      0
+    ],
+    "why": [
+      "W",
+      200
+    ],
+    "spin": [
+      "V",
+      0
+    ],
+    "salt": [
+      "M",
+      250
+    ],
+    "payoff": [
+      "V",
+      120
+    ],
+    "cta": [
+      "W",
+      120
+    ]
+  },
+  "blur_beats": [
+    "salt"
+  ],
+  "beats": [
+    {
+      "id": "hook",
+      "pad_before": 0.0,
+      "pad_after": 0.25,
+      "min_duration": 3.5,
+      "lines": [
+        "In 1980, one drill bit pulled the plug on an entire lake."
+      ]
+    },
+    {
+      "id": "setup",
+      "pad_before": 0.15,
+      "pad_after": 0.25,
+      "min_duration": 4.6,
+      "lines": [
+        {
+          "text": "Lake Peigneur, Louisiana. Ten feet deep, with an oil rig drilling in the middle.",
+          "say": "Lake Pain-yer, Louisiana. Ten feet deep, with an oil rig drilling in the middle."
+        }
+      ]
+    },
+    {
+      "id": "mine",
+      "pad_before": 0.15,
+      "pad_after": 0.3,
+      "min_duration": 7.4,
+      "lines": [
+        "But under the lake sat a salt mine, with fifty-five miners inside.",
+        "At twelve hundred feet, the drill punched right through its roof."
+      ]
+    },
+    {
+      "id": "whirlpool",
+      "pad_before": 0.15,
+      "pad_after": 0.3,
+      "min_duration": 5.6,
+      "lines": [
+        "The lake poured in and started to spin. It swallowed the rig, eleven barges and a tugboat."
+      ]
+    },
+    {
+      "id": "waterfall",
+      "pad_before": 0.15,
+      "pad_after": 0.3,
+      "min_duration": 5.0,
+      "lines": [
+        "The canal from the sea ran backwards, into a one hundred sixty-four foot waterfall. And every miner got out alive."
+      ]
+    },
+    {
+      "id": "why",
+      "pad_before": 0.2,
+      "pad_after": 0.2,
+      "min_duration": 2.4,
+      "lines": [
+        "So why a whirlpool, not just a drain?"
+      ]
+    },
+    {
+      "id": "spin",
+      "pad_before": 0.15,
+      "pad_after": 0.3,
+      "min_duration": 6.0,
+      "lines": [
+        "Water always carries a little spin. Pulled inward, speed times radius stays the same. Half the distance, double the speed."
+      ]
+    },
+    {
+      "id": "salt",
+      "pad_before": 0.15,
+      "pad_after": 0.3,
+      "min_duration": 6.0,
+      "lines": [
+        "And fresh water eats salt. Every cubic meter can dissolve about three hundred fifty kilos, so the hole kept growing."
+      ]
+    },
+    {
+      "id": "payoff",
+      "pad_before": 0.15,
+      "pad_after": 0.25,
+      "min_duration": 3.0,
+      "lines": [
+        "It's your bathtub drain, with a salt mine at the bottom."
+      ]
+    },
+    {
+      "id": "cta",
+      "pad_before": 0.1,
+      "pad_after": 0.6,
+      "min_duration": 2.6,
+      "lines": [
+        "Follow for more disasters, explained."
+      ]
+    }
+  ]
+}

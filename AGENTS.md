@@ -16,6 +16,8 @@ pipeline/            reusable tooling (video-agnostic)
   blender/scene_bag.py     procedural Cycles scene for video 001 (water bag over flame)
   blender/scene_chain.py   procedural Cycles scene for video 002 (chain fountain)
   blender/scene_leidenfrost.py, scene_kaye.py   videos 004 and 005
+  blender/scene_peigneur.py, scene_vtuber.py   video 006 (low-poly anime scene + VTuber host layer)
+  blender/toon.py    shared toon look: cel emission materials, inverted-hull outlines, mesh helpers
   checks.py          measured acceptance checks (duration, VO onset, luma, UI-zone safe area, loop seam, loudness)
   safe_area.json     the TikTok UI zones every renderer and check reads (see 'Where things may go on screen')
   fake_timeline.py   ESTIMATED timeline from script.json for overlay previews/audits without Kokoro (never assemble with it)
@@ -365,6 +367,43 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
   the stream slides along it and exits as a jet lasting a few tenths of a
   second; stable on a tilted surface. Honey (Newtonian) coils, water
   splashes. "Roughly ten times thinner" keeps the "roughly".
+
+## Video 006 notes (Lake Peigneur, low-poly anime + VTuber host)
+
+- New art style, shared in `pipeline/blender/toon.py`: every material is Emission, so a camera ray stops
+  at the first surface (no bounces, no denoiser, 6 samples are only anti-aliasing). Cel bands come from a
+  constant ColorRamp on `dot(Normal, LIGHT)` multiplied into the base colour; outlines are inverted hulls
+  (copy, push along vertex normals, reverse faces, black where front-facing, Transparent where Backfacing).
+  View transform `Standard` so hex colours come out as typed. ~1.0-1.4 s/frame at 720x1280 for the whole
+  lake (20k-face terrain, 150 trees, rig, 12 boats, 3k-face water): 10x cheaper than the realistic videos.
+- Per-face colour mosaics (terrain, water foam) are a CORNER colour attribute read by `attr_mat`; the water
+  colours and vertex z are rewritten with numpy `foreach_set` every frame (polar grid, log-spaced rings).
+- Foam spiral arms: phase = 5(theta - omega(r) t) + 2.4 ln r with omega = GAMMA/(r^2 + a^2). The differential
+  rotation winds the arms tighter over time, which is what a real free vortex does. Floats are advected by the
+  same omega (integrated from t=0 each frame so frames stay standalone) and tilted to the funnel surface.
+- VTuber host (`scene_vtuber.py`, "avatar" in script.json): a separate RGBA pass over the whole timeline,
+  composited by `assemble.py` above the (blurred) footage and below the overlay. Built from a UV sphere head
+  (narrowed jaw), face decals bent onto the head's curvature (eyes = stacked ellipses + lash strips, placed by
+  ray-casting the head), bezier "blade" hair strands, sailor collar loft, cat-ear headset. Lip sync = 50 ms RMS
+  of vo.wav mapped from -40..-20 dB with fast attack / slow release; blinks seeded + on every beat change;
+  expressions keyed to beat starts and spoken words (`expr_keys()`). ~0.6 s/frame at 640x920.
+- Gotcha: `obj.matrix_world` of objects you just placed is stale until `view_layer.update()`; parenting with
+  `matrix_parent_inverse = parent.matrix_world.inverted()` before the update put the head 2 units low.
+- Gotcha: `hide_render` on an Empty does not hide its children; use `hide()` in scene_peigneur.py.
+- Gotcha: a "far ground" quad above z=0 covered the whole lake; it is an annulus outside the terrain now.
+- `tts.py` lines may be `{"text": ..., "say": ...}`: captions show "Peigneur", Kokoro reads "Pain-yer"
+  (espeak gives "pay-NOOR" otherwise). Check with `Kokoro.tokenizer.phonemize(text, 'en-us')`.
+- The mine cutaway reads the breach time from build/timeline.json (word "punched"), so the drill breaks the
+  roof on the word even if the VO is re-synthesized; re-render M after a script change.
+- Physics overlay is tied to the 3D: shot V is an orthographic top-down camera with the vortex at pixel
+  (540, 700) and 48 px/unit; the buoys orbit at r = 9 and 4.5 with theta = th0 + GAMMA t / r^2 (ideal
+  v = GAMMA/r), and beats.js draws the rings/arrows from the same numbers (`VC`, `BUOYS`).
+- Facts (Wikipedia, MSHA): 20 Nov 1980; lake ~10 ft deep; Texaco/Wilson Brothers 14-inch drill stuck at
+  1,228 ft, likely breach on the 1,300 ft level (mine went to 1,500 ft); 55 miners, all escaped; 7 rig crew
+  escaped; 11 barges + a tugboat sucked in, 9 barges popped back up; Delcambre Canal reversed, 164 ft
+  waterfall for a few days; 65 acres of land lost; no human deaths (three dogs). Blame was never settled
+  (wrong drilling spot vs. inaccurate mine maps), so the script does not say "miscalculation". Salt
+  solubility ~360 g/L at 25 C -> "about 350 kilos per cubic meter".
 
 ## Workflow for a new video
 

@@ -119,6 +119,16 @@ def main():
     else:
         vf = (f"[0:v]scale={W}:{H}:flags=lanczos,setsar=1,format=yuv420p,{blur}null[bg];"
               f"[1:v]format=rgba[ov];[bg][ov]overlay=0:0:format=auto,format=yuv420p[v]")
+    # optional host layer ("avatar" in script.json: RGBA frames from scene_vtuber.py, one per output frame), composited
+    # over the (blurred) footage and under the overlay, so captions and labels stay on top of her
+    av = script.get("avatar"); av_in = []
+    if av and glob.glob(os.path.join(bd, av["dir"], "*.png")):
+        ai = 4 + len(stack_concats); prefix = os.path.basename(av["dir"].rstrip("/"))
+        av_in = ["-framerate", str(fps), "-i", os.path.join(bd, av["dir"], f"{prefix}_%04d.png")]
+        old = "[1:v]format=rgba[ov];[bg][ov]overlay"; assert old in vf
+        vf = vf.replace(old, f"[{ai}:v]scale={av['width']}:{av['height']}:flags=lanczos,format=rgba[av];[bg][av]overlay={av['x']}:{av['y']}:format=auto:eof_action=pass[bgav];"
+                             "[1:v]format=rgba[ov];[bgav][ov]overlay")
+    elif av: print("warning: script.json has an avatar but no frames rendered yet; assembling without the host")
     out = a.out or os.path.join(vd, "out", ("preview.mp4" if a.preview else "final.mp4"))
     os.makedirs(os.path.dirname(out), exist_ok=True)
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-stats",
@@ -127,6 +137,7 @@ def main():
            "-i", os.path.join(bd, "mix.wav"),
            "-f", "concat", "-safe", "0", "-r", str(fps), "-i", concat_top,
            *[x for pth in stack_concats for x in ("-f", "concat", "-safe", "0", "-r", str(fps), "-i", pth)],
+           *av_in,
            "-filter_complex", vf, "-map", "[v]", "-map", "2:a",
            "-c:v", "libx264", "-preset", ("veryfast" if a.preview else "slow"), "-crf", str(a.crf if not a.preview else 23),
            "-pix_fmt", "yuv420p", "-r", str(fps), "-movflags", "+faststart",
