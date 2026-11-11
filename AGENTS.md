@@ -16,6 +16,7 @@ pipeline/            reusable tooling (video-agnostic)
   blender/scene_bag.py     procedural Cycles scene for video 001 (water bag over flame)
   blender/scene_chain.py   procedural Cycles scene for video 002 (chain fountain)
   blender/scene_leidenfrost.py, scene_kaye.py   videos 004 and 005
+  blender/scene_odyssey.py   video 006 (cat Odyssey, PS2 look, ~0.5 s/frame)
   checks.py          measured acceptance checks (duration, VO onset, luma, UI-zone safe area, loop seam, loudness)
   safe_area.json     the TikTok UI zones every renderer and check reads (see 'Where things may go on screen')
   fake_timeline.py   ESTIMATED timeline from script.json for overlay previews/audits without Kokoro (never assemble with it)
@@ -365,6 +366,27 @@ invalidate rendered frames: beats trim or wrap the footage via `BG_PLAN`.
   the stream slides along it and exits as a jet lasting a few tenths of a
   second; stable on a tilted surface. Honey (Newtonian) coils, water
   splashes. "Roughly ten times thinner" keeps the "roughly".
+
+## Video 006 notes (the Odyssey with cats, "PS2 graphics")
+
+- Not STEM: a 41 s story recap, 9 beats = 9 shots, one gag per stage, ends on a cat joke that loops into the hook.
+- The PS2 look costs nothing: `scene_odyssey.py` uses Emission-only materials through one shared node group
+  ("PSX": colour x (ambient + diffuse x N.L), then linear fog from Camera Data View Z Depth). No lights, 0 bounces,
+  6 samples, no denoise: **0.3-0.6 s/frame** at 360x640. A full re-render is ~10 min, so iterate on full renders.
+- Chunky textures without image files: noise / stripes / checker sampled on SNAPped object coordinates. Object
+  coords are pre-scale, so a pattern keyed to the wrong axis on a deformed grid gives nonsense (sail stripes keyed
+  to the billow axis drew a red disc).
+- `script.json` `"scale": "neighbor"` makes assemble.py upscale with nearest neighbour (x3) instead of lanczos.
+- Blob shadows (35 % black discs), flat-shaded sea grid displaced per frame with numpy, sky dome with a ramp,
+  lighting/fog/sky colours animated by writing the shared group's nodes (storm, day/night cycle).
+- Characters are rigid parts on empties (`cat()` / `pose()`), cats face -Y; hide by moving to z=-500
+  (hide_render on an empty does not hide children). Shot events read word times from timeline.json (`W()`),
+  so re-run the render after any script change (cheap here, unlike the Cycles videos).
+- Framing: HUD + title cards own y 250..460, captions moved to y=1150 (`BEATS.caption.y`), so characters must sit
+  between. `cam(..., shift=)` sets camera `shift_y` per shot to slide the subject up without re-aiming.
+- helpers.js already has `const clamp`; redefining it in beats.js is a SyntaxError that silently drops ALL beat
+  graphics (captions still render). Look at an overlay contact sheet before assembling.
+- No downloaded assets: everything is procedural, so there is nothing to license.
 
 ## Workflow for a new video
 

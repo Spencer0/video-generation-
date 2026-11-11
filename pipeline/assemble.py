@@ -2,6 +2,7 @@
 """Composite 3D frames + overlay PNGs + audio mix into the final vertical MP4.
 
 usage: python3 pipeline/assemble.py <video_id> [--out path] [--preview]
+script.json "scale" picks the ffmpeg upscale filter (default lanczos; "neighbor" for pixel-art renders).
 
 The 3D shots are rendered at a lower resolution for speed; here they are
 mapped onto the timeline (which shot/frame each output frame shows), upscaled
@@ -35,6 +36,7 @@ def main():
     bg_plan = {k: tuple(v) for k, v in script.get("bg_plan", BG_PLAN).items()}
     blur_beats = tuple(script.get("blur_beats", BLUR_BEATS))
     shot_ids = sorted(script.get("shots", {"A": 0, "B": 0, "C": 0, "D": 0}).keys())
+    SCALE = script.get("scale", "lanczos")   # "neighbor" keeps low-res renders chunky (006, PS2 look)
     frames_dir = os.path.join(bd, "frames")
     shots = {}
     for s in shot_ids:
@@ -104,20 +106,20 @@ def main():
     if split_windows:
         # split screen: top half from the 'top' sequence, bottom half from the main one, each cropped to its centre band
         sw = "+".join(f"between(t,{a:.3f},{b:.3f})" for a, b in split_windows)
-        vf = (f"[0:v]scale={W}:{H}:flags=lanczos,setsar=1,format=yuv420p,{blur}split[bgA][bgB];"
-              f"[3:v]scale={W}:{H}:flags=lanczos,setsar=1,format=yuv420p,crop={W}:{H//2}:0:{H//4},eq=brightness=0.07:contrast=1.08[top];"
+        vf = (f"[0:v]scale={W}:{H}:flags={SCALE},setsar=1,format=yuv420p,{blur}split[bgA][bgB];"
+              f"[3:v]scale={W}:{H}:flags={SCALE},setsar=1,format=yuv420p,crop={W}:{H//2}:0:{H//4},eq=brightness=0.07:contrast=1.08[top];"
               f"[bgB]crop={W}:{H//2}:0:{H//4}[bot];[top][bot]vstack,drawbox=y={H//2-3}:w={W}:h=6:color=black@0.9:t=fill[sp];"
               f"[bgA][sp]overlay=0:0:enable='{sw}'[bg];[1:v]format=rgba[ov];[bg][ov]overlay=0:0:format=auto,format=yuv420p[v]")
     elif n_stack:
         # N-panel stack: each panel input is scaled to cover W x H/N (panels may be rendered at that aspect) and centre-cropped
         PH = H // n_stack; sw = "+".join(f"between(t,{a:.3f},{b:.3f})" for a, b in stack_windows)
-        pf = "".join(f"[{4+pi}:v]scale={W}:{PH}:force_original_aspect_ratio=increase:flags=lanczos,crop={W}:{PH},setsar=1,format=yuv420p[p{pi}];" for pi in range(n_stack))
+        pf = "".join(f"[{4+pi}:v]scale={W}:{PH}:force_original_aspect_ratio=increase:flags={SCALE},crop={W}:{PH},setsar=1,format=yuv420p[p{pi}];" for pi in range(n_stack))
         boxes = ",".join(f"drawbox=y={PH*(pi+1)-3}:w={W}:h=6:color=white@0.95:t=fill" for pi in range(n_stack - 1))
-        vf = (f"[0:v]scale={W}:{H}:flags=lanczos,setsar=1,format=yuv420p,{blur}null[bgA];{pf}"
+        vf = (f"[0:v]scale={W}:{H}:flags={SCALE},setsar=1,format=yuv420p,{blur}null[bgA];{pf}"
               f"{''.join(f'[p{pi}]' for pi in range(n_stack))}vstack=inputs={n_stack},{boxes}[sp];"
               f"[bgA][sp]overlay=0:0:enable='{sw}'[bg];[1:v]format=rgba[ov];[bg][ov]overlay=0:0:format=auto,format=yuv420p[v]")
     else:
-        vf = (f"[0:v]scale={W}:{H}:flags=lanczos,setsar=1,format=yuv420p,{blur}null[bg];"
+        vf = (f"[0:v]scale={W}:{H}:flags={SCALE},setsar=1,format=yuv420p,{blur}null[bg];"
               f"[1:v]format=rgba[ov];[bg][ov]overlay=0:0:format=auto,format=yuv420p[v]")
     out = a.out or os.path.join(vd, "out", ("preview.mp4" if a.preview else "final.mp4"))
     os.makedirs(os.path.dirname(out), exist_ok=True)

@@ -1,0 +1,151 @@
+{
+ "id": "006-cat-odyssey",
+ "title": "The Odyssey, but everyone is a cat",
+ "fps": 30,
+ "width": 1080,
+ "height": 1920,
+ "voice": {
+  "engine": "kokoro",
+  "name": "af_heart",
+  "speed": 1.1,
+  "lang": "en-us"
+ },
+ "scene": "pipeline/blender/scene_odyssey.py",
+ "shots": {
+  "A": 89,
+  "B": 162,
+  "C": 159,
+  "D": 160,
+  "E": 112,
+  "F": 164,
+  "G": 110,
+  "H": 160,
+  "I": 123
+ },
+ "bg_plan": {
+  "hook": [
+   "A",
+   0
+  ],
+  "home": [
+   "B",
+   0
+  ],
+  "cyclops": [
+   "C",
+   0
+  ],
+  "winds": [
+   "D",
+   0
+  ],
+  "circe": [
+   "E",
+   0
+  ],
+  "sirens": [
+   "F",
+   0
+  ],
+  "calypso": [
+   "G",
+   0
+  ],
+  "suitors": [
+   "H",
+   0
+  ],
+  "door": [
+   "I",
+   0
+  ]
+ },
+ "blur_beats": [],
+ "scale": "neighbor",
+ "beats": [
+  {
+   "id": "hook",
+   "lines": [
+    "This is the Odyssey.",
+    "But everyone is a cat."
+   ],
+   "pad_before": 0.1,
+   "pad_after": 0.3
+  },
+  {
+   "id": "home",
+   "lines": [
+    "Odysseus just won the Trojan War.",
+    "Now he wants to go home.",
+    "It takes him ten years."
+   ],
+   "pad_before": 0.2,
+   "pad_after": 0.3
+  },
+  {
+   "id": "cyclops",
+   "lines": [
+    "First, a one-eyed giant traps his crew in a cave.",
+    "They sneak out, hiding under his sheep."
+   ],
+   "pad_before": 0.2,
+   "pad_after": 0.3
+  },
+  {
+   "id": "winds",
+   "lines": [
+    "A god hands him a bag holding every storm.",
+    "His crew opens it.",
+    "They could see home."
+   ],
+   "pad_before": 0.2,
+   "pad_after": 0.35
+  },
+  {
+   "id": "circe",
+   "lines": [
+    "A witch turns his crew into pigs.",
+    "In this version, dogs."
+   ],
+   "pad_before": 0.2,
+   "pad_after": 0.35
+  },
+  {
+   "id": "sirens",
+   "lines": [
+    "The Sirens sing a song no sailor can resist.",
+    "So he gets tied to the mast, just to listen."
+   ],
+   "pad_before": 0.2,
+   "pad_after": 0.3
+  },
+  {
+   "id": "calypso",
+   "lines": [
+    "Then a goddess keeps him on her island.",
+    "For seven years."
+   ],
+   "pad_before": 0.2,
+   "pad_after": 0.5
+  },
+  {
+   "id": "suitors",
+   "lines": [
+    "When he finally gets home,",
+    "a hundred strangers are eating his food.",
+    "He handles it."
+   ],
+   "pad_before": 0.2,
+   "pad_after": 0.5
+  },
+  {
+   "id": "door",
+   "lines": [
+    "Ten years to get back inside.",
+    "And now, he wants out."
+   ],
+   "pad_before": 0.2,
+   "pad_after": 0.9
+  }
+ ]
+}

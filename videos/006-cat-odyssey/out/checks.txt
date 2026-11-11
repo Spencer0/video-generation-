@@ -1,0 +1,17 @@
+duration: 41.02 s (timeline 41.00 s)
+  beat hook      2.93 s OK
+  beat home      5.37 s OK
+  beat cyclops   5.27 s OK
+  beat winds     5.30 s OK
+  beat circe     3.70 s OK
+  beat sirens    5.43 s OK
+  beat calypso   3.63 s OK
+  beat suitors   5.30 s OK
+  beat door      4.07 s OK
+longest beat: 5.43 s
+first spoken word onset (VO stem, 50 ms RMS > -20 dBFS): 0.15 s
+mean luma Y: first 3 s = 115.1, whole = 115.1, darkest frame = 61.4 (frame 255)
+frames in final: 1230 (timeline 1230)
+loop seam: mean abs pixel difference frame 0 vs last frame = 98.0 / 255 (lower is more seamless)
+safe area (410 overlay frames sampled against 5 UI zones): PASS, nothing readable under the TikTok UI
+loudness: Input Integrated:    -14.1 LUFS; Input True Peak:      -1.5 dBTP
